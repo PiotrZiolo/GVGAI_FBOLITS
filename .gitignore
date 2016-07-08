@@ -6,3 +6,4 @@ examples/.DS_Store
 *.class
 src/tools/.DS_Store
 *.db
+.DS_Store
