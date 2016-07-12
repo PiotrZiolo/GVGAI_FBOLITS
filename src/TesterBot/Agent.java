@@ -155,7 +155,10 @@ public class Agent extends AbstractMultiPlayer
     
     private void printState(StateObservationMulti so, int iAdvances)
     {
-    	Vector2d avatarPosition = so.getAvatarPosition(id);
+  System.out.println("========== Player " + id + " report ==========");
+        System.out.println("Advance number: " + iAdvances);
+  
+     Vector2d avatarPosition = so.getAvatarPosition(id);
         ArrayList<Observation>[] npcPositions = so.getNPCPositions(avatarPosition);
         ArrayList<Observation>[] immovablePositions = so.getImmovablePositions(avatarPosition);
         ArrayList<Observation>[] movablePositions = so.getMovablePositions(avatarPosition);
@@ -163,75 +166,78 @@ public class Agent extends AbstractMultiPlayer
         ArrayList<Observation>[] portalPositions = so.getPortalsPositions(avatarPosition);
         ArrayList<Observation>[] fromAvatarSpritesPositions = so.getFromAvatarSpritesPositions(avatarPosition);
         
-		int npcCounter = 0;
+  int npcCounter = 0;
         if (npcPositions != null) {
             for (ArrayList<Observation> npcs : npcPositions) {
                 if(npcs.size() > 0)
                 {
                     npcCounter += npcs.size();
+                    System.out.println("Number of NPCs of type " + npcs.get(0).itype + ": " + npcs.size());
                 }
             }
         }
+        System.out.println("Number of NPCs: " + npcCounter);
         
         int immovableCounter = 0;
         if (immovablePositions != null) {
             for (ArrayList<Observation> immovable : immovablePositions) {
                 if(immovable.size() > 0)
                 {
-                	immovableCounter += immovable.size();
+                 immovableCounter += immovable.size();
+                 System.out.println("Number of immovables of type " + immovable.get(0).itype + ": " + immovable.size());
                 }
             }
         }
+        System.out.println("Number of immovables: " + immovableCounter);
         
         int movableCounter = 0;
         if (movablePositions != null) {
             for (ArrayList<Observation> movable : movablePositions) {
                 if(movable.size() > 0)
                 {
-                	movableCounter += movable.size();
+                 movableCounter += movable.size();
+                 System.out.println("Number of movables of type " + movable.get(0).itype + ": " + movable.size());
                 }
             }
         }
+        System.out.println("Number of movables: " + movableCounter);
         
         int resourcesCounter = 0;
         if (resourcesPositions != null) {
             for (ArrayList<Observation> resources : resourcesPositions) {
                 if(resources.size() > 0)
                 {
-                	resourcesCounter += resources.size();
+                 resourcesCounter += resources.size();
+                 System.out.println("Number of resources of type " + resources.get(0).itype + ": " + resources.size());
                 }
             }
         }
+        System.out.println("Number of resources: " + resourcesCounter);
         
         int portalsCounter = 0;
         if (portalPositions != null) {
             for (ArrayList<Observation> portals : portalPositions) {
                 if(portals.size() > 0)
                 {
-                	portalsCounter += portals.size();
+                 portalsCounter += portals.size();
+                 System.out.println("Number of portals of type " + portals.get(0).itype + ": " + portals.size());
                 }
             }
         }
+        System.out.println("Number of portals: " + portalsCounter);
         
         int fromAvatarSpritesCounter = 0;
         if (fromAvatarSpritesPositions != null) {
             for (ArrayList<Observation> fromAvatarSprites : fromAvatarSpritesPositions) {
                 if(fromAvatarSprites.size() > 0)
                 {
-                	fromAvatarSpritesCounter += fromAvatarSprites.size();
+                 fromAvatarSpritesCounter += fromAvatarSprites.size();
+                 System.out.println("Number of from avatar sprites of type " + fromAvatarSprites.get(0).itype + ": " + fromAvatarSprites.size());
                 }
             }
         }
-        
-        System.out.println("========== Player " + id + " report ==========");
-        System.out.println("Advance number: " + iAdvances);
-		System.out.println("Number of NPCs: " + npcCounter);
-		System.out.println("Number of immovables: " + immovableCounter);
-		System.out.println("Number of movables: " + movableCounter);
-		System.out.println("Number of resources: " + resourcesCounter);
-		System.out.println("Number of portals: " + portalsCounter);
-		System.out.println("Number of from avatar sprites: " + fromAvatarSpritesCounter);
-		System.out.println("=====================================");
+        System.out.println("Number of from avatar sprites: " + fromAvatarSpritesCounter);
+        System.out.println("=====================================");
 		System.out.println("");
     }
 }

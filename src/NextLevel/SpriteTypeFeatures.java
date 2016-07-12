@@ -28,7 +28,7 @@ public class SpriteTypeFeatures {
     /**
      * Amount of points it give
      */
-    public int givingPoints;
+    public int changingPoints;
     /**
      * Can avatar pass through it?
      */
@@ -44,7 +44,7 @@ public class SpriteTypeFeatures {
     /**
      * does collecting/destroying it increase value of other objects?
      */
-    public boolean increasingValuesOfOtherObjects;
+    public boolean changingValuesOfOtherObjects;
     /**
      * does collecting/destroying it allow to achieve victory?
      */
@@ -62,11 +62,11 @@ public class SpriteTypeFeatures {
     	this.collectable = false;
     	this.givingVictory = false;
     	this.givingDefeat = false;
-    	this.givingPoints = 0;
+    	this.changingPoints = 0;
     	this.passable = false;
     	this.moving = false;
     	this.speed = 0;
-    	this.increasingValuesOfOtherObjects = false;
+    	this.changingValuesOfOtherObjects = false;
     	this.allowingVictory = false;
     }
 	/**
@@ -83,44 +83,11 @@ public class SpriteTypeFeatures {
     	this.collectable = collectable;
     	this.givingVictory = givingVictory;
     	this.givingDefeat = givingDefeat;
-    	this.givingPoints = givingPoints;
+    	this.changingPoints = givingPoints;
     	this.passable = passable;
     	this.moving = moving;
     	this.speed = speed;
-    	this.increasingValuesOfOtherObjects = increasingValuesOfOtherObjects;
+    	this.changingValuesOfOtherObjects = increasingValuesOfOtherObjects;
     	this.allowingVictory = allowingVictory;
-    }
-	/**
-     * Returns partial score from given sprite
-     * @param weights array of weights used to calculate partial score.
-     * @param distanceToSprite distance from current position to given sprite.
-     */
-    public double getScore(double[] weights, double distanceToSprite)
-    {
-    	double[] filledWeights = new double[12];
-    	if(weights.length!=12) {
-    		System.out.println("The weights array was incomplite. Missing values were set to 0.");
-    		for (int i = 0; i<weights.length; i++) {
-    			filledWeights[i] = weights[i];
-    		}
-    		for (int i = weights.length; i<12; i++) {
-    			filledWeights[i] = 0;
-    		}
-    	} else {
-    		filledWeights = weights;
-    	}
-    	double spriteScore = filledWeights[0] * this.dangerousToAvatar +
-    			filledWeights[1] * ((this.dangerousOtherwise) ? 1 : 0) +
-    			filledWeights[2] * ((this.destroyable) ? 1 : 0) +
-    			filledWeights[3] * ((this.collectable) ? 1 : 0) +
-    			filledWeights[4] * ((this.givingVictory) ? 1 : 0) +
-    			filledWeights[5] * ((this.givingDefeat) ? 1 : 0) +
-    			filledWeights[6] * this.givingPoints +
-    			filledWeights[7] * ((this.passable) ? 1 : 0) +
-    			filledWeights[8] * ((this.moving) ? 1 : 0) +
-    			filledWeights[9] * this.speed +
-    			filledWeights[10] * ((this.increasingValuesOfOtherObjects) ? 1 : 0) +
-    			filledWeights[11] * ((this.allowingVictory) ? 1 : 0);
-    	return spriteScore/distanceToSprite;
     }
 }
