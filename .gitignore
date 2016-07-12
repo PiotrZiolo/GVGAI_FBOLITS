@@ -7,3 +7,8 @@ examples/.DS_Store
 src/tools/.DS_Store
 *.db
 .DS_Store
+.settings/
+bin/
+dist/
+.classpath
+.project
