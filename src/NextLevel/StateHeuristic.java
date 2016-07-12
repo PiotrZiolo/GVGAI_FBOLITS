@@ -1,13 +1,15 @@
 package NextLevel;
 
 import core.game.Observation;
-import core.game.StateObservation;
+//import core.game.StateObservation;
 import core.game.StateObservationMulti;
-import ontology.Types;
+//import ontology.Types;
 import tools.Vector2d;
+import NextLevel.SpriteTypeFeatures;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+//import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * Created with IntelliJ IDEA. User: ssamot Date: 11/02/14 Time: 15:44 This is a
@@ -15,113 +17,133 @@ import java.util.HashMap;
  */
 public class StateHeuristic
 {
-	double initialNpcCounter = 0;
-	int playerID;
+    double initialNpcCounter = 0;
+    int playerID;
+    int oppID;
+    TreeMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap;
+    double[] weights;
+    double lengthScale;
+    double pointScale;
 
-	public StateHeuristic(StateObservationMulti stateObs, int playerID)
-	{
-		this.playerID = playerID;
-	}
+    public StateHeuristic(int playerID, int oppID,
+    		TreeMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap/*, double[] weights*/) {
+    	this.playerID = playerID;
+        this.oppID = oppID;
+    	this.spriteTypeFeaturesMap = spriteTypeFeaturesMap;
+    }
 
-	public double evaluateState(StateObservationMulti stateObs, int playerID)
-	{
-		Vector2d avatarPosition = stateObs.getAvatarPosition(playerID);
-		ArrayList<Observation>[] npcPositions = stateObs.getNPCPositions(avatarPosition);
-		ArrayList<Observation>[] portalPositions = stateObs.getPortalsPositions(avatarPosition);
-		HashMap<Integer, Integer> resources = stateObs.getAvatarResources(playerID);
+    public double evaluateState(StateObservationMulti stateObs) {
+        Vector2d avatarPosition = stateObs.getAvatarPosition(playerID);
+        int avatarHealthPoints = stateObs.getAvatarHealthPoints(playerID);
+        
+        double score = 0;
+        
+        ArrayList<Observation>[] npcPositions = stateObs.getNPCPositions();
+        score += positionPayoffFunction(npcPositions, avatarPosition, avatarHealthPoints);
+        
+        ArrayList<Observation>[] portalPositions = stateObs.getPortalsPositions(avatarPosition);
+        score += positionPayoffFunction(portalPositions, avatarPosition, avatarHealthPoints);
+        
+        ArrayList<Observation>[] movablePositions = stateObs.getMovablePositions(avatarPosition);
+        score += positionPayoffFunction(movablePositions, avatarPosition, avatarHealthPoints);
+        
+        ArrayList<Observation>[] immovablePositions = stateObs.getImmovablePositions(avatarPosition);
+        score += positionPayoffFunction(immovablePositions, avatarPosition, avatarHealthPoints);
+        
+        ArrayList<Observation>[] fromAvatarSpritesPositions = stateObs.getFromAvatarSpritesPositions();
+        score += positionPayoffFunction(fromAvatarSpritesPositions, avatarPosition, avatarHealthPoints);
+        
+        ArrayList<Observation>[] resourcesPositions = stateObs.getResourcesPositions(avatarPosition);
+        score += positionPayoffFunction(resourcesPositions, avatarPosition, avatarHealthPoints);
+        
+        //ArrayList<Observation>[] avatarPosition = stateObs.getAva(oppID);
+        
+        /*double won = 0;
+        Types.WINNER[] winners = stateObs.getMultiGameWinner();
 
-		ArrayList<Observation>[] npcPositionsNotSorted = stateObs.getNPCPositions();
+        boolean bothWin = (winners[playerID] == Types.WINNER.PLAYER_WINS) && (winners[oppID] == Types.WINNER.PLAYER_WINS);
+        boolean meWins  = (winners[playerID] == Types.WINNER.PLAYER_WINS) && (winners[oppID] == Types.WINNER.PLAYER_LOSES);
+        boolean meLoses = (winners[playerID] == Types.WINNER.PLAYER_LOSES) && (winners[oppID] == Types.WINNER.PLAYER_WINS);
+        boolean bothLose = (winners[playerID] == Types.WINNER.PLAYER_LOSES) && (winners[oppID] == Types.WINNER.PLAYER_LOSES);
 
-		double won = 0;
-		int oppID = (playerID + 1) % stateObs.getNoPlayers();
-		Types.WINNER[] winners = stateObs.getMultiGameWinner();
+        if(meWins || bothWin)
+            won = 1000000000;
+        else if (meLoses)
+            return -999999999;
 
-		boolean bothWin = (winners[playerID] == Types.WINNER.PLAYER_WINS)
-				&& (winners[oppID] == Types.WINNER.PLAYER_WINS);
-		boolean meWins = (winners[playerID] == Types.WINNER.PLAYER_WINS)
-				&& (winners[oppID] == Types.WINNER.PLAYER_LOSES);
-		boolean meLoses = (winners[playerID] == Types.WINNER.PLAYER_LOSES)
-				&& (winners[oppID] == Types.WINNER.PLAYER_WINS);
-		boolean bothLose = (winners[playerID] == Types.WINNER.PLAYER_LOSES)
-				&& (winners[oppID] == Types.WINNER.PLAYER_LOSES);
+        npcPositions[0].sqDist;
 
-		if (meWins || bothWin)
-			won = 1000000000;
-		else if (meLoses)
-			return -999999999;
+        if (portalPositions == null) {
 
-		// if (winners[playerID] == Types.WINNER.PLAYER_WINS) {
-		// won = 1000000000;
-		// } else if (winners[playerID] == Types.WINNER.PLAYER_LOSES) {
-		// return -999999999;
-		// }
+            double score = 0;
+            if (npcCounter == 0) {
+                score = stateObs.getGameScore(playerID) + won*100000000;
+            } else {
+                score = -minDistance / 100.0 + (-npcCounter) * 100.0 + stateObs.getGameScore(playerID) + won*100000000;
+            }
+            return score;
+        }
 
-		double minDistance = Double.POSITIVE_INFINITY;
-		Vector2d minObject = null;
-		int minNPC_ID = -1;
-		int minNPCType = -1;
+        double minDistancePortal = Double.POSITIVE_INFINITY;
+        Vector2d minObjectPortal = null;
+        for (ArrayList<Observation> portals : portalPositions) {
+            if(portals.size() > 0)
+            {
+                minObjectPortal   =  portals.get(0).position; //This is the closest portal
+                minDistancePortal =  portals.get(0).sqDist;   //This is the (square) distance to the closest portal
+            }
+        }
 
-		int npcCounter = 0;
-		if (npcPositions != null)
-		{
-			for (ArrayList<Observation> npcs : npcPositions)
-			{
-				if (npcs.size() > 0)
-				{
-					minObject = npcs.get(0).position; // This is the closest guy
-					minDistance = npcs.get(0).sqDist; // This is the (square)
-														// distance to the
-														// closest NPC.
-					minNPC_ID = npcs.get(0).obsID; // This is the id of the
-													// closest NPC.
-					minNPCType = npcs.get(0).itype; // This is the type of the
-													// closest NPC.
-					npcCounter += npcs.size();
-				}
-			}
-		}
+        double score = 0;
+        if (minObjectPortal == null) {
+            score = stateObs.getGameScore() + won*100000000;
+        }
+        else {
+            score = stateObs.getGameScore() + won*1000000 - minDistancePortal * 10.0;
+        }
+         */
 
-		if (portalPositions == null)
-		{
+        return score;
+    }
 
-			double score = 0;
-			if (npcCounter == 0)
-			{
-				score = stateObs.getGameScore(playerID) + won * 100000000;
-			} else
-			{
-				score = -minDistance / 100.0 + (-npcCounter) * 100.0 + stateObs.getGameScore(playerID)
-						+ won * 100000000;
-			}
-
-			return score;
-		}
-
-		double minDistancePortal = Double.POSITIVE_INFINITY;
-		Vector2d minObjectPortal = null;
-		for (ArrayList<Observation> portals : portalPositions)
-		{
-			if (portals.size() > 0)
-			{
-				minObjectPortal = portals.get(0).position; // This is the
-															// closest portal
-				minDistancePortal = portals.get(0).sqDist; // This is the
-															// (square) distance
-															// to the closest
-															// portal
-			}
-		}
-
-		double score = 0;
-		if (minObjectPortal == null)
-		{
-			score = stateObs.getGameScore() + won * 100000000;
-		} else
-		{
-			score = stateObs.getGameScore() + won * 1000000 - minDistancePortal * 10.0;
-		}
-
+    private double positionPayoffFunction(ArrayList<Observation>[] observations,
+    		Vector2d agentPosition, int avatarHealthPoints) {
+    	double score = 0;
+        if(observations!=null) {
+	        for(int i = 0; i < observations.length; ++i) {
+	        	for (Observation obs : observations[i]) {
+	        		if (spriteTypeFeaturesMap.containsKey(obs.itype))
+	        		{
+	        			SpriteTypeFeatures sprite = spriteTypeFeaturesMap.get(obs.itype);
+	        			if (sprite.givingVictory) {
+	        				score += weights[0]*distance(obs.position, agentPosition);
+	        			}
+	        			if (sprite.allowingVictory) {
+	        				score += weights[1]*distance(obs.position, agentPosition);
+	        				score -= weights[2];
+	        			}
+	        			if (sprite.dangerousToAvatar>0) {
+	        				score += -weights[3]*sprite.dangerousToAvatar/avatarHealthPoints*distance(obs.position, agentPosition);
+	        			}
+	        			if (sprite.dangerousOtherwise) {
+	        				score += -weights[4];
+	        				score += -weights[5]*distance(obs.position, agentPosition);
+	        			}
+	        			if (sprite.changingPoints!=0) {
+	        				score += weights[6]*sprite.changingPoints/pointScale*distance(obs.position, agentPosition);
+	        			}
+	        			if (sprite.changingValuesOfOtherObjects) {
+	        				int totalPointsChange = 0;
+	        				score += weights[7]*totalPointsChange*distance(obs.position, agentPosition);
+	        			}
+	        		}
+	        	}
+	        }
+        }
 		return score;
 	}
-
+    
+    double distance ( Vector2d v1, Vector2d v2 ) {
+    	return lengthScale/Math.pow( Math.abs(v1.x-v2.x) + Math.abs(v1.y-v2.y), 2 );
+    }
 }
