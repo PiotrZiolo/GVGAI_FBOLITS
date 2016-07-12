@@ -21,210 +21,209 @@ import tools.Vector2d;
  */
 public class Agent extends AbstractMultiPlayer
 {
-    int id; //this player's ID
-    int turn = 0;
-    int direction = 0;
-    Random rd;
-    int firstTurns = 0;
+	int id; // this player's ID
+	int turn = 0;
+	int direction = 0;
+	Random rd;
+	int firstTurns = 0;
 
-    /**
-     * Public constructor with state observation and time due.
-     * @param so state observation of the current game.
-     * @param elapsedTimer Timer for the controller creation.
-     * @param playerID ID if this agent
-     */
-    public Agent(StateObservationMulti so, ElapsedCpuTimer elapsedTimer, int playerID)
-    {
-        id = playerID;
-        rd = new Random();
-        Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
-        
-        int iAdvances = 0;
-    	
-    	while (elapsedTimer.remainingTimeMillis() > 0)
-    	{
-    		ArrayList<ACTIONS> actions = so.getAvailableActions(id);
+	/**
+	 * Public constructor with state observation and time due.
+	 * 
+	 * @param so
+	 *            state observation of the current game.
+	 * @param elapsedTimer
+	 *            Timer for the controller creation.
+	 * @param playerID
+	 *            ID if this agent
+	 */
+	public Agent(StateObservationMulti so, ElapsedCpuTimer elapsedTimer, int playerID)
+	{
+		id = playerID;
+		rd = new Random();
+		Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
 
-    		if (actions.size() > 0)
-    		{
-    			actions.get(rd.nextInt(actions.size()));
-    		}
-    		else
-    		{
-    			action = Types.ACTIONS.ACTION_NIL;
-    		}
-    		so.advance(action);
-    		iAdvances++;
-    		
-    		if (iAdvances <= 99000 && iAdvances % 1000 == 0)
-    		{
-    			printState(so, iAdvances);
-    		}
-    	}
-    	System.out.println("Player " + id + " | Initialization advance operations: " + iAdvances);
-    	System.out.println("");
-    }
+		int iAdvances = 0;
 
+		while (elapsedTimer.remainingTimeMillis() > 0)
+		{
+			ArrayList<ACTIONS> actions = so.getAvailableActions(id);
 
-    /**
-     * Picks an action. This function is called every game step to request an
-     * action from the player.
-     * @param stateObs Observation of the current state.
-     * @param elapsedTimer Timer when the action returned is due.
-     * @return An action for the current state
-     */
-    public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer)
-    {
-    	Types.ACTIONS action = Types.ACTIONS.ACTION_USE;
+			if (actions.size() > 0)
+			{
+				actions.get(rd.nextInt(actions.size()));
+			} else
+			{
+				action = Types.ACTIONS.ACTION_NIL;
+			}
+			so.advance(action);
+			iAdvances++;
 
-    	/*
-    	if (turn == 0)
-    	{
-    		switch (direction)
-    		{
-    			case 0:
-    				action = Types.ACTIONS.ACTION_UP;
-    				break;
-    			case 1:
-    				action = Types.ACTIONS.ACTION_RIGHT;
-    				break;
-    			case 2:
-    				action = Types.ACTIONS.ACTION_DOWN;
-    				break;
-    			case 3:
-    				action = Types.ACTIONS.ACTION_LEFT;
-    				break;
-    		}
-    		
-    		direction = (direction + 1) % 4;
-    	}
-    	else
-    	{
-    		action = Types.ACTIONS.ACTION_USE;
-    	}
-    	
-    	turn = (turn + 1) % 30;
-    	*/
-    	
-    	int iAdvances = 0;
-    	
-    	printState(stateObs, iAdvances);
-    	
-    	while (elapsedTimer.remainingTimeMillis() > 0)
-    	{
-    		ArrayList<ACTIONS> actions = stateObs.getAvailableActions(id);
+			if (iAdvances <= 99000 && iAdvances % 1000 == 0)
+			{
+				printState(so, iAdvances);
+			}
+		}
+		System.out.println("Player " + id + " | Initialization advance operations: " + iAdvances);
+		System.out.println("");
+	}
 
-    		if (actions.size() > 0)
-    		{
-    			actions.get(rd.nextInt(actions.size()));
-    		}
-    		else
-    		{
-    			action = Types.ACTIONS.ACTION_NIL;
-    		}
-    		action = Types.ACTIONS.ACTION_NIL;
-    		stateObs.advance(action);
-    		iAdvances++;
-    		
-    		if (iAdvances <= 90 && iAdvances % 10 == 0)
-    		{
-    			//printState(stateObs, iAdvances);
-    		}
-    	}
-    	System.out.println("Player " + id + " | Advance operations: " + iAdvances);
-    	System.out.println("");
+	/**
+	 * Picks an action. This function is called every game step to request an
+	 * action from the player.
+	 * 
+	 * @param stateObs
+	 *            Observation of the current state.
+	 * @param elapsedTimer
+	 *            Timer when the action returned is due.
+	 * @return An action for the current state
+	 */
+	public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer)
+	{
+		Types.ACTIONS action = Types.ACTIONS.ACTION_USE;
 
-    	
-    	if (firstTurns < 50)
-    	{
-    		action = Types.ACTIONS.ACTION_USE;
-    	}
-    	else
-    	{
-    		action = Types.ACTIONS.ACTION_NIL;
-    	}
-    	firstTurns++;
-    	
-        return action;
-    }
+		/*
+		 * if (turn == 0) { switch (direction) { case 0: action =
+		 * Types.ACTIONS.ACTION_UP; break; case 1: action =
+		 * Types.ACTIONS.ACTION_RIGHT; break; case 2: action =
+		 * Types.ACTIONS.ACTION_DOWN; break; case 3: action =
+		 * Types.ACTIONS.ACTION_LEFT; break; }
+		 * 
+		 * direction = (direction + 1) % 4; } else { action =
+		 * Types.ACTIONS.ACTION_USE; }
+		 * 
+		 * turn = (turn + 1) % 30;
+		 */
 
-    public void result(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer)
-    {
-        //System.out.println("Thanks for playing! " + stateObservation.isAvatarAlive());
-    }
-    
-    private void printState(StateObservationMulti so, int iAdvances)
-    {
-    	Vector2d avatarPosition = so.getAvatarPosition(id);
-        ArrayList<Observation>[] npcPositions = so.getNPCPositions(avatarPosition);
-        ArrayList<Observation>[] immovablePositions = so.getImmovablePositions(avatarPosition);
-        ArrayList<Observation>[] movablePositions = so.getMovablePositions(avatarPosition);
-        ArrayList<Observation>[] resourcesPositions = so.getResourcesPositions(avatarPosition);
-        ArrayList<Observation>[] portalPositions = so.getPortalsPositions(avatarPosition);
-        ArrayList<Observation>[] fromAvatarSpritesPositions = so.getFromAvatarSpritesPositions(avatarPosition);
-        
+		int iAdvances = 0;
+
+		printState(stateObs, iAdvances);
+
+		while (elapsedTimer.remainingTimeMillis() > 0)
+		{
+			ArrayList<ACTIONS> actions = stateObs.getAvailableActions(id);
+
+			if (actions.size() > 0)
+			{
+				actions.get(rd.nextInt(actions.size()));
+			} else
+			{
+				action = Types.ACTIONS.ACTION_NIL;
+			}
+			action = Types.ACTIONS.ACTION_NIL;
+			stateObs.advance(action);
+			iAdvances++;
+
+			if (iAdvances <= 90 && iAdvances % 10 == 0)
+			{
+				// printState(stateObs, iAdvances);
+			}
+		}
+		System.out.println("Player " + id + " | Advance operations: " + iAdvances);
+		System.out.println("");
+
+		if (firstTurns < 50)
+		{
+			action = Types.ACTIONS.ACTION_USE;
+		} else
+		{
+			action = Types.ACTIONS.ACTION_NIL;
+		}
+		firstTurns++;
+
+		return action;
+	}
+
+	public void result(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer)
+	{
+		// System.out.println("Thanks for playing! " +
+		// stateObservation.isAvatarAlive());
+	}
+
+	private void printState(StateObservationMulti so, int iAdvances)
+	{
+		Vector2d avatarPosition = so.getAvatarPosition(id);
+		ArrayList<Observation>[] npcPositions = so.getNPCPositions(avatarPosition);
+		ArrayList<Observation>[] immovablePositions = so.getImmovablePositions(avatarPosition);
+		ArrayList<Observation>[] movablePositions = so.getMovablePositions(avatarPosition);
+		ArrayList<Observation>[] resourcesPositions = so.getResourcesPositions(avatarPosition);
+		ArrayList<Observation>[] portalPositions = so.getPortalsPositions(avatarPosition);
+		ArrayList<Observation>[] fromAvatarSpritesPositions = so.getFromAvatarSpritesPositions(avatarPosition);
+
 		int npcCounter = 0;
-        if (npcPositions != null) {
-            for (ArrayList<Observation> npcs : npcPositions) {
-                if(npcs.size() > 0)
-                {
-                    npcCounter += npcs.size();
-                }
-            }
-        }
-        
-        int immovableCounter = 0;
-        if (immovablePositions != null) {
-            for (ArrayList<Observation> immovable : immovablePositions) {
-                if(immovable.size() > 0)
-                {
-                	immovableCounter += immovable.size();
-                }
-            }
-        }
-        
-        int movableCounter = 0;
-        if (movablePositions != null) {
-            for (ArrayList<Observation> movable : movablePositions) {
-                if(movable.size() > 0)
-                {
-                	movableCounter += movable.size();
-                }
-            }
-        }
-        
-        int resourcesCounter = 0;
-        if (resourcesPositions != null) {
-            for (ArrayList<Observation> resources : resourcesPositions) {
-                if(resources.size() > 0)
-                {
-                	resourcesCounter += resources.size();
-                }
-            }
-        }
-        
-        int portalsCounter = 0;
-        if (portalPositions != null) {
-            for (ArrayList<Observation> portals : portalPositions) {
-                if(portals.size() > 0)
-                {
-                	portalsCounter += portals.size();
-                }
-            }
-        }
-        
-        int fromAvatarSpritesCounter = 0;
-        if (fromAvatarSpritesPositions != null) {
-            for (ArrayList<Observation> fromAvatarSprites : fromAvatarSpritesPositions) {
-                if(fromAvatarSprites.size() > 0)
-                {
-                	fromAvatarSpritesCounter += fromAvatarSprites.size();
-                }
-            }
-        }
-        
-        System.out.println("========== Player " + id + " report ==========");
-        System.out.println("Advance number: " + iAdvances);
+		if (npcPositions != null)
+		{
+			for (ArrayList<Observation> npcs : npcPositions)
+			{
+				if (npcs.size() > 0)
+				{
+					npcCounter += npcs.size();
+				}
+			}
+		}
+
+		int immovableCounter = 0;
+		if (immovablePositions != null)
+		{
+			for (ArrayList<Observation> immovable : immovablePositions)
+			{
+				if (immovable.size() > 0)
+				{
+					immovableCounter += immovable.size();
+				}
+			}
+		}
+
+		int movableCounter = 0;
+		if (movablePositions != null)
+		{
+			for (ArrayList<Observation> movable : movablePositions)
+			{
+				if (movable.size() > 0)
+				{
+					movableCounter += movable.size();
+				}
+			}
+		}
+
+		int resourcesCounter = 0;
+		if (resourcesPositions != null)
+		{
+			for (ArrayList<Observation> resources : resourcesPositions)
+			{
+				if (resources.size() > 0)
+				{
+					resourcesCounter += resources.size();
+				}
+			}
+		}
+
+		int portalsCounter = 0;
+		if (portalPositions != null)
+		{
+			for (ArrayList<Observation> portals : portalPositions)
+			{
+				if (portals.size() > 0)
+				{
+					portalsCounter += portals.size();
+				}
+			}
+		}
+
+		int fromAvatarSpritesCounter = 0;
+		if (fromAvatarSpritesPositions != null)
+		{
+			for (ArrayList<Observation> fromAvatarSprites : fromAvatarSpritesPositions)
+			{
+				if (fromAvatarSprites.size() > 0)
+				{
+					fromAvatarSpritesCounter += fromAvatarSprites.size();
+				}
+			}
+		}
+
+		System.out.println("========== Player " + id + " report ==========");
+		System.out.println("Advance number: " + iAdvances);
 		System.out.println("Number of NPCs: " + npcCounter);
 		System.out.println("Number of immovables: " + immovableCounter);
 		System.out.println("Number of movables: " + movableCounter);
@@ -233,5 +232,5 @@ public class Agent extends AbstractMultiPlayer
 		System.out.println("Number of from avatar sprites: " + fromAvatarSpritesCounter);
 		System.out.println("=====================================");
 		System.out.println("");
-    }
+	}
 }
