@@ -60,6 +60,7 @@ public class Brain
 	public void learn(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer)
 	{
 		int iAdvanceCount = 0;
+		boolean productionVersion = false;
 
 		Vector2d avatarPosition = stateObs.getAvatarPosition(playerID);
 		ArrayList<Observation>[] npcPositions = stateObs.getNPCPositions(avatarPosition);
@@ -69,6 +70,14 @@ public class Brain
 		ArrayList<Observation>[] portalPositions = stateObs.getPortalsPositions(avatarPosition);
 		ArrayList<Observation>[] fromAvatarSpritesPositions = stateObs.getFromAvatarSpritesPositions(avatarPosition);
 
+		ArrayList<ArrayList<Observation>[]> arraysOfSprites = new ArrayList<ArrayList<Observation>[]>();
+		arraysOfSprites.add(npcPositions);
+		arraysOfSprites.add(immovablePositions);
+		arraysOfSprites.add(movablePositions);
+		arraysOfSprites.add(resourcesPositions);
+		arraysOfSprites.add(portalPositions);
+		arraysOfSprites.add(fromAvatarSpritesPositions);
+		
 		if (npcPositions != null)
 		{
 			for (ArrayList<Observation> npcs : npcPositions)
@@ -79,8 +88,17 @@ public class Brain
 					{
 						if (memory.getSpriteTypeFeaturesByType(npcs.get(i).itype) == null)
 						{
-							memory.setSpriteTypeFeaturesByType(npcs.get(i).itype, 
-									getSpriteTypeFeaturesForAsteroids(npcs.get(i).category, npcs.get(i).itype));
+							SpriteTypeFeatures spriteTypeFeatures = new SpriteTypeFeatures(npcs.get(i).itype);
+							if (productionVersion)
+							{
+								
+							}
+							else
+							{
+								spriteTypeFeatures = getSpriteTypeFeaturesForAsteroids(npcs.get(i).category, npcs.get(i).itype);
+							}
+							
+							memory.setSpriteTypeFeaturesByType(npcs.get(i).itype, spriteTypeFeatures);
 						}
 					}
 				}
