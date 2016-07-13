@@ -1,7 +1,6 @@
 package NextLevel;
 
 import core.game.Observation;
-//import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
 import ontology.Types;
@@ -12,7 +11,7 @@ import tools.Vector2d;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 public class Agent extends AbstractMultiPlayer {
 	/*
@@ -25,6 +24,7 @@ public class Agent extends AbstractMultiPlayer {
 	public static int oppID; //player ID of the opponent
 	public static int id; //ID of this player
 	public static int no_players; //number of players in the game
+	public static ArrayList<Types.ACTIONS> availableActions;
 	private static double epsilon = 1e-6;
 	private Random m_rnd;
 	private static HashMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap;
@@ -47,6 +47,7 @@ public class Agent extends AbstractMultiPlayer {
         no_players = stateObs.getNoPlayers();
         id = playerID; //player ID of this agent
         oppID = (playerID + 1) % stateObs.getNoPlayers();
+        availableActions = stateObs.getAvailableActions(Agent.id);
         
      // Fill spriteTypeFeaturesMap
 
@@ -57,7 +58,7 @@ public class Agent extends AbstractMultiPlayer {
      		spriteTypeFeaturesMap = brain.getSpriteTypeFeatures();
 
      		// After filling spriteTypeFeaturesMap
-        double[] weights = new double[] {1, 1, 1, 1, 1, 1, 1, 1};	// 8 weights
+        double[] weights = new double[] {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01};	// 8 weights
         double pointScale = 10;
         heuristic =  new StateHeuristic(id, oppID, spriteTypeFeaturesMap, weights, pointScale, stateObs.getWorldDimension());
         

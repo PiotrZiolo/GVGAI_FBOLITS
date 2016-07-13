@@ -80,7 +80,7 @@ public class Brain
 						if (memory.getSpriteTypeFeaturesByType(npcs.get(i).itype) == null)
 						{
 							memory.setSpriteTypeFeaturesByType(npcs.get(i).itype, 
-									getSpriteTypeFeaturesForAsteroids(npcs.get(i).category, npcs.get(i).itype));
+									getSpriteTypeFeaturesForCategory(npcs.get(i).category, npcs.get(i).itype));
 						}
 					}
 				}
@@ -98,7 +98,7 @@ public class Brain
 						if (memory.getSpriteTypeFeaturesByType(immovable.get(i).itype) == null)
 						{
 							memory.setSpriteTypeFeaturesByType(immovable.get(i).itype, 
-									getSpriteTypeFeaturesForAsteroids(immovable.get(i).category, immovable.get(i).itype));
+									getSpriteTypeFeaturesForCategory(immovable.get(i).category, immovable.get(i).itype));
 						}
 					}
 				}
@@ -116,7 +116,7 @@ public class Brain
 						if (memory.getSpriteTypeFeaturesByType(movable.get(i).itype) == null)
 						{
 							memory.setSpriteTypeFeaturesByType(movable.get(i).itype, 
-									getSpriteTypeFeaturesForAsteroids(movable.get(i).category, movable.get(i).itype));
+									getSpriteTypeFeaturesForCategory(movable.get(i).category, movable.get(i).itype));
 						}
 					}
 				}
@@ -134,7 +134,7 @@ public class Brain
 						if (memory.getSpriteTypeFeaturesByType(resources.get(i).itype) == null)
 						{
 							memory.setSpriteTypeFeaturesByType(resources.get(i).itype, 
-									getSpriteTypeFeaturesForAsteroids(resources.get(i).category, resources.get(i).itype));
+									getSpriteTypeFeaturesForCategory(resources.get(i).category, resources.get(i).itype));
 						}
 					}
 				}
@@ -152,7 +152,7 @@ public class Brain
 						if (memory.getSpriteTypeFeaturesByType(portals.get(i).itype) == null)
 						{
 							memory.setSpriteTypeFeaturesByType(portals.get(i).itype, 
-									getSpriteTypeFeaturesForAsteroids(portals.get(i).category, portals.get(i).itype));
+									getSpriteTypeFeaturesForCategory(portals.get(i).category, portals.get(i).itype));
 						}
 					}
 				}
@@ -170,7 +170,7 @@ public class Brain
 						if (memory.getSpriteTypeFeaturesByType(fromAvatarSprites.get(i).itype) == null)
 						{
 							memory.setSpriteTypeFeaturesByType(fromAvatarSprites.get(i).itype, 
-									getSpriteTypeFeaturesForAsteroids(fromAvatarSprites.get(i).category, fromAvatarSprites.get(i).itype));
+									getSpriteTypeFeaturesForCategory(fromAvatarSprites.get(i).category, fromAvatarSprites.get(i).itype));
 						}
 					}
 				}
@@ -293,7 +293,7 @@ public class Brain
 				break;
 
 			case 2:
-				
+				spriteTypeFeatures = new SpriteTypeFeatures(type, 0, false, false, true, true, false, 1, true, false, 0, true, true);
 				break;
 
 			case 3:
