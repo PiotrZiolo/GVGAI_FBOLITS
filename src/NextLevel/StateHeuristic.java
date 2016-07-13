@@ -8,8 +8,7 @@ import tools.Vector2d;
 import NextLevel.SpriteTypeFeatures;
 
 import java.util.ArrayList;
-//import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA. User: ssamot Date: 11/02/14 Time: 15:44 This is a
@@ -20,16 +19,17 @@ public class StateHeuristic
     double initialNpcCounter = 0;
     int playerID;
     int oppID;
-    TreeMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap;
+    HashMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap;
     double[] weights;
     double lengthScale;
     double pointScale;
 
     public StateHeuristic(int playerID, int oppID,
-    		TreeMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap/*, double[] weights*/) {
+    		HashMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap/*, double[] weights*/) {
     	this.playerID = playerID;
         this.oppID = oppID;
     	this.spriteTypeFeaturesMap = spriteTypeFeaturesMap;
+    	weights = new double[]{1, 1, 1, 1, 1, 1, 1, 1};
     }
 
     public double evaluateState(StateObservationMulti stateObs) {
