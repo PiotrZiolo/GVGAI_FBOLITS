@@ -40,8 +40,8 @@ public class Agent extends AbstractMultiPlayer {
         oppID = (playerID + 1) % stateObs.getNoPlayers();
         
         // after filling spriteTypeFeaturesMap
-
-        heuristic =  new StateHeuristic(id, oppID, spriteTypeFeaturesMap);
+        double[] weights = new double[] {1, 1, 1, 1, 1, 1, 1, 1};	// 8 weights
+        heuristic =  new StateHeuristic(id, oppID, spriteTypeFeaturesMap, weights, 10, stateObs.getWorldDimension());
     }
 
     /**

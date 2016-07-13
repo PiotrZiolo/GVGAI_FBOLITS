@@ -3,10 +3,12 @@ package NextLevel;
 import core.game.Observation;
 //import core.game.StateObservation;
 import core.game.StateObservationMulti;
+import ontology.Types;
 //import ontology.Types;
 import tools.Vector2d;
 import NextLevel.SpriteTypeFeatures;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 //import java.util.HashMap;
 import java.util.TreeMap;
@@ -28,123 +30,122 @@ public class StateHeuristic
     double lengthScale;
     double pointScale;
 
-    public StateHeuristic(int playerID, int oppID,
-    		TreeMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap/*, double[] weights*/) {
+    public StateHeuristic(int playerID, int oppID, TreeMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap,
+    		double[] weights, double pointScale, Dimension worldDimension) {
+    	
+    	this.lengthScale = worldDimension.getHeight() + worldDimension.getWidth();
+    	this.pointScale = pointScale;
+    	this.weights = new double[8];
+    	for (int i=0; i<weights.length; i++) {
+    		this.weights[i] = weights[i];
+    	}
+    	if (weights.length < this.weights.length) {
+    		System.out.println("Not enough weights. Missing values were set to 0.");
+    	}
+    	for (int i=weights.length; i<this.weights.length; i++) {
+    		this.weights[i] = weights[i];
+    	}
     	this.playerID = playerID;
         this.oppID = oppID;
     	this.spriteTypeFeaturesMap = spriteTypeFeaturesMap;
     }
 
     public double evaluateState(StateObservationMulti stateObs) {
+    	
         Vector2d avatarPosition = stateObs.getAvatarPosition(playerID);
         int avatarHealthPoints = stateObs.getAvatarHealthPoints(playerID);
         
         double score = 0;
         
+        if (stateObs.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_WINS) {
+        	return 1000000000;
+        }
+        
+        if (stateObs.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES) {
+        	return -999999999;
+        }
+        
         ArrayList<Observation>[] npcPositions = stateObs.getNPCPositions();
-        score += positionPayoffFunction(npcPositions, avatarPosition, avatarHealthPoints);
-        
         ArrayList<Observation>[] portalPositions = stateObs.getPortalsPositions(avatarPosition);
-        score += positionPayoffFunction(portalPositions, avatarPosition, avatarHealthPoints);
-        
         ArrayList<Observation>[] movablePositions = stateObs.getMovablePositions(avatarPosition);
-        score += positionPayoffFunction(movablePositions, avatarPosition, avatarHealthPoints);
-        
         ArrayList<Observation>[] immovablePositions = stateObs.getImmovablePositions(avatarPosition);
-        score += positionPayoffFunction(immovablePositions, avatarPosition, avatarHealthPoints);
-        
         ArrayList<Observation>[] fromAvatarSpritesPositions = stateObs.getFromAvatarSpritesPositions();
-        score += positionPayoffFunction(fromAvatarSpritesPositions, avatarPosition, avatarHealthPoints);
-        
         ArrayList<Observation>[] resourcesPositions = stateObs.getResourcesPositions(avatarPosition);
-        score += positionPayoffFunction(resourcesPositions, avatarPosition, avatarHealthPoints);
         
-        //ArrayList<Observation>[] avatarPosition = stateObs.getAva(oppID);
+        Observation oppAvatar = new Observation(stateObs.getAvatarType(oppID), 0,
+        		stateObs.getAvatarPosition(oppID), new Vector2d(), 0);		// unused values are set to 0
+
+        score += observationArrayPayoffFunction(npcPositions, avatarPosition, avatarHealthPoints);
+        score += observationArrayPayoffFunction(portalPositions, avatarPosition, avatarHealthPoints);
+        score += observationArrayPayoffFunction(movablePositions, avatarPosition, avatarHealthPoints);
+        score += observationArrayPayoffFunction(immovablePositions, avatarPosition, avatarHealthPoints);
+        score += observationArrayPayoffFunction(fromAvatarSpritesPositions, avatarPosition, avatarHealthPoints);
+        score += observationArrayPayoffFunction(resourcesPositions, avatarPosition, avatarHealthPoints);
+        score += observationPayoffFunction(oppAvatar, avatarPosition, avatarHealthPoints);
+
+        /*if(stateObs.getAvatarLastAction(playerID)==Types.ACTIONS.ACTION_USE)
+        {        
+	        Types.ACTIONS[] acts = new Types.ACTIONS[2];
+	        acts[playerID] = Types.ACTIONS.ACTION_NIL;
+	        acts[oppID] = Types.ACTIONS.ACTION_NIL;
+	        
+	        StateObservationMulti stateObsSimulated = stateObs.copy();
+	        StateObservationMulti stateObsChecked;
+	        for (int time=0; time<=10; time++) {
+	        	stateObsChecked = stateObsSimulated.copy();
+	        	stateObsChecked.advance(acts);
+	        	if (stateObsChecked.isGameOver()) {
+	        		break;
+	        	}
+	        }
+        }*/
         
-        /*double won = 0;
-        Types.WINNER[] winners = stateObs.getMultiGameWinner();
-
-        boolean bothWin = (winners[playerID] == Types.WINNER.PLAYER_WINS) && (winners[oppID] == Types.WINNER.PLAYER_WINS);
-        boolean meWins  = (winners[playerID] == Types.WINNER.PLAYER_WINS) && (winners[oppID] == Types.WINNER.PLAYER_LOSES);
-        boolean meLoses = (winners[playerID] == Types.WINNER.PLAYER_LOSES) && (winners[oppID] == Types.WINNER.PLAYER_WINS);
-        boolean bothLose = (winners[playerID] == Types.WINNER.PLAYER_LOSES) && (winners[oppID] == Types.WINNER.PLAYER_LOSES);
-
-        if(meWins || bothWin)
-            won = 1000000000;
-        else if (meLoses)
-            return -999999999;
-
-        npcPositions[0].sqDist;
-
-        if (portalPositions == null) {
-
-            double score = 0;
-            if (npcCounter == 0) {
-                score = stateObs.getGameScore(playerID) + won*100000000;
-            } else {
-                score = -minDistance / 100.0 + (-npcCounter) * 100.0 + stateObs.getGameScore(playerID) + won*100000000;
-            }
-            return score;
-        }
-
-        double minDistancePortal = Double.POSITIVE_INFINITY;
-        Vector2d minObjectPortal = null;
-        for (ArrayList<Observation> portals : portalPositions) {
-            if(portals.size() > 0)
-            {
-                minObjectPortal   =  portals.get(0).position; //This is the closest portal
-                minDistancePortal =  portals.get(0).sqDist;   //This is the (square) distance to the closest portal
-            }
-        }
-
-        double score = 0;
-        if (minObjectPortal == null) {
-            score = stateObs.getGameScore() + won*100000000;
-        }
-        else {
-            score = stateObs.getGameScore() + won*1000000 - minDistancePortal * 10.0;
-        }
-         */
-
         return score;
     }
 
-    private double positionPayoffFunction(ArrayList<Observation>[] observations,
+    private double observationArrayPayoffFunction(ArrayList<Observation>[] observations,
     		Vector2d agentPosition, int avatarHealthPoints) {
     	double score = 0;
         if(observations!=null) {
 	        for(int i = 0; i < observations.length; ++i) {
 	        	for (Observation obs : observations[i]) {
-	        		if (spriteTypeFeaturesMap.containsKey(obs.itype))
-	        		{
-	        			SpriteTypeFeatures sprite = spriteTypeFeaturesMap.get(obs.itype);
-	        			if (sprite.givingVictory) {
-	        				score += weights[0]*distance(obs.position, agentPosition);
-	        			}
-	        			if (sprite.allowingVictory) {
-	        				score += weights[1]*distance(obs.position, agentPosition);
-	        				score -= weights[2];
-	        			}
-	        			if (sprite.dangerousToAvatar>0) {
-	        				score += -weights[3]*sprite.dangerousToAvatar/avatarHealthPoints*distance(obs.position, agentPosition);
-	        			}
-	        			if (sprite.dangerousOtherwise) {
-	        				score += -weights[4];
-	        				score += -weights[5]*distance(obs.position, agentPosition);
-	        			}
-	        			if (sprite.changingPoints!=0) {
-	        				score += weights[6]*sprite.changingPoints/pointScale*distance(obs.position, agentPosition);
-	        			}
-	        			if (sprite.changingValuesOfOtherObjects) {
-	        				int totalPointsChange = 0;
-	        				score += weights[7]*totalPointsChange*distance(obs.position, agentPosition);
-	        			}
-	        		}
+	        		score += observationPayoffFunction(obs, agentPosition, avatarHealthPoints);
 	        	}
 	        }
         }
 		return score;
 	}
+
+    private double observationPayoffFunction(Observation obs, Vector2d agentPosition,
+    		int avatarHealthPoints) {
+    	double score = 0;
+		if (spriteTypeFeaturesMap.containsKey(obs.itype))
+		{
+			SpriteTypeFeatures sprite = spriteTypeFeaturesMap.get(obs.itype);
+			if (sprite.givingVictory) {
+				score += weights[0]*distance(obs.position, agentPosition);
+			}
+			if (sprite.allowingVictory) {
+				score += weights[1]*distance(obs.position, agentPosition);
+				score -= weights[2];
+			}
+			if (sprite.dangerousToAvatar>0) {
+				score += -weights[3]*sprite.dangerousToAvatar/avatarHealthPoints*distance(obs.position, agentPosition);
+			}
+			if (sprite.dangerousOtherwise) {
+				score += -weights[4];
+				score += -weights[5]*distance(obs.position, agentPosition);
+			}
+			if (sprite.changingPoints!=0) {
+				score += weights[6]*sprite.changingPoints/pointScale*distance(obs.position, agentPosition);
+			}
+			if (sprite.changingValuesOfOtherObjects) {
+				int totalPointsChange = 0;
+				score += weights[7]*totalPointsChange*distance(obs.position, agentPosition);
+			}
+		}
+		return score;
+    }
     
     double distance ( Vector2d v1, Vector2d v2 ) {
     	return lengthScale/Math.pow( Math.abs(v1.x-v2.x) + Math.abs(v1.y-v2.y), 2 );
