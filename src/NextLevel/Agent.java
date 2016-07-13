@@ -61,7 +61,7 @@ public class Agent extends AbstractMultiPlayer
 
 		stateObs.advance(Types.ACTIONS.ACTION_USE);
 
-		printState(stateObs, 999, true);
+		printState(stateObs, 999, false);
 	}
 
 	/**
@@ -188,16 +188,19 @@ public class Agent extends AbstractMultiPlayer
 					npcCounter += npcs.size();
 					System.out.println("Number of NPCs of type " + npcs.get(0).itype + ": " + npcs.size());
 
-					for (int i = 0; i < npcs.size(); i++)
+					if (extended)
 					{
-						System.out.println("<<<Object>>>");
-						System.out.println("Category:           " + npcs.get(i).category);
-						System.out.println("Type:               " + npcs.get(i).itype);
-						System.out.println("Observation id:     " + npcs.get(i).obsID);
-						System.out.println("Position x:         " + npcs.get(i).position.x);
-						System.out.println("Position y:         " + npcs.get(i).position.y);
-						System.out.println("Squared distance:   " + npcs.get(i).sqDist);
-						System.out.println("----------");
+						for (int i = 0; i < npcs.size(); i++)
+						{
+							System.out.println("<<<Object>>>");
+							System.out.println("Category:           " + npcs.get(i).category);
+							System.out.println("Type:               " + npcs.get(i).itype);
+							System.out.println("Observation id:     " + npcs.get(i).obsID);
+							System.out.println("Position x:         " + npcs.get(i).position.x);
+							System.out.println("Position y:         " + npcs.get(i).position.y);
+							System.out.println("Squared distance:   " + npcs.get(i).sqDist);
+							System.out.println("----------");
+						}
 					}
 				}
 			}
@@ -215,16 +218,19 @@ public class Agent extends AbstractMultiPlayer
 					System.out.println(
 							"Number of immovables of type " + immovable.get(0).itype + ": " + immovable.size());
 
-					for (int i = 0; i < immovable.size(); i++)
+					if (extended)
 					{
-						System.out.println("<<<Object>>>");
-						System.out.println("Category:           " + immovable.get(i).category);
-						System.out.println("Type:               " + immovable.get(i).itype);
-						System.out.println("Observation id:     " + immovable.get(i).obsID);
-						System.out.println("Position x:         " + immovable.get(i).position.x);
-						System.out.println("Position y:         " + immovable.get(i).position.y);
-						System.out.println("Squared distance:   " + immovable.get(i).sqDist);
-						System.out.println("----------");
+						for (int i = 0; i < immovable.size(); i++)
+						{
+							System.out.println("<<<Object>>>");
+							System.out.println("Category:           " + immovable.get(i).category);
+							System.out.println("Type:               " + immovable.get(i).itype);
+							System.out.println("Observation id:     " + immovable.get(i).obsID);
+							System.out.println("Position x:         " + immovable.get(i).position.x);
+							System.out.println("Position y:         " + immovable.get(i).position.y);
+							System.out.println("Squared distance:   " + immovable.get(i).sqDist);
+							System.out.println("----------");
+						}
 					}
 				}
 			}
@@ -241,16 +247,19 @@ public class Agent extends AbstractMultiPlayer
 					movableCounter += movable.size();
 					System.out.println("Number of movables of type " + movable.get(0).itype + ": " + movable.size());
 
-					for (int i = 0; i < movable.size(); i++)
+					if (extended)
 					{
-						System.out.println("<<<Object>>>");
-						System.out.println("Category:           " + movable.get(i).category);
-						System.out.println("Type:               " + movable.get(i).itype);
-						System.out.println("Observation id:     " + movable.get(i).obsID);
-						System.out.println("Position x:         " + movable.get(i).position.x);
-						System.out.println("Position y:         " + movable.get(i).position.y);
-						System.out.println("Squared distance:   " + movable.get(i).sqDist);
-						System.out.println("----------");
+						for (int i = 0; i < movable.size(); i++)
+						{
+							System.out.println("<<<Object>>>");
+							System.out.println("Category:           " + movable.get(i).category);
+							System.out.println("Type:               " + movable.get(i).itype);
+							System.out.println("Observation id:     " + movable.get(i).obsID);
+							System.out.println("Position x:         " + movable.get(i).position.x);
+							System.out.println("Position y:         " + movable.get(i).position.y);
+							System.out.println("Squared distance:   " + movable.get(i).sqDist);
+							System.out.println("----------");
+						}
 					}
 				}
 			}
@@ -268,16 +277,19 @@ public class Agent extends AbstractMultiPlayer
 					System.out
 							.println("Number of resources of type " + resources.get(0).itype + ": " + resources.size());
 
-					for (int i = 0; i < resources.size(); i++)
+					if (extended)
 					{
-						System.out.println("<<<Object>>>");
-						System.out.println("Category:           " + resources.get(i).category);
-						System.out.println("Type:               " + resources.get(i).itype);
-						System.out.println("Observation id:     " + resources.get(i).obsID);
-						System.out.println("Position x:         " + resources.get(i).position.x);
-						System.out.println("Position y:         " + resources.get(i).position.y);
-						System.out.println("Squared distance:   " + resources.get(i).sqDist);
-						System.out.println("----------");
+						for (int i = 0; i < resources.size(); i++)
+						{
+							System.out.println("<<<Object>>>");
+							System.out.println("Category:           " + resources.get(i).category);
+							System.out.println("Type:               " + resources.get(i).itype);
+							System.out.println("Observation id:     " + resources.get(i).obsID);
+							System.out.println("Position x:         " + resources.get(i).position.x);
+							System.out.println("Position y:         " + resources.get(i).position.y);
+							System.out.println("Squared distance:   " + resources.get(i).sqDist);
+							System.out.println("----------");
+						}
 					}
 				}
 			}
@@ -294,16 +306,19 @@ public class Agent extends AbstractMultiPlayer
 					portalsCounter += portals.size();
 					System.out.println("Number of portals of type " + portals.get(0).itype + ": " + portals.size());
 
-					for (int i = 0; i < portals.size(); i++)
+					if (extended)
 					{
-						System.out.println("<<<Object>>>");
-						System.out.println("Category:           " + portals.get(i).category);
-						System.out.println("Type:               " + portals.get(i).itype);
-						System.out.println("Observation id:     " + portals.get(i).obsID);
-						System.out.println("Position x:         " + portals.get(i).position.x);
-						System.out.println("Position y:         " + portals.get(i).position.y);
-						System.out.println("Squared distance:   " + portals.get(i).sqDist);
-						System.out.println("----------");
+						for (int i = 0; i < portals.size(); i++)
+						{
+							System.out.println("<<<Object>>>");
+							System.out.println("Category:           " + portals.get(i).category);
+							System.out.println("Type:               " + portals.get(i).itype);
+							System.out.println("Observation id:     " + portals.get(i).obsID);
+							System.out.println("Position x:         " + portals.get(i).position.x);
+							System.out.println("Position y:         " + portals.get(i).position.y);
+							System.out.println("Squared distance:   " + portals.get(i).sqDist);
+							System.out.println("----------");
+						}
 					}
 				}
 			}
@@ -321,16 +336,19 @@ public class Agent extends AbstractMultiPlayer
 					System.out.println("Number of from avatar sprites of type " + fromAvatarSprites.get(0).itype + ": "
 							+ fromAvatarSprites.size());
 
-					for (int i = 0; i < fromAvatarSprites.size(); i++)
+					if (extended)
 					{
-						System.out.println("<<<Object>>>");
-						System.out.println("Category:           " + fromAvatarSprites.get(i).category);
-						System.out.println("Type:               " + fromAvatarSprites.get(i).itype);
-						System.out.println("Observation id:     " + fromAvatarSprites.get(i).obsID);
-						System.out.println("Position x:         " + fromAvatarSprites.get(i).position.x);
-						System.out.println("Position y:         " + fromAvatarSprites.get(i).position.y);
-						System.out.println("Squared distance:   " + fromAvatarSprites.get(i).sqDist);
-						System.out.println("----------");
+						for (int i = 0; i < fromAvatarSprites.size(); i++)
+						{
+							System.out.println("<<<Object>>>");
+							System.out.println("Category:           " + fromAvatarSprites.get(i).category);
+							System.out.println("Type:               " + fromAvatarSprites.get(i).itype);
+							System.out.println("Observation id:     " + fromAvatarSprites.get(i).obsID);
+							System.out.println("Position x:         " + fromAvatarSprites.get(i).position.x);
+							System.out.println("Position y:         " + fromAvatarSprites.get(i).position.y);
+							System.out.println("Squared distance:   " + fromAvatarSprites.get(i).sqDist);
+							System.out.println("----------");
+						}
 					}
 				}
 			}
