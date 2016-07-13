@@ -5,165 +5,221 @@ import core.game.Observation;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
 import ontology.Types;
-//import ontology.Types.ACTIONS;
+import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
 import tools.Utils;
 import tools.Vector2d;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.HashMap;
 
-import NextLevel.StateHeuristic;
-
-public class Agent extends AbstractMultiPlayer
-{
-	int oppID; // player ID of the opponent
-	int id; // ID of this player
-	int no_players; // number of players in the game
-	double epsilon = 1e-6;
-	Random m_rnd;
-	HashMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap;
-	StateHeuristic heuristic;
-	Brain brain;
-
-	/**
-	 * initialize all variables for the agent
-	 * 
-	 * @param stateObs
-	 *            Observation of the current state.
-	 * @param elapsedTimer
-	 *            Timer when the action returned is due.
-	 * @param playerID
-	 *            ID of this agent
+public class Agent extends AbstractMultiPlayer {
+	/*
+	 * Chosen algorithm ID
+	 * 1 - heuristic OneStep
+	 * 2 - heuristic OLMCTS
+	 * 3 - GA
 	 */
-	public Agent(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, int playerID)
-	{
-		m_rnd = new Random();
-		spriteTypeFeaturesMap = new HashMap<Integer, SpriteTypeFeatures>();
+	public static int algorithmID;
+	public static int oppID; //player ID of the opponent
+	public static int id; //ID of this player
+	public static int no_players; //number of players in the game
+	private static double epsilon = 1e-6;
+	private Random m_rnd;
+	private static HashMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap;
+	private static HashMap<Integer,int[][]> distanceMap;
+	public static StateHeuristic heuristic;
+	private static SingleMCTSPlayer mctsPlayer;
+    private Brain brain;
 
-		// get game information
-		no_players = stateObs.getNoPlayers();
-		id = playerID; // player ID of this agent
-		oppID = (playerID + 1) % stateObs.getNoPlayers();
+    /**
+     * initialize all variables for the agent
+     * @param stateObs Observation of the current state.
+     * @param elapsedTimer Timer when the action returned is due.
+     * @param playerID ID if this agent
+     */
+    public Agent(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, int playerID) {
+        m_rnd = new Random();
+        spriteTypeFeaturesMap = new HashMap<Integer, SpriteTypeFeatures>();
 
-		// Fill spriteTypeFeaturesMap
+        //get game information
+        no_players = stateObs.getNoPlayers();
+        id = playerID; //player ID of this agent
+        oppID = (playerID + 1) % stateObs.getNoPlayers();
+        
+     // Fill spriteTypeFeaturesMap
 
-		brain = new Brain();
+     		brain = new Brain();
 
-		brain.learn(stateObs, elapsedTimer);
+     		brain.learn(stateObs, elapsedTimer);
 
-		spriteTypeFeaturesMap = brain.getSpriteTypeFeatures();
+     		spriteTypeFeaturesMap = brain.getSpriteTypeFeatures();
 
-		// After filling spriteTypeFeaturesMap
+     		// After filling spriteTypeFeaturesMap
+        double[] weights = new double[] {1, 1, 1, 1, 1, 1, 1, 1};	// 8 weights
+        double pointScale = 10;
+        heuristic =  new StateHeuristic(id, oppID, spriteTypeFeaturesMap, weights, pointScale, stateObs.getWorldDimension());
+        
+        // choose algorithmID to play the game
+        algorithmID = 1;
+        
+    	switch (algorithmID) {
+	    	case 1:
+	    		// no oneStepLookAhead specific initialization needed
+	    		break;
+	    	case 2:
+	    		mctsPlayer = new SingleMCTSPlayer(new Random());
+	    		break;
+	    	case 3:
+	    		// GA specific initialization
+	    		break;
+    	}
+    }
 
-		heuristic = new StateHeuristic(id, oppID, spriteTypeFeaturesMap);
-
-		stateObs.advance(Types.ACTIONS.ACTION_USE);
-
-		printState(stateObs, 999, false);
-	}
-
-	/**
-	 *
-	 * Very simple one step lookahead agent. Pass player ID to all state
-	 * observation methods to query the right player. Omitting the player ID
-	 * will result in it being set to the default 0 (first player, whichever
-	 * that is).
-	 *
-	 * @param stateObs
-	 *            Observation of the current state.
-	 * @param elapsedTimer
-	 *            Timer when the action returned is due.
-	 * @return An action for the current state
-	 */
-	public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer)
-	{
-
-		/*
-		 * // Human player with reporting // int id = (getPlayerID() + 1) %
-		 * stateObs.getNoPlayers(); Direction move =
-		 * Utils.processMovementActionKeys(Game.ki.getMask(), id); boolean useOn
-		 * = Utils.processUseKey(Game.ki.getMask(), id);
+    /**
+     * Picks an action using chosen algorithm. This function is called every game step to request an
+     * action from the player.
+     * @param stateObs Observation of the current state.
+     * @param elapsedTimer Timer when the action returned is due.
+     * @return An action for the current state
+     */
+    public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer) {
+    	
+    	/*
+		 * // Human player with reporting 
+		 * // int id = (getPlayerID() + 1) % stateObs.getNoPlayers(); 
+		 * Direction move = Utils.processMovementActionKeys(Game.ki.getMask(), id); 
+		 * boolean useOn = Utils.processUseKey(Game.ki.getMask(), id);
 		 * 
-		 * // In the keycontroller, move has preference. Types.ACTIONS action =
-		 * Types.ACTIONS.fromVector(move); if (action ==
-		 * Types.ACTIONS.ACTION_NIL && useOn) action = Types.ACTIONS.ACTION_USE;
+		 * // In the keycontroller, move has preference. 
+		 * Types.ACTIONS action = Types.ACTIONS.fromVector(move); 
+		 * if (action == Types.ACTIONS.ACTION_NIL && useOn) action = Types.ACTIONS.ACTION_USE;
 		 * 
 		 * printState(stateObs, 0);
 		 * 
 		 * return action;
 		 * 
 		 */
+    	
+    	switch (algorithmID) {
+	    	case 1:
+	    		return oneStepLookAhead(stateObs);
+	    	case 2:
+	    		return heuristicOLMCTS(stateObs, elapsedTimer);
+	    	case 3:
+	    		return geneticAlgorithm(stateObs, elapsedTimer);
+    		default:	// just in case :)
+    			return random(stateObs);
+    	}
+    }
+    
+    /**
+     *
+     * Very simple one step lookahead agent.
+     * Pass player ID to all state observation methods to query the right player.
+     * Omitting the player ID will result in it being set to the default 0 (first player, whichever that is).
+     *
+     * @param stateObs Observation of the current state.
+     * @return An action for the current state
+     */
+    public Types.ACTIONS oneStepLookAhead(StateObservationMulti stateObs) {
+        
+	    Types.ACTIONS bestAction = null;
+	    double maxQ = Double.NEGATIVE_INFINITY;
+	
+	    //A random non-suicidal action by the opponent.
+	    Types.ACTIONS oppAction = getOppNotLosingAction(stateObs);
+	
+	    for (Types.ACTIONS action : stateObs.getAvailableActions(id)) {
+	
+	        StateObservationMulti stCopy = stateObs.copy();
+	
+	        //need to provide actions for all players to advance the forward model
+	        Types.ACTIONS[] acts = new Types.ACTIONS[no_players];
+	
+	        //set this agent's action
+	        acts[id] = action;
+	        acts[oppID] = oppAction;
+	
+	        stCopy.advance(acts);
+	
+	        double Q = heuristic.evaluateState(stCopy) + stateObs.getGameScore(oppID) - stateObs.getGameScore(id);
+	        //System.out.println("Action " + action + ", score " + Q);
+	        Q = Utils.noise(Q, Agent.epsilon, this.m_rnd.nextDouble());
+	
+	        //System.out.println("Action:" + action + " score:" + Q);
+	        if (Q > maxQ) {
+	            maxQ = Q;
+	            bestAction = action;
+	        }
+	    }
+	    return bestAction;
+    }
+    
+    /**
+    *Returns an action, at random, that the opponent would make,
+    *assuming I do NIL, which wouldn't make it lose the game.
+    */
+    private Types.ACTIONS getOppNotLosingAction(StateObservationMulti state)
+    {
+        int no_players = state.getNoPlayers();
+        ArrayList<Types.ACTIONS> oppActions = state.getAvailableActions(oppID);
+        java.util.Collections.shuffle(oppActions);
 
-		Types.ACTIONS bestAction = null;
-		double maxQ = Double.NEGATIVE_INFINITY;
+        //Look for the opponent actions that would not kill him.
+        for (Types.ACTIONS action : oppActions) {
+            Types.ACTIONS[] acts = new Types.ACTIONS[no_players];
+            acts[id] = Types.ACTIONS.ACTION_NIL;
+            acts[oppID] = action;
 
-		// A random non-suicidal action by the opponent.
-		Types.ACTIONS oppAction = getOppNotLosingAction(stateObs, id, oppID);
+            StateObservationMulti stateCopy = state.copy();
+            stateCopy.advance(acts);
 
-		for (Types.ACTIONS action : stateObs.getAvailableActions(id))
-		{
+            if(stateCopy.getMultiGameWinner()[oppID] != Types.WINNER.PLAYER_LOSES)
+            	return action;
+        }
 
-			StateObservationMulti stCopy = stateObs.copy();
-
-			// need to provide actions for all players to advance the forward
-			// model
-			Types.ACTIONS[] acts = new Types.ACTIONS[no_players];
-
-			// set this agent's action
-			acts[id] = action;
-			acts[oppID] = oppAction;
-
-			stCopy.advance(acts);
-
-			// !!!!!!!!
-			// !!!!!!!! Possibly an error - now promoting the second player
-			// !!!!!!!!!
-			// !!!!!!!!
-			double Q = heuristic.evaluateState(stCopy) + stateObs.getGameScore(oppID) - stateObs.getGameScore(id);
-			Q = Utils.noise(Q, this.epsilon, this.m_rnd.nextDouble());
-
-			// System.out.println("Action:" + action + " score:" + Q);
-			if (Q > maxQ)
-			{
-				maxQ = Q;
-				bestAction = action;
-			}
-		}
-
-		// System.out.println("======== " + getPlayerID() + " " + maxQ + " " +
-		// bestAction + "============");
-		// System.out.println(elapsedTimer.remainingTimeMillis());
-		return bestAction;
+        return oppActions.get(new Random().nextInt(oppActions.size()));
 	}
+    
+    /**
+     * Open Loop Monte Carlo Tree Search using position-based heuristics in evaluation function.
+     *
+     * @param stateObs Observation of the current state.
+     * @param elapsedTimer Timer when the action returned is due.
+     * @return An action for the current state
+     */
+    public Types.ACTIONS heuristicOLMCTS(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer) {
 
-	// Returns an action, at random, that the opponent would make, assuming I do
-	// NIL, which wouldn't make it lose the game.
-	private Types.ACTIONS getOppNotLosingAction(StateObservationMulti stm, int thisID, int oppID)
-	{
-		int no_players = stm.getNoPlayers();
-		ArrayList<Types.ACTIONS> oppActions = stm.getAvailableActions(oppID);
-		java.util.Collections.shuffle(oppActions);
+        //Set the state observation object as the new root of the tree.
+    	int ROLLOUT_DEPTH = 10;
+    	double K = Math.sqrt(2);
+        mctsPlayer.init(stateObs, ROLLOUT_DEPTH, K);
 
-		// Look for the opp actions that would not kill the opponent.
-		for (Types.ACTIONS action : oppActions)
-		{
-			Types.ACTIONS[] acts = new Types.ACTIONS[no_players];
-			acts[thisID] = Types.ACTIONS.ACTION_NIL;
-			acts[oppID] = action;
+        //Determine the action using MCTS and return it
+        return mctsPlayer.run(elapsedTimer);
+    }
 
-			StateObservationMulti stCopy = stm.copy();
-			stCopy.advance(acts);
+    /**
+     * Piotr Nojszewski part
+     */
+    public Types.ACTIONS geneticAlgorithm(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer) {
+    	return Types.ACTIONS.ACTION_NIL;
+    }
 
-			if (stCopy.getMultiGameWinner()[oppID] != Types.WINNER.PLAYER_LOSES)
-				return action;
-		}
-
-		return oppActions.get(new Random().nextInt(oppActions.size()));
-	}
-
-	private void printState(StateObservationMulti so, int iAdvances, boolean extended)
+    /**
+     * Chooses random available action
+     *
+     * @param stateObs Observation of the current state.
+     * @return An action for the current state
+     */
+    public Types.ACTIONS random(StateObservationMulti stateObs) {
+		ArrayList<ACTIONS> actions = stateObs.getAvailableActions(id);
+		return actions.get(new Random().nextInt(actions.size()));
+    }
+    
+    private void printState(StateObservationMulti so, int iAdvances, boolean extended)
 	{
 		System.out.println("========== Player " + id + " report ==========");
 		System.out.println("Advance number: " + iAdvances);

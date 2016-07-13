@@ -25,7 +25,7 @@ public class TestMultiPlayer
         String nextLevel = "NextLevel.Agent";
 
         //Set here the controllers used in the games (need 2 separated by space).
-        String controllers = nextLevel + " " + oneStepController ;
+        String controllers = nextLevel + " " + oneStepController;
 
         //Available games:
         String gamesPath = "examples/2player/";
@@ -40,7 +40,7 @@ public class TestMultiPlayer
         int seed = new Random().nextInt();
 
         //Game and level to play
-        int gameIdx = 1;
+        int gameIdx = 9;
         int levelIdx = 0; //level names from 0 to 4 (game_lvlN.txt).
         String game = gamesPath + games[gameIdx] + ".txt";
         String level1 = gamesPath + games[gameIdx] + "_lvl" + levelIdx +".txt";
@@ -52,7 +52,8 @@ public class TestMultiPlayer
 
         // 2. This plays a game in a level by the controllers. If one of the players is human, change the playerID passed
         // to the runOneGame method to be that of the human player (0 or 1).
-        ArcadeMachine.runOneGame(game, level1, visuals, controllers, recordActionsFile, seed, 0);
+        for (int i=0; i<15; i++)
+        	ArcadeMachine.runOneGame(game, level1, visuals, controllers, recordActionsFile, seed, 0);
         
         // 3. This replays a game from an action file previously recorded
         //String readActionsFile = recordActionsFile;
