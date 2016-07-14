@@ -2,6 +2,8 @@ package NextLevel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 import core.game.Observation;
 import core.game.StateObservationMulti;
@@ -162,6 +164,9 @@ public class Brain
 
 		// Checks for new types of sprites and add knowledge about them
 
+		// !!!!!!!!!!!!
+		// To be filled
+		// !!!!!!!!!!!!
 	}
 
 	/**
@@ -169,7 +174,9 @@ public class Brain
 	 */
 	public void rememberAllInLongTermMemory()
 	{
-
+		// !!!!!!!!!!!!
+		// To be filled
+		// !!!!!!!!!!!!
 	}
 
 	/**
@@ -177,7 +184,9 @@ public class Brain
 	 */
 	public void initializeFromLongTermMemory()
 	{
-
+		// !!!!!!!!!!!!
+		// To be filled
+		// !!!!!!!!!!!!
 	}
 
 	/**
@@ -410,8 +419,6 @@ public class Brain
 						// Localize the sprite after action
 						Vector2d spriteCurrentPosition = localizeSprite(stateObsJustAfterAction, observation, 5);
 
-						// observation.obsID
-
 						if (spriteCurrentPosition == null)
 						{
 							succeeded = true;
@@ -513,15 +520,74 @@ public class Brain
 	 *            other player on our player.
 	 */
 	private SpriteTypeFeatures updateKnowledgeAfterActionOnSprite(SpriteTypeFeatures currentSpriteTypeFeatures,
-			StateObservationMulti stateObsJustBeforeAction, StateObservationMulti stateObsAfterAction,
+			StateObservationMulti stateObsJustBeforeAction, StateObservationMulti stateObsJustAfterAction,
 			Observation observation, int actionType)
 	{
-		stateObsJustBeforeAction = stateObsJustBeforeAction.copy();
-		stateObsAfterAction = stateObsAfterAction.copy();
+		// Get the event if something happened
 
-		// !!!!!!!!!!!!
-		// To be filled
-		// !!!!!!!!!!!!
+		TreeSet<Event> eventsHistory = stateObsJustAfterAction.getEventsHistory();
+		Iterator<Event> eventsIterator = eventsHistory.descendingIterator();
+		Event event = null;
+		boolean eventHappened = false;
+
+		while (!eventHappened && eventsIterator.hasNext())
+		{
+			event = eventsIterator.next();
+
+			if (event.gameStep == stateObsJustAfterAction.getGameTick())
+			{
+				eventHappened = true;
+			}
+		}
+
+		if (!eventHappened)
+		{
+			event = null;
+		}
+
+		// Process different types of situations
+
+		switch (actionType)
+		{
+			// Use
+			case 0:
+				if (eventHappened)
+				{
+
+				}
+				else
+				{
+					currentSpriteTypeFeatures.destroyable = false;
+				}
+
+				break;
+
+			// Move onto
+			case 1:
+				if (eventHappened)
+				{
+
+				}
+				else
+				{
+
+				}
+
+				break;
+
+			// Action of the other player on our player
+			case 2:
+				if (eventHappened)
+				{
+
+				}
+				else
+				{
+
+				}
+
+				break;
+		}
 
 		return currentSpriteTypeFeatures;
 	}
@@ -709,9 +775,9 @@ public class Brain
 
 		int[] blockWhereObservationWasLastSeen = { (int) (observation.position.x / stateObs.getBlockSize()),
 				(int) (observation.position.y / stateObs.getBlockSize()) };
-		
-		int worldXDimension = (int)(stateObs.getWorldDimension().getWidth() / stateObs.getBlockSize());
-		int worldYDimension = (int)(stateObs.getWorldDimension().getHeight() / stateObs.getBlockSize());
+
+		int worldXDimension = (int) (stateObs.getWorldDimension().getWidth() / stateObs.getBlockSize());
+		int worldYDimension = (int) (stateObs.getWorldDimension().getHeight() / stateObs.getBlockSize());
 
 		boolean objectLocalized = false;
 		int distance = 0;
@@ -727,8 +793,7 @@ public class Brain
 						if (!(i == 0 && j == 0))
 						{
 							suspects = stateObs.getObservationGrid()[(blockWhereObservationWasLastSeen[0] + i)
-									% worldXDimension][(blockWhereObservationWasLastSeen[1] + j)
-											% worldYDimension];
+									% worldXDimension][(blockWhereObservationWasLastSeen[1] + j) % worldYDimension];
 							for (Observation suspect : suspects)
 							{
 								if (suspect.obsID == observation.obsID)
@@ -744,8 +809,7 @@ public class Brain
 						if (!(i == 0 && j == 0))
 						{
 							suspects = stateObs.getObservationGrid()[(blockWhereObservationWasLastSeen[0] + i)
-									% worldXDimension][(blockWhereObservationWasLastSeen[1] + j)
-											% worldYDimension];
+									% worldXDimension][(blockWhereObservationWasLastSeen[1] + j) % worldYDimension];
 							for (Observation suspect : suspects)
 							{
 								if (suspect.obsID == observation.obsID)
