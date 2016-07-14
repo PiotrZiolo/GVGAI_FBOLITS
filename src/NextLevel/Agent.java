@@ -63,7 +63,7 @@ public class Agent extends AbstractMultiPlayer {
         heuristic =  new StateHeuristic(id, oppID, spriteTypeFeaturesMap, weights, pointScale, stateObs.getWorldDimension());
         
         // choose algorithmID to play the game
-        algorithmID = 1;
+        algorithmID = 2;
         
     	switch (algorithmID) {
 	    	case 1:
@@ -102,6 +102,8 @@ public class Agent extends AbstractMultiPlayer {
 		 * return action;
 		 * 
 		 */
+    	
+    	printState(stateObs, 0, true);
     	
     	switch (algorithmID) {
 	    	case 1:
