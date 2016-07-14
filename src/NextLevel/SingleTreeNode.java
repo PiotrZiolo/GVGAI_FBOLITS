@@ -33,10 +33,7 @@ public class SingleTreeNode
     	this.childIdx = -1;
     	this.m_depth = 0;
         this.rootState = a_gameState;
-        System.out.println("m_depth = " + m_depth);
-        System.out.println("size = " + a_gameState.getAvailableActions(Agent.id));
-        System.out.println("isGameOver = " + a_gameState.isGameOver());
-        children = new SingleTreeNode[a_gameState.getAvailableActions(Agent.id).size()];
+        children = new SingleTreeNode[Agent.availableActions.size()];
     }
 
     public SingleTreeNode(SingleTreeNode parent, int childIdx, Random rnd, StateObservationMulti a_gameState ) {
@@ -48,10 +45,7 @@ public class SingleTreeNode
             m_depth = parent.m_depth+1;
         else
             m_depth = 0;
-        System.out.println("m_depth = " + m_depth);
-        System.out.println("size = " + a_gameState.getAvailableActions(Agent.id));
-        System.out.println("isGameOver = " + a_gameState.isGameOver());
-        children = new SingleTreeNode[a_gameState.getAvailableActions(Agent.id).size()];
+        children = new SingleTreeNode[Agent.availableActions.size()];
     }
 
 
@@ -87,7 +81,6 @@ public class SingleTreeNode
         {
             if (cur.notFullyExpanded()) {
                 return cur.expand(state);
-
             } else {
                 SingleTreeNode next = cur.uct(state);
                 cur = next;
@@ -135,10 +128,10 @@ public class SingleTreeNode
 
         SingleTreeNode selected = null;
         double bestValue = -Double.MAX_VALUE;
-        System.out.println("UCT");
+        //System.out.println("UCT " + children.length);
         for (SingleTreeNode child : this.children)
         {
-            System.out.println(child);
+            //System.out.println(child);
             double hvVal = child.totValue;
             double childValue =  hvVal / (child.nVisits + this.epsilon);
 
@@ -260,8 +253,11 @@ public class SingleTreeNode
 
         for (int i=0; i<children.length; i++) {
 
-        	System.out.println("Action " + rootState.getAvailableActions(Agent.id).get(i) + ", " + children[i].nVisits);
-            if(children[i] != null)
+        	/*if (children[i]!=null)
+        		System.out.println("Action " + rootState.getAvailableActions(Agent.id).get(i) + ", " + children[i].nVisits);
+        	else
+        		System.out.println("Action " + rootState.getAvailableActions(Agent.id).get(i) + ", null");*/
+        	if(children[i] != null)
             {
                 if(first == -1)
                     first = children[i].nVisits;
@@ -278,7 +274,7 @@ public class SingleTreeNode
                 }
             }
         }
-        System.out.println();
+        //System.out.println();
 
         if (selected == -1)
         {
@@ -331,7 +327,7 @@ public class SingleTreeNode
     
     private Types.ACTIONS getNotLosingAction(StateObservationMulti state, int playerID, Types.ACTIONS oppmove)
     {
-        int no_players = state.getNoPlayers();
+        /*int no_players = state.getNoPlayers();
         int oppID = (playerID + 1) % no_players;
         ArrayList<Types.ACTIONS> availableActions = state.getAvailableActions(playerID);
         java.util.Collections.shuffle(availableActions);
@@ -347,8 +343,9 @@ public class SingleTreeNode
 
             if(stateCopy.getMultiGameWinner()[playerID] != Types.WINNER.PLAYER_LOSES)
             	return action;
-        }
+        }*/
 
+        ArrayList<Types.ACTIONS> availableActions = state.getAvailableActions(playerID);
         return availableActions.get(new Random().nextInt(availableActions.size()));
 	}
 }
