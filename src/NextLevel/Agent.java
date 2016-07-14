@@ -49,15 +49,17 @@ public class Agent extends AbstractMultiPlayer {
         oppID = (playerID + 1) % stateObs.getNoPlayers();
         availableActions = stateObs.getAvailableActions(Agent.id);
         
-     // Fill spriteTypeFeaturesMap
+        // Fill spriteTypeFeaturesMap
 
-     		brain = new Brain();
+     	brain = new Brain(id);
+     	
+     	brain.learn(stateObs, elapsedTimer);
+     	Observation obs = stateObs.getImmovablePositions()[1].get(0);
+     	brain.approachSprite(stateObs, obs);
 
-     		brain.learn(stateObs, elapsedTimer);
+     	spriteTypeFeaturesMap = brain.getSpriteTypeFeatures();
 
-     		spriteTypeFeaturesMap = brain.getSpriteTypeFeatures();
-
-     		// After filling spriteTypeFeaturesMap
+     	// After filling spriteTypeFeaturesMap
         double[] weights = new double[] {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01};	// 8 weights
         double pointScale = 10;
         heuristic =  new StateHeuristic(id, oppID, spriteTypeFeaturesMap, weights, pointScale, stateObs.getWorldDimension());
