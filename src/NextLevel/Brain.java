@@ -137,14 +137,17 @@ public class Brain
 			}
 		}
 
-		if (stateObs.getNoPlayers() > 1)
+		if (productionVersion)
 		{
-			SpriteTypeFeatures spriteTypeFeatures = testOtherPlayer(stateObs, oppID);
-
-			if (spriteTypeFeatures != null)
+			if (stateObs.getNoPlayers() > 1)
 			{
-				// Opponents' features are saved with their ID negative as type
-				memory.setSpriteTypeFeaturesByType(-oppID, spriteTypeFeatures);
+				SpriteTypeFeatures spriteTypeFeatures = testOtherPlayer(stateObs, oppID);
+		
+				if (spriteTypeFeatures != null)
+				{
+					// Opponents' features are saved with their ID negative as type
+					memory.setSpriteTypeFeaturesByType(-oppID, spriteTypeFeatures);
+				}
 			}
 		}
 	}
