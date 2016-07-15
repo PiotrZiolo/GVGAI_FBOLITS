@@ -73,7 +73,7 @@ public class Agent extends AbstractMultiPlayer {
      	spriteTypeFeaturesMap = brain.getSpriteTypeFeaturesMap();
 
      	// After filling spriteTypeFeaturesMap
-        double[] weights = new double[] {0.05, 0.04, 0.04, 0.02, 0.02, 0.02, 0.1, 0.1};	// 8 weights
+        double[] weights = new double[] {0.05, 0.04, 0.04, 0.02, 0.02, 0.02, 0.1, 0.1, 0.01, 0.01};	// 10 weights
         double pointScale = 10;
         heuristic =  new StateHeuristic(id, oppID, spriteTypeFeaturesMap, weights, pointScale, stateObs.getWorldDimension());
         
@@ -120,6 +120,7 @@ public class Agent extends AbstractMultiPlayer {
     	
     	//printState(stateObs, 0, true);
     	
+		//System.out.println("Learning started");
     	brain.learn(stateObs, elapsedTimer, false, false, 1);
     	TreeSet<Event> eventsHistory = stateObs.getEventsHistory();
 		Iterator<Event> eventsIterator = eventsHistory.descendingIterator();
@@ -133,7 +134,10 @@ public class Agent extends AbstractMultiPlayer {
 				brain.learn(stateObs, elapsedTimer, false, false, 2, 2);
 			}
 		}
-    	
+		
+		//System.out.println("Learning finished");
+		//System.out.println("Remaining time: " + elapsedTimer.remainingTimeMillis());
+		
     	switch (algorithmID) {
 	    	case 1:
 	    		return oneStepLookAhead(stateObs);

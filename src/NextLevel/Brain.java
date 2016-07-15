@@ -182,7 +182,7 @@ public class Brain
 									//if (!justImagine)
 									//{
 										//System.out.println("After action: " + elapsedTimer.remainingTimeMillis());
-										//spriteTypeFeatures.print();
+										spriteTypeFeatures.print();
 										//System.out.println("----------");
 									//}
 								}

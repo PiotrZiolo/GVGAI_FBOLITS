@@ -32,15 +32,16 @@ public class StateHeuristic
 
 		this.lengthScale = worldDimension.getHeight() + worldDimension.getWidth();
 		this.pointScale = pointScale;
-		this.weights = new double[8];
+		this.weights = new double[10];
 		for (int i = 0; i < weights.length; i++)
 		{
 			this.weights[i] = weights[i];
 		}
-		//if (weights.length < this.weights.length)
-		//{
-			//System.out.println("Not enough weights. Missing values were set to 0.");
-		//}
+		// if (weights.length < this.weights.length)
+		// {
+		// System.out.println("Not enough weights. Missing values were set to
+		// 0.");
+		// }
 		for (int i = weights.length; i < this.weights.length; i++)
 		{
 			this.weights[i] = weights[i];
@@ -48,7 +49,7 @@ public class StateHeuristic
 		this.playerID = playerID;
 		this.oppID = oppID;
 		this.spriteTypeFeaturesMap = spriteTypeFeaturesMap;
-		weights = new double[] { 1, 1, 1, 1, 1, 1, 1, 1 };
+		//weights = new double[] { 1, 1, 1, 1, 1, 1, 1, 1 };
 	}
 
 	public double evaluateState(StateObservationMulti stateObs)
@@ -76,16 +77,20 @@ public class StateHeuristic
 		ArrayList<Observation>[] fromAvatarSpritesPositions = stateObs.getFromAvatarSpritesPositions();
 		ArrayList<Observation>[] resourcesPositions = stateObs.getResourcesPositions();
 
-		Observation oppAvatar = new Observation(-1-oppID, 0, stateObs.getAvatarPosition(oppID),
-				new Vector2d(), 0); // unused values are set to 0
+		Observation oppAvatar = new Observation(-1 - oppID, 0, stateObs.getAvatarPosition(oppID), new Vector2d(), 0); // unused
+																														// values
+																														// are
+																														// set
+																														// to
+																														// 0
 
-		//score += observationArrayPayoffFunction(npcPositions, avatarPosition, avatarHealthPoints);
-		//score += observationArrayPayoffFunction(portalPositions, avatarPosition, avatarHealthPoints);
-		//score += observationArrayPayoffFunction(movablePositions, avatarPosition, avatarHealthPoints);
+		score += observationArrayPayoffFunction(npcPositions, avatarPosition, avatarHealthPoints);
+		score += observationArrayPayoffFunction(portalPositions, avatarPosition, avatarHealthPoints);
+		score += observationArrayPayoffFunction(movablePositions, avatarPosition, avatarHealthPoints);
 		score += observationArrayPayoffFunction(immovablePositions, avatarPosition, avatarHealthPoints);
-		//score += observationArrayPayoffFunction(fromAvatarSpritesPositions, avatarPosition, avatarHealthPoints);
-		//score += observationArrayPayoffFunction(resourcesPositions, avatarPosition, avatarHealthPoints);
-		//score += observationPayoffFunction(oppAvatar, avatarPosition, avatarHealthPoints);
+		score += observationArrayPayoffFunction(fromAvatarSpritesPositions, avatarPosition, avatarHealthPoints);
+		score += observationArrayPayoffFunction(resourcesPositions, avatarPosition, avatarHealthPoints);
+		score += observationPayoffFunction(oppAvatar, avatarPosition, avatarHealthPoints);
 
 		/*
 		 * if(stateObs.getAvatarLastAction(playerID)==Types.ACTIONS.ACTION_USE)
@@ -125,45 +130,61 @@ public class StateHeuristic
 		if (spriteTypeFeaturesMap.containsKey(obs.itype))
 		{
 			SpriteTypeFeatures sprite = spriteTypeFeaturesMap.get(obs.itype);
-			//System.out.println("Type: " + sprite.passable);
-			if (sprite.passable || sprite.destroyable) {
-				if (sprite.givingVictory) {
-					score += weights[0]*distance(obs.position, agentPosition);
-					score -= weights[0]*lengthScale;
+			// System.out.println("Type: " + sprite.passable);
+			if (sprite.passable || sprite.destroyable)
+			{
+				if (sprite.givingVictory)
+				{
+					score += weights[0] * distance(obs.position, agentPosition);
+					score -= weights[0] * lengthScale;
 				}
-				if (sprite.allowingVictory) {
-					score += weights[1]*distance(obs.position, agentPosition);
-					score -= weights[1]*lengthScale;
+				if (sprite.allowingVictory)
+				{
+					score += weights[1] * distance(obs.position, agentPosition);
+					score -= weights[1] * lengthScale;
 					score -= weights[2];
 				}
-				if (sprite.dangerousToAvatar>0) {
-					if (avatarHealthPoints==0)
-						score -= weights[3]*distance(obs.position, agentPosition);
+				if (sprite.dangerousToAvatar > 0)
+				{
+					if (avatarHealthPoints == 0)
+						score -= weights[3] * distance(obs.position, agentPosition);
 					else
-						score -= weights[3]*sprite.dangerousToAvatar/avatarHealthPoints*distance(obs.position, agentPosition);
+						score -= weights[3] * sprite.dangerousToAvatar / avatarHealthPoints
+								* distance(obs.position, agentPosition);
 				}
-				if (sprite.dangerousOtherwise) {
+				if (sprite.dangerousOtherwise)
+				{
 					score -= weights[4];
-					score -= weights[5]*distance(obs.position, agentPosition);
+					score -= weights[5] * distance(obs.position, agentPosition);
 				}
-				if (sprite.changingPoints!=0) {
-					score += weights[6]*sprite.changingPoints/pointScale*distance(obs.position, agentPosition);
-					score -= weights[6]*sprite.changingPoints/pointScale*lengthScale;
+				if (sprite.changingPoints != 0)
+				{
+					score += weights[6] * sprite.changingPoints / pointScale * distance(obs.position, agentPosition);
+					score -= weights[6] * sprite.changingPoints / pointScale * lengthScale;
 				}
-				if (sprite.changingValuesOfOtherObjects!=0) {
-					score += weights[7]*(sprite.changingValuesOfOtherObjects/pointScale)*distance(obs.position, agentPosition);
-					score -= weights[7]*sprite.changingPoints/pointScale*lengthScale*lengthScale;
+				if (sprite.changingValuesOfOtherObjects != 0)
+				{
+					score += weights[7] * (sprite.changingValuesOfOtherObjects / pointScale)
+							* distance(obs.position, agentPosition);
+					score -= weights[7] * sprite.changingPoints / pointScale * lengthScale * lengthScale;
+				}
+				if (sprite.collectable)
+				{
+					score += weights[8] * distance(obs.position, agentPosition);
+					score -= weights[8] * lengthScale;
+					score -= weights[9];
 				}
 			}
 		}
 		return score;
-    }
-    
-    double distance ( Vector2d v1, Vector2d v2 ) {
-    	double distance = Math.abs(v1.x-v2.x) + Math.abs(v1.y-v2.y);
-    	if (distance==0)
-    		return lengthScale/0.1;
-    	else
-    		return lengthScale/Math.pow(distance, 2);
-    }
+	}
+
+	double distance(Vector2d v1, Vector2d v2)
+	{
+		double distance = Math.abs(v1.x - v2.x) + Math.abs(v1.y - v2.y);
+		if (distance == 0)
+			return lengthScale / 0.1;
+		else
+			return lengthScale / Math.pow(distance, 2);
+	}
 }
