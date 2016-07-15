@@ -70,22 +70,22 @@ public class StateHeuristic
 		}
 
 		ArrayList<Observation>[] npcPositions = stateObs.getNPCPositions();
-		ArrayList<Observation>[] portalPositions = stateObs.getPortalsPositions(avatarPosition);
-		ArrayList<Observation>[] movablePositions = stateObs.getMovablePositions(avatarPosition);
-		ArrayList<Observation>[] immovablePositions = stateObs.getImmovablePositions(avatarPosition);
+		ArrayList<Observation>[] portalPositions = stateObs.getPortalsPositions();
+		ArrayList<Observation>[] movablePositions = stateObs.getMovablePositions();
+		ArrayList<Observation>[] immovablePositions = stateObs.getImmovablePositions();
 		ArrayList<Observation>[] fromAvatarSpritesPositions = stateObs.getFromAvatarSpritesPositions();
-		ArrayList<Observation>[] resourcesPositions = stateObs.getResourcesPositions(avatarPosition);
+		ArrayList<Observation>[] resourcesPositions = stateObs.getResourcesPositions();
 
-		Observation oppAvatar = new Observation(stateObs.getAvatarType(oppID), 0, stateObs.getAvatarPosition(oppID),
+		Observation oppAvatar = new Observation(-1-oppID, 0, stateObs.getAvatarPosition(oppID),
 				new Vector2d(), 0); // unused values are set to 0
 
-		score += observationArrayPayoffFunction(npcPositions, avatarPosition, avatarHealthPoints);
-		score += observationArrayPayoffFunction(portalPositions, avatarPosition, avatarHealthPoints);
-		score += observationArrayPayoffFunction(movablePositions, avatarPosition, avatarHealthPoints);
+		//score += observationArrayPayoffFunction(npcPositions, avatarPosition, avatarHealthPoints);
+		//score += observationArrayPayoffFunction(portalPositions, avatarPosition, avatarHealthPoints);
+		//score += observationArrayPayoffFunction(movablePositions, avatarPosition, avatarHealthPoints);
 		score += observationArrayPayoffFunction(immovablePositions, avatarPosition, avatarHealthPoints);
-		score += observationArrayPayoffFunction(fromAvatarSpritesPositions, avatarPosition, avatarHealthPoints);
-		score += observationArrayPayoffFunction(resourcesPositions, avatarPosition, avatarHealthPoints);
-		score += observationPayoffFunction(oppAvatar, avatarPosition, avatarHealthPoints);
+		//score += observationArrayPayoffFunction(fromAvatarSpritesPositions, avatarPosition, avatarHealthPoints);
+		//score += observationArrayPayoffFunction(resourcesPositions, avatarPosition, avatarHealthPoints);
+		//score += observationPayoffFunction(oppAvatar, avatarPosition, avatarHealthPoints);
 
 		/*
 		 * if(stateObs.getAvatarLastAction(playerID)==Types.ACTIONS.ACTION_USE)
@@ -125,6 +125,7 @@ public class StateHeuristic
 		if (spriteTypeFeaturesMap.containsKey(obs.itype))
 		{
 			SpriteTypeFeatures sprite = spriteTypeFeaturesMap.get(obs.itype);
+			//System.out.println("Type: " + sprite.passable);
 			if (sprite.passable || sprite.destroyable) {
 				if (sprite.givingVictory) {
 					score += weights[0]*distance(obs.position, agentPosition);
@@ -155,7 +156,6 @@ public class StateHeuristic
 				}
 			}
 		}
-		// System.out.println(score);
 		return score;
     }
     
