@@ -1,5 +1,6 @@
 package NextLevel;
 
+import core.game.Event;
 import core.game.Observation;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
@@ -10,7 +11,9 @@ import tools.Utils;
 import tools.Vector2d;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 public class Agent extends AbstractMultiPlayer {
@@ -70,7 +73,7 @@ public class Agent extends AbstractMultiPlayer {
      	spriteTypeFeaturesMap = brain.getSpriteTypeFeaturesMap();
 
      	// After filling spriteTypeFeaturesMap
-        double[] weights = new double[] {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01};	// 8 weights
+        double[] weights = new double[] {0.05, 0.04, 0.04, 0.02, 0.02, 0.02, 0.01, 0.1};	// 8 weights
         double pointScale = 10;
         heuristic =  new StateHeuristic(id, oppID, spriteTypeFeaturesMap, weights, pointScale, stateObs.getWorldDimension());
         
@@ -98,13 +101,6 @@ public class Agent extends AbstractMultiPlayer {
      * @return An action for the current state
      */
     public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer) {
-     	/*System.out.println(stateObs.getNPCPositions(stateObs.getAvatarPosition(id)));
-     	System.out.println(stateObs.getPortalsPositions(stateObs.getAvatarPosition(id)));
-     	System.out.println(stateObs.getImmovablePositions(stateObs.getAvatarPosition(id)).length);
-     	System.out.println(stateObs.getMovablePositions(stateObs.getAvatarPosition(id)));
-     	System.out.println(stateObs.getResourcesPositions(stateObs.getAvatarPosition(id)));
-     	System.out.println(stateObs.getFromAvatarSpritesPositions(stateObs.getAvatarPosition(id)));
-     	System.out.println();*/
     	
     	/*
 		 * // Human player with reporting 
@@ -125,12 +121,25 @@ public class Agent extends AbstractMultiPlayer {
     	//printState(stateObs, 0, true);
     	
     	brain.learn(stateObs, elapsedTimer, false, false, 1);
+        TreeSet<Event> eventsHistory = stateObs.getEventsHistory();
+        Iterator<Event> eventsIterator = eventsHistory.descendingIterator();
+        Event event;
+        
+        if (eventsIterator.hasNext())
+        {
+	        event = eventsIterator.next();
+	        if (event.gameStep == stateObs.getGameTick() - 1)
+	        {
+	        	brain.learn(stateObs, elapsedTimer, false, false, 2, 2);
+	        }
+        }
     	
     	switch (algorithmID) {
 	    	case 1:
 	    		return oneStepLookAhead(stateObs);
 	    	case 2:
-	    		return heuristicOLMCTS(stateObs, elapsedTimer);
+	    		return Types.ACTIONS.ACTION_NIL;
+	    		//return heuristicOLMCTS(stateObs, elapsedTimer);
 	    	case 3:
 	    		return geneticAlgorithm(stateObs, elapsedTimer);
     		default:	// just in case :)

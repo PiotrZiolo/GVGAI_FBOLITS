@@ -265,7 +265,7 @@ public class SingleTreeNode
                 {
                     allEqual = false;
                 }
-
+                
                 double childValue = children[i].nVisits;
                 childValue = Utils.noise(childValue, this.epsilon, this.m_rnd.nextDouble());     //break ties randomly
                 if (childValue > bestValue) {

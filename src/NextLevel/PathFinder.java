@@ -77,7 +77,7 @@ public class PathFinder {
 		boolean[] positions_objects = new boolean[positions.size()];
 		for(int i=0;i<positions.size();i++){
 			for(int x=-1;x<=1;x+=2){
-				for(Observation obs : stateObs.getObservationGrid()[positions.get(i)[0]+x][positions.get(i)[1]])
+				for(Observation obs : stateObs.getObservationGrid()[(width+positions.get(i)[0]+x)%width][(height+positions.get(i)[1])%height])
 					positions_objects[i] = obs.category == 4;
 				if(positions_objects[i])
 					break;
@@ -85,7 +85,7 @@ public class PathFinder {
 			if(positions_objects[i])
 				break;
 			for(int y=-1;y<=1;y+=2)
-				for(Observation obs : stateObs.getObservationGrid()[positions.get(i)[0]][positions.get(i)[1]+y])
+				for(Observation obs : stateObs.getObservationGrid()[(width+positions.get(i)[0])%width][(height+positions.get(i)[1]+y)%height])
 					positions_objects[i] = obs.category == 4;
 				if(positions_objects[i])
 					break;
@@ -124,16 +124,17 @@ public class PathFinder {
 		
 		//eliminate immovable objects
 		ArrayList<Observation>[] obs = stateObs.getImmovablePositions();
-		for(int i=0;i<obs.length;i++)
-			for(Observation o : obs[i])
-				V[(int)o.position.x/stateObs.getBlockSize()][(int)o.position.y/stateObs.getBlockSize()]=2;
+		if (obs!=null)
+			for(int i=0;i<obs.length;i++)
+				for(Observation o : obs[i])
+					V[(int)o.position.x/stateObs.getBlockSize()][(int)o.position.y/stateObs.getBlockSize()]=2;
 
 		//eliminate portals objects
 		obs = stateObs.getPortalsPositions();
-		for(int i=0;i<obs.length;i++)
-			for(Observation o : obs[i])
-				V[(int)o.position.x/stateObs.getBlockSize()][(int)o.position.y/stateObs.getBlockSize()]=2;
-				//System.out.println(" - " + (int)o.position.x/stateObs.getBlockSize() + " " + (int)o.position.y/stateObs.getBlockSize());
+		if (obs!=null)
+			for(int i=0;i<obs.length;i++)
+				for(Observation o : obs[i])
+					V[(int)o.position.x/stateObs.getBlockSize()][(int)o.position.y/stateObs.getBlockSize()]=2;
 		
 		V[goal[0]][goal[1]]=0;
 			
@@ -188,7 +189,7 @@ public class PathFinder {
 			current = prev[goal[0]][goal[1]];
 			//back trace the path
 			while(current[0]!=start[0] || current[1]!=start[1]){
-				path.add(getDirection(current, prev[current[0]][current[1]]));
+				path.add(getDirection(current, prev[(width+current[0])%width][(height+current[1])%height]));
 				current=prev[mod(current[0],width)][mod(current[1],height)];
 			}
 			return path;
