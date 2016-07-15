@@ -127,20 +127,23 @@ public class StateHeuristic
 				score -= weights[2];
 			}
 			if (sprite.dangerousToAvatar>0) {
-				score += -weights[3]*sprite.dangerousToAvatar/avatarHealthPoints*distance(obs.position, agentPosition);
+				if (avatarHealthPoints==0)
+					score -= weights[3]*distance(obs.position, agentPosition);
+				else
+					score -= weights[3]*sprite.dangerousToAvatar/avatarHealthPoints*distance(obs.position, agentPosition);
 			}
 			if (sprite.dangerousOtherwise) {
-				score += -weights[4];
-				score += -weights[5]*distance(obs.position, agentPosition);
+				score -= weights[4];
+				score -= weights[5]*distance(obs.position, agentPosition);
 			}
 			if (sprite.changingPoints!=0) {
 				score += weights[6]*sprite.changingPoints/pointScale*distance(obs.position, agentPosition);
 			}
-			if (sprite.changingValuesOfOtherObjects) {
-				int totalPointsChange = 0;
-				score += weights[7]*totalPointsChange*distance(obs.position, agentPosition);
+			if (sprite.changingValuesOfOtherObjects!=0) {
+				score += weights[7]*(sprite.changingValuesOfOtherObjects/pointScale)*distance(obs.position, agentPosition);
 			}
 		}
+		//System.out.println(score);
 		return score;
     }
     

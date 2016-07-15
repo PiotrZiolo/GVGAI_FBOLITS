@@ -127,13 +127,19 @@ public class PathFinder {
 		for(int i=0;i<obs.length;i++)
 			for(Observation o : obs[i])
 				V[(int)o.position.x/stateObs.getBlockSize()][(int)o.position.y/stateObs.getBlockSize()]=2;
-		//System.out.println(" - " + start[0] + " " + start[1]);
+
+		//eliminate portals objects
+		obs = stateObs.getPortalsPositions();
+		for(int i=0;i<obs.length;i++)
+			for(Observation o : obs[i])
+				V[(int)o.position.x/stateObs.getBlockSize()][(int)o.position.y/stateObs.getBlockSize()]=2;
+				//System.out.println(" - " + (int)o.position.x/stateObs.getBlockSize() + " " + (int)o.position.y/stateObs.getBlockSize());
 		
 		V[goal[0]][goal[1]]=0;
 			
 		//this line is after the elimination to prevent endless loop
 		V[start[0]][start[1]]=1;
-			
+		//System.out.println("start <- " + start[0] + " ; " + start[1]);
 		//FIFO
 		LinkedList<int[]> list = new LinkedList<int[]>();
 		list.add(new int[]{start[0],start[1]});
@@ -181,7 +187,7 @@ public class PathFinder {
 			path.add(getDirection(goal, prev[goal[0]][goal[1]]));
 			current = prev[goal[0]][goal[1]];
 			//back trace the path
-			while(current[0]!=start[0] || current[0]!=start[0]){
+			while(current[0]!=start[0] || current[1]!=start[1]){
 				path.add(getDirection(current, prev[current[0]][current[1]]));
 				current=prev[mod(current[0],width)][mod(current[1],height)];
 			}

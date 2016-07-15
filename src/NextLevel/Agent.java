@@ -50,12 +50,23 @@ public class Agent extends AbstractMultiPlayer {
         availableActions = stateObs.getAvailableActions(Agent.id);
         
         // Fill spriteTypeFeaturesMap
+     	
+     	Types.ACTIONS[] acts = {Types.ACTIONS.ACTION_NIL, Types.ACTIONS.ACTION_NIL};
+     	StateObservationMulti stateObsCopy = stateObs.copy();
+     	stateObsCopy.advance(acts);
 
      	brain = new Brain(id);
      	
      	brain.learn(stateObs, elapsedTimer);
-     	Observation obs = stateObs.getImmovablePositions()[1].get(0);
-     	brain.approachSprite(stateObs, obs);
+     	
+     	/*System.out.println(stateObs.getNPCPositions(stateObs.getAvatarPosition(id)));
+     	System.out.println(stateObs.getPortalsPositions(stateObs.getAvatarPosition(id)));
+     	System.out.println(stateObs.getImmovablePositions(stateObs.getAvatarPosition(id)).length);
+     	System.out.println(stateObs.getMovablePositions(stateObs.getAvatarPosition(id)));
+     	System.out.println(stateObs.getResourcesPositions(stateObs.getAvatarPosition(id)));
+     	System.out.println(stateObs.getFromAvatarSpritesPositions(stateObs.getAvatarPosition(id)));*/
+     	//Observation obs = stateObs.getPortalsPositions(stateObs.getAvatarPosition(id))[0].get(0);
+     	//brain.approachSprite(stateObs, obs);
 
      	spriteTypeFeaturesMap = brain.getSpriteTypeFeatures();
 
@@ -88,6 +99,13 @@ public class Agent extends AbstractMultiPlayer {
      * @return An action for the current state
      */
     public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer) {
+     	/*System.out.println(stateObs.getNPCPositions(stateObs.getAvatarPosition(id)));
+     	System.out.println(stateObs.getPortalsPositions(stateObs.getAvatarPosition(id)));
+     	System.out.println(stateObs.getImmovablePositions(stateObs.getAvatarPosition(id)).length);
+     	System.out.println(stateObs.getMovablePositions(stateObs.getAvatarPosition(id)));
+     	System.out.println(stateObs.getResourcesPositions(stateObs.getAvatarPosition(id)));
+     	System.out.println(stateObs.getFromAvatarSpritesPositions(stateObs.getAvatarPosition(id)));
+     	System.out.println();*/
     	
     	/*
 		 * // Human player with reporting 
@@ -105,7 +123,7 @@ public class Agent extends AbstractMultiPlayer {
 		 * 
 		 */
     	
-    	printState(stateObs, 0, true);
+    	//printState(stateObs, 0, true);
     	
     	switch (algorithmID) {
 	    	case 1:
@@ -135,6 +153,7 @@ public class Agent extends AbstractMultiPlayer {
 	
 	    //A random non-suicidal action by the opponent.
 	    Types.ACTIONS oppAction = getOppNotLosingAction(stateObs);
+	    double currentScore = heuristic.evaluateState(stateObs) + stateObs.getGameScore(id);
 	
 	    for (Types.ACTIONS action : stateObs.getAvailableActions(id)) {
 	
@@ -149,8 +168,7 @@ public class Agent extends AbstractMultiPlayer {
 	
 	        stCopy.advance(acts);
 	
-	        double Q = heuristic.evaluateState(stCopy) + stateObs.getGameScore(oppID) - stateObs.getGameScore(id);
-	        //System.out.println("Action " + action + ", score " + Q);
+	        double Q = heuristic.evaluateState(stCopy) + stateObs.getGameScore(oppID) - currentScore;
 	        Q = Utils.noise(Q, Agent.epsilon, this.m_rnd.nextDouble());
 	
 	        //System.out.println("Action:" + action + " score:" + Q);
@@ -198,7 +216,7 @@ public class Agent extends AbstractMultiPlayer {
     public Types.ACTIONS heuristicOLMCTS(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer) {
 
         //Set the state observation object as the new root of the tree.
-    	int ROLLOUT_DEPTH = 10;
+    	int ROLLOUT_DEPTH = 4;
     	double K = Math.sqrt(2);
         mctsPlayer.init(stateObs, ROLLOUT_DEPTH, K);
 
