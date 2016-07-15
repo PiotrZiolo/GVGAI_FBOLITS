@@ -278,7 +278,7 @@ public class SingleTreeNode
 
         if (selected == -1)
         {
-            System.out.println("Unexpected selection!");
+            //System.out.println("Unexpected selection!");
             selected = 0;
         } else if(allEqual)
         {
@@ -298,7 +298,7 @@ public class SingleTreeNode
             if(children[i] != null) {
                 //double tieBreaker = m_rnd.nextDouble() * epsilon;
                 double childValue = children[i].totValue / (children[i].nVisits + this.epsilon);
-                System.out.println("Child = " + childValue);
+                //System.out.println("Child = " + childValue);
                 childValue = Utils.noise(childValue, this.epsilon, this.m_rnd.nextDouble());     //break ties randomly
                 if (childValue > bestValue) {
                     bestValue = childValue;
@@ -309,7 +309,7 @@ public class SingleTreeNode
 
         if (selected == -1)
         {
-            System.out.println("Unexpected selection!");
+            //System.out.println("Unexpected selection!");
             selected = 0;
         }
 

@@ -144,8 +144,8 @@ public class Brain
 
 		if (!justImagine)
 		{
-			System.out.println("----------");
-			System.out.println(">>> Game turn: " + stateObs.getGameTick());
+			//System.out.println("----------");
+			//System.out.println(">>> Game turn: " + stateObs.getGameTick());
 		}
 
 		for (ArrayList<Observation>[] positions : arraysOfSprites)
@@ -156,12 +156,12 @@ public class Brain
 				{
 					if (observations.size() > 0)
 					{
-						if (!justImagine)
-						{
-							System.out.println("----------");
-							System.out.println("Checking sprite of type: " + observations.get(0).itype
-									+ " and category: " + observations.get(0).category);
-						}
+						//if (!justImagine)
+						//{
+							//System.out.println("----------");
+							//System.out.println("Checking sprite of type: " + observations.get(0).itype
+							//		+ " and category: " + observations.get(0).category);
+						//}
 
 						if (range == 0 || range == 1 || observations.get(0).category == category)
 						{
@@ -171,20 +171,20 @@ public class Brain
 								SpriteTypeFeatures spriteTypeFeatures;
 								if (productionVersion)
 								{
-									if (!justImagine)
-									{
-										System.out.println("Testing sprite of type: " + observations.get(0).itype
-												+ " and category: " + observations.get(0).category);
-										System.out.println("Before action: " + elapsedTimer.remainingTimeMillis());
-									}
+									//if (!justImagine)
+									//{
+										//System.out.println("Testing sprite of type: " + observations.get(0).itype
+										//		+ " and category: " + observations.get(0).category);
+										//System.out.println("Before action: " + elapsedTimer.remainingTimeMillis());
+									//}
 									spriteTypeFeatures = testSprite(stateObs, observations.get(0),
 											recursiveImplications);
-									if (!justImagine)
-									{
-										System.out.println("After action: " + elapsedTimer.remainingTimeMillis());
-										spriteTypeFeatures.print();
-										System.out.println("----------");
-									}
+									//if (!justImagine)
+									//{
+										//System.out.println("After action: " + elapsedTimer.remainingTimeMillis());
+										//spriteTypeFeatures.print();
+										//System.out.println("----------");
+									//}
 								}
 								else
 								{
@@ -203,29 +203,29 @@ public class Brain
 			}
 		}
 
-		if (!justImagine)
-		{
-			System.out.println("----------");
-			System.out.println("Checking sprite of type: " + (-1 - oppID) + " and category: " + 0);
-		}
+		//if (!justImagine)
+		//{
+			//System.out.println("----------");
+			//System.out.println("Checking sprite of type: " + (-1 - oppID) + " and category: " + 0);
+		//}
 		if (range == 0 || (range == 2 && category == 0))
 		{
 			if (productionVersion)
 			{
 				if (stateObs.getNoPlayers() > 1)
 				{
-					if (!justImagine)
-					{
-						System.out.println("Testing sprite of type: " + (-1 - oppID) + " and category: " + 0);
-						System.out.println("Before action: " + elapsedTimer.remainingTimeMillis());
-					}
+					//if (!justImagine)
+					//{
+						//System.out.println("Testing sprite of type: " + (-1 - oppID) + " and category: " + 0);
+						//System.out.println("Before action: " + elapsedTimer.remainingTimeMillis());
+					//}
 					SpriteTypeFeatures spriteTypeFeatures = testOtherPlayer(stateObs, oppID, recursiveImplications);
-					if (!justImagine)
-					{
-						System.out.println("After action: " + elapsedTimer.remainingTimeMillis());
-						spriteTypeFeatures.print();
-						System.out.println("----------");
-					}
+					//if (!justImagine)
+					//{
+						//System.out.println("After action: " + elapsedTimer.remainingTimeMillis());
+						//spriteTypeFeatures.print();
+						//System.out.println("----------");
+					//}
 
 					if (spriteTypeFeatures != null)
 					{
@@ -344,8 +344,8 @@ public class Brain
 				&& (!movingOntoTested || !useTested || (!isSpriteNonPlayer && !otherPlayerUseTested)))
 		{
 			StateObservationMulti stateObsApproached = approachSprite(stateObs, observation);
-			if (stateObsApproached == null)
-				System.out.println("Approach failed");
+			//if (stateObsApproached == null)
+				//System.out.println("Approach failed");
 
 			if (stateObsApproached != null)
 			{
@@ -448,7 +448,7 @@ public class Brain
 		int pathFinderLimit = (fastThinking) ? 1 : 10;
 		if (!stateObs.isAvatarAlive(oppID))
 		{
-			System.out.println("Opponent died.");
+			//System.out.println("Opponent died.");
 			return null;
 		}
 		
@@ -464,7 +464,7 @@ public class Brain
 		
 		Vector2d observationPosition = observation.position;
 		if (observationPosition == playerPreviousPosition) {
-			System.out.println("Object is in the same place as player");
+			//System.out.println("Object is in the same place as player");
 			return null;
 		}
 		int[] blockWhereObservationWasLastSeen = { (int) (observationPosition.x / stateObs.getBlockSize()),
@@ -486,7 +486,7 @@ public class Brain
 				observationPosition = FindObject(blockWhereObservationWasLastSeen, currentState, observation.obsID);
 			if (observationPosition == null)
 			{
-				System.out.println("Object was lost.");
+				//System.out.println("Object was lost.");
 				return null;
 			}
 
@@ -498,11 +498,11 @@ public class Brain
 			if (isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition, playerPreviousPosition, currentState,
 					playerPreviousOrientation, observation.itype))
 			{
-				System.out.println("Standard approach successful.");
+				//System.out.println("Standard approach successful.");
 
 				if (currentState.isGameOver())
 				{
-					System.out.println("Opp died when rotating.");
+					//System.out.println("Opp died when rotating.");
 					return null;
 				}
 				return currentState;
@@ -511,7 +511,7 @@ public class Brain
 			// if opponent always die finish return null
 			if (opponentGoodActions.isEmpty())
 			{
-				System.out.println("Opp is dead.");
+				//System.out.println("Opp is dead.");
 				return null;
 			}
 
@@ -540,7 +540,7 @@ public class Brain
 			// temporaryState.getAvatarPosition(playerID));
 			if (advanceLimit == 0)
 			{
-				System.out.println("advanceLimit reached.");
+				//System.out.println("advanceLimit reached.");
 				return null;
 			}
 			temporaryState.advance(actions);
@@ -603,14 +603,14 @@ public class Brain
 		{
 			PathFinder pathFinder = new PathFinder();
 			
-			System.out.println("playerPreviousPosition = " + playerPreviousPosition);
-			System.out.println("observationPosition = " + observationPosition);
-			System.out.println("playerPreviousPosition = " + currentState.getAvatarPosition(playerID));
-			System.out.println("playerID = " + playerID);
+			//System.out.println("playerPreviousPosition = " + playerPreviousPosition);
+			//System.out.println("observationPosition = " + observationPosition);
+			//System.out.println("playerPreviousPosition = " + currentState.getAvatarPosition(playerID));
+			//System.out.println("playerID = " + playerID);
 			
 			Deque<Types.ACTIONS> playerMoveSequenceToGoal = pathFinder.pathFinder(playerPreviousPosition,
 					observationPosition, currentState, playerID);
-			System.out.println("After pathfinding: " + elapsedTimer.remainingTimeMillis());
+			//System.out.println("After pathfinding: " + elapsedTimer.remainingTimeMillis());
 
 			Iterator<Types.ACTIONS> iterator = playerMoveSequenceToGoal.descendingIterator();
 			Types.ACTIONS forceMove = null;
@@ -627,7 +627,7 @@ public class Brain
 					observationPosition = FindObject(blockWhereObservationWasLastSeen, currentState, observation.obsID);
 				if (observationPosition == null)
 				{
-					System.out.println("Object was lost.");
+					//System.out.println("Object was lost.");
 					return null;
 				}
 
@@ -636,10 +636,10 @@ public class Brain
 				if (isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition, playerPreviousPosition,
 						currentState, playerPreviousOrientation, observation.itype))
 				{
-					System.out.println("Advanced approach successful.");
+					//System.out.println("Advanced approach successful.");
 					if (currentState.isGameOver())
 					{
-						System.out.println("Opponent died when turning.");
+						//System.out.println("Opponent died when turning.");
 						return null;
 					}
 					return currentState;
@@ -648,7 +648,7 @@ public class Brain
 				// if opponent always die finish return null
 				if (opponentGoodActions.isEmpty())
 				{
-					System.out.println("Opponent died.");
+					//System.out.println("Opponent died.");
 					return null;
 				}
 
@@ -665,7 +665,7 @@ public class Brain
 				{
 					actions[playerID] = iterator.next();
 					if (actions[playerID] == Types.ACTIONS.ACTION_NIL) {
-						System.out.println("PathFinder failed to find the path.");
+						//System.out.println("PathFinder failed to find the path.");
 						return null;
 					}
 				}
@@ -683,7 +683,7 @@ public class Brain
 				// temporaryState.getAvatarPosition(playerID));
 				if (advanceLimit == 0)
 				{
-					System.out.println("AdvancedLimit reached.");
+					//System.out.println("AdvancedLimit reached.");
 					return null;
 				}
 				temporaryState.advance(actions);
@@ -697,7 +697,7 @@ public class Brain
 				boolean goodMove = true;
 				if (!temporaryState.isAvatarAlive(playerID))
 				{
-					System.out.println("Player killed.");
+					//System.out.println("Player killed.");
 					return null; // do poprawy - na razie jak zginê id¹c do
 									// obiektu to siê poddaje
 
@@ -1145,8 +1145,8 @@ public class Brain
 	private StateObservationMulti chaseSprite(StateObservationMulti stateObs, Observation observation)
 	{
 		StateObservationMulti stateObsApproached = approachSprite(stateObs, observation);
-		if (stateObsApproached == null)
-			System.out.println("Approach failed");
+		//if (stateObsApproached == null)
+		//	System.out.println("Approach failed");
 		return stateObsApproached;
 	}
 
@@ -1188,14 +1188,14 @@ public class Brain
 			if (event.gameStep == stateObsJustAfterAction.getGameTick() - 1)
 			{
 				eventHappened = true;
-				System.out.println("Event happened");
+				//System.out.println("Event happened");
 			}
 		}
 
 		if (!eventHappened)
 		{
 			event = null;
-			System.out.println("Event not happened");
+			//System.out.println("Event not happened");
 		}
 
 		// Process different types of situations
@@ -1320,12 +1320,12 @@ public class Brain
 										.getAvatarPosition(oppID).y)
 						{
 							currentSpriteTypeFeatures.passable = true;
-							System.out.println("Passable");
+							//System.out.println("Passable");
 						}
 						else
 						{
 							currentSpriteTypeFeatures.passable = false;
-							System.out.println("Not passable");
+							//System.out.println("Not passable");
 						}
 					}
 					else
@@ -1340,20 +1340,20 @@ public class Brain
 									&& Math.abs(distance.y) < stateObsJustAfterAction.getBlockSize())
 							{
 								currentSpriteTypeFeatures.passable = true;
-								System.out.println("Passable");
+								//System.out.println("Passable");
 							}
 							else
 							{
 								currentSpriteTypeFeatures.passable = false;
-								System.out.println("Not passable");
+								//System.out.println("Not passable");
 							}
 						}
 						else
 						{
 							currentSpriteTypeFeatures.collectable = true;
 							currentSpriteTypeFeatures.passable = true;
-							System.out.println("Collectable");
-							System.out.println("Passable");
+							//System.out.println("Collectable");
+							//System.out.println("Passable");
 						}
 					}
 
@@ -1370,7 +1370,7 @@ public class Brain
 					currentSpriteTypeFeatures.changingPoints = stateObsJustAfterAction.getGameScore(playerID)
 							- stateObsJustBeforeAction.getGameScore(playerID);
 
-					System.out.println("Points: " + currentSpriteTypeFeatures.changingPoints);
+					//System.out.println("Points: " + currentSpriteTypeFeatures.changingPoints);
 
 					if (recursiveImplications)
 					{
@@ -1398,18 +1398,18 @@ public class Brain
 										.getAvatarPosition(oppID).y)
 						{
 							currentSpriteTypeFeatures.passable = true;
-							System.out.println("Passable");
+							//System.out.println("Passable");
 						}
 						else
 						{
 							currentSpriteTypeFeatures.passable = false;
-							System.out.println("Not passable");
+							//System.out.println("Not passable");
 						}
 					}
 					else
 					{
 						currentSpriteTypeFeatures.collectable = false;
-						System.out.println("Not collectable");
+						//System.out.println("Not collectable");
 
 						Vector2d spriteCurrentPosition = localizeSprite(stateObsJustAfterAction, observation, 3);
 						if (spriteCurrentPosition != null)
@@ -1421,17 +1421,17 @@ public class Brain
 									&& Math.abs(distance.y) < stateObsJustAfterAction.getBlockSize())
 							{
 								currentSpriteTypeFeatures.passable = true;
-								System.out.println("Passable");
+								//System.out.println("Passable");
 							}
 							else
 							{
 								currentSpriteTypeFeatures.passable = false;
-								System.out.println("Not passable");
+								//System.out.println("Not passable");
 							}
 						}
 						else
 						{
-							System.out.println("Object not found");
+							//System.out.println("Object not found");
 						}
 					}
 				}
@@ -1533,7 +1533,7 @@ public class Brain
 				if (!victoryConditionAppeared && !spriteTypeFeaturesMapEntry.getValue().givingVictory
 						&& portalsTypeFeaturesMapImagined.get(spriteTypeFeaturesMapEntry.getKey()).givingVictory)
 				{
-					System.out.println("Allowing victory portal opened");
+					//System.out.println("Allowing victory portal opened");
 					currentSpriteTypeFeatures.allowingVictory = true;
 					victoryConditionAppeared = true;
 				}
@@ -1559,7 +1559,7 @@ public class Brain
 				if (!victoryConditionAppeared && spriteTypeFeaturesMapImaginedEntry.getValue().givingVictory)
 				{
 					currentSpriteTypeFeatures.allowingVictory = true;
-					System.out.println("Allowing victory new portal");
+					//System.out.println("Allowing victory new portal");
 					victoryConditionAppeared = true;
 				}
 			}
