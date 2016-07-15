@@ -416,18 +416,20 @@ public class Brain
 				(int) (observationPosition.y / stateObs.getBlockSize()) };
 
 		// in this while avatar is trying to minimize distance to goal
-		while (true)
-		{
-
-			// finding object position - first in the same place as last time,
-			// than in the neighborhood
+		System.out.println("playerPreviousPosition = " + playerPreviousPosition);
+		System.out.println("observationPosition = " + observationPosition);
+		//System.out.println("playerID = " + playerID);
+		while (true) {
+			
+			// finding object position - first in the same place as last time, than in the neighborhood
 			observationPosition = FindObject(blockWhereObservationWasLastSeen, stateObs, observation.obsID);
+		
+			//System.out.println(observationPosition + " " + playerPreviousPosition + " " + playerPreviousOrientation + " " + observation.itype);
+			// check whether avatar reached the object and return opponent if he is the object.
+			if (isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition, playerPreviousPosition,
+					currentState, playerPreviousOrientation, observation.itype)) {
+				System.out.println("Standard approach successful.");
 
-			// check whether avatar reached the object and return opponent if he
-			// is the object.
-			if (isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition, playerPreviousPosition, currentState,
-					playerPreviousOrientation, observation.itype))
-			{
 				if (currentState.isGameOver())
 					return null;
 				return currentState;
@@ -455,15 +457,16 @@ public class Brain
 				break;
 
 			// advance
-			// System.out.println("avatarPosition = " +
-			// temporaryState.getAvatarPosition(playerID));
-			// System.out.println("goalPosition = " + observationPosition);
-			// System.out.println("actions = " + actions[playerID].toString());
-			if (advanceLimit == 0)
+			//
+			//System.out.println("goalPosition = " + observationPosition);
+			System.out.println("actions = " + actions[playerID].toString());
+			System.out.println("avatarPositionB = " + temporaryState.getAvatarPosition(playerID));
+			if (advanceLimit==0)
 				return null;
 			temporaryState.advance(actions);
 			advanceLimit--;
-
+			System.out.println("avatarPositionA = " + temporaryState.getAvatarPosition(playerID));
+			
 			// check whether no one died
 			boolean goodMove = true;
 			if (!temporaryState.isAvatarAlive(playerID))
@@ -471,18 +474,25 @@ public class Brain
 				playerGoodActions.remove(actions[playerID]);
 				goodMove = false;
 			}
-			if (!temporaryState.isAvatarAlive(1 - playerID))
-			{
-				opponentGoodActions.remove(actions[1 - playerID]);
+			if (goodMove && !temporaryState.isAvatarAlive(1-playerID)) {
+				opponentGoodActions.remove(actions[1-playerID]);
 				goodMove = false;
 			}
 
 			// check whether player changed position or direction
 			Vector2d playerNewPosition = temporaryState.getAvatarPosition(playerID);
 			Vector2d playerNewOrientation = temporaryState.getAvatarOrientation(playerID);
-			if (playerNewPosition.equals(playerPreviousPosition)
-					&& playerNewOrientation.equals(playerPreviousOrientation))
-			{
+			if (goodMove && playerNewPosition.equals(playerPreviousPosition) &&
+					playerNewOrientation.equals(playerPreviousOrientation)) {
+				playerGoodActions.remove(actions[playerID]);
+				goodMove = false;
+			}
+
+			// check whether player haven't move back
+			Vector2d previousDistance = playerPreviousPosition.copy().subtract(observationPosition);
+			Vector2d newDistance = playerNewPosition.copy().subtract(observationPosition);
+			if (goodMove && (Math.abs(previousDistance.x) < Math.abs(newDistance.x) ||
+					Math.abs(previousDistance.y) < Math.abs(newDistance.y))) {
 				playerGoodActions.remove(actions[playerID]);
 				goodMove = false;
 			}
@@ -503,37 +513,33 @@ public class Brain
 		}
 		// return null;
 
-		// in this while avatar is trying to go along the shortest path to goal
-		// using BFS
-		while (true)
-		{
-			// System.out.println("playerPreviousPosition = " +
-			// playerPreviousPosition);
-			// System.out.println("observationPosition = " +
-			// observationPosition);
-			// System.out.println("playerID = " + playerID);
+		// in this while avatar is trying to go along the shortest path to goal using BFS
+		while(true) {
 			PathFinder pathFinder = new PathFinder();
+			System.out.println("playerPreviousPosition = " + playerPreviousPosition);
+			System.out.println("observationPosition = " + observationPosition);
+			System.out.println("playerPreviousPosition = " + currentState.getAvatarPosition(playerID));
+			System.out.println("playerID = " + playerID);
 			Deque<Types.ACTIONS> playerMoveSequenceToGoal = pathFinder.pathFinder(playerPreviousPosition,
 					observationPosition, currentState, playerID);
 
-			Iterator<Types.ACTIONS> iterator = playerMoveSequenceToGoal.iterator();
+			Iterator<Types.ACTIONS> iterator = playerMoveSequenceToGoal.descendingIterator();
 			Types.ACTIONS forceMove = null;
 
-			/*
-			 * while(iterator.hasNext()) { System.out.println("actions = " +
-			 * iterator.next().toString()); } return null;
-			 */
-			while (iterator.hasNext())
-			{
-				// finding object position - first in the same place as last
-				// time, than in the neighborhood
+			while(iterator.hasNext()) {
+				System.out.println("actions = " + iterator.next().toString());
+			}
+			
+			iterator = playerMoveSequenceToGoal.descendingIterator();
+			System.out.println("BFS started");
+			while(iterator.hasNext()) {
+				// finding object position - first in the same place as last time, than in the neighborhood
 				observationPosition = FindObject(blockWhereObservationWasLastSeen, stateObs, observation.obsID);
 
-				// check whether avatar reached the object and return opponent
-				// if he is the object.
+				// check whether avatar reached the object and return opponent if he is the object.
 				if (isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition, playerPreviousPosition,
-						currentState, playerPreviousOrientation, observation.itype))
-				{
+						currentState, playerPreviousOrientation, observation.itype)) {
+					System.out.println("Advanced approach successful.");
 					if (currentState.isGameOver())
 						return null;
 					return currentState;
@@ -559,18 +565,17 @@ public class Brain
 				temporaryState = currentState.copy();
 
 				// advance
-				// System.out.println("avatarPosition = " +
-				// temporaryState.getAvatarPosition(playerID));
-				// System.out.println("goalPosition = " + observationPosition);
-				// System.out.println("actions = " +
-				// actions[playerID].toString());
-				if (advanceLimit == 0)
+				//System.out.println("avatarPosition = " + temporaryState.getAvatarPosition(playerID));
+				//System.out.println("goalPosition = " + observationPosition);
+				System.out.println("actions = " + actions[playerID].toString());
+				System.out.println("avatarPositionB = " + temporaryState.getAvatarPosition(playerID));
+				if (advanceLimit==0)
 					return null;
 				temporaryState.advance(actions);
 				advanceLimit--;
-				// System.out.println("avatarPosition2 = " +
-				// temporaryState.getAvatarPosition(playerID));
-
+				System.out.println("avatarPositionA = " + temporaryState.getAvatarPosition(playerID));
+				//System.out.println("avatarPosition2 = " + temporaryState.getAvatarPosition(playerID));
+				
 				// check whether no one died
 				boolean goodMove = true;
 				if (!temporaryState.isAvatarAlive(playerID))
@@ -590,9 +595,9 @@ public class Brain
 				// check whether player changed position or direction
 				Vector2d playerNewPosition = temporaryState.getAvatarPosition(playerID);
 				Vector2d playerNewOrientation = temporaryState.getAvatarOrientation(playerID);
-				if (playerNewPosition.equals(playerPreviousPosition)
-						&& playerNewOrientation.equals(playerPreviousOrientation))
-				{
+				
+				if (playerNewPosition.equals(playerPreviousPosition) &&
+						playerNewOrientation.equals(playerPreviousOrientation)) {
 					break; // look for path again
 				}
 				if (playerNewPosition.equals(playerPreviousPosition)
@@ -606,13 +611,10 @@ public class Brain
 				}
 
 				// if goodMove=true advance to next step
-				if (goodMove)
-				{
-					currentState = temporaryState;
-					if (!playerNewPosition.equals(playerPreviousPosition))
-					{
-						opponentGoodActions = (ArrayList<Types.ACTIONS>) stateObs.getAvailableActions(1 - playerID)
-								.clone();
+				if (goodMove) {
+					currentState = temporaryState.copy();
+					if (!playerNewPosition.equals(playerPreviousPosition)) {
+						opponentGoodActions = (ArrayList<Types.ACTIONS>)stateObs.getAvailableActions(1-playerID).clone();
 					}
 					playerPreviousPosition = playerNewPosition;
 					playerPreviousOrientation = playerNewOrientation;
@@ -628,13 +630,13 @@ public class Brain
 
 		double speedInPixels = currentState.getBlockSize() * currentState.getAvatarSpeed(playerID);
 		Vector2d distance = observationPosition.copy().subtract(avatarPosition);
-		if (Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_DOWN
-				&& Math.abs(distance.x) < currentState.getBlockSize()
-				&& Math.abs(distance.y - speedInPixels) < currentState.getBlockSize())
-		{
-			if (spriteType == 0 && Types.ACTIONS
-					.fromVector(currentState.getAvatarOrientation(1 - playerID)) != Types.ACTIONS.ACTION_UP)
-			{
+		if ((Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_NIL ||
+				Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_DOWN) &&
+				Math.abs(distance.x) < currentState.getBlockSize() &&
+				Math.abs(distance.y - speedInPixels) < currentState.getBlockSize()) {
+			if (spriteType==0 &&
+					Types.ACTIONS.fromVector(currentState.getAvatarOrientation(1-playerID))!=
+					Types.ACTIONS.ACTION_UP) {
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				actions[playerID] = Types.ACTIONS.ACTION_NIL;
 				actions[1 - playerID] = Types.ACTIONS.ACTION_UP;
@@ -642,13 +644,13 @@ public class Brain
 			}
 			return true;
 		}
-		if (Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_UP
-				&& Math.abs(distance.x) < currentState.getBlockSize()
-				&& Math.abs(distance.y + speedInPixels) < currentState.getBlockSize())
-		{
-			if (spriteType == 0 && Types.ACTIONS
-					.fromVector(currentState.getAvatarOrientation(1 - playerID)) != Types.ACTIONS.ACTION_DOWN)
-			{
+		if ((Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_NIL ||
+				Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_UP) &&
+				Math.abs(distance.x) < currentState.getBlockSize() &&
+				Math.abs(distance.y + speedInPixels) < currentState.getBlockSize()) {
+			if (spriteType==0 &&
+					Types.ACTIONS.fromVector(currentState.getAvatarOrientation(1-playerID))!=
+					Types.ACTIONS.ACTION_DOWN) {
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				actions[playerID] = Types.ACTIONS.ACTION_NIL;
 				actions[1 - playerID] = Types.ACTIONS.ACTION_DOWN;
@@ -656,13 +658,13 @@ public class Brain
 			}
 			return true;
 		}
-		if (Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_RIGHT
-				&& Math.abs(distance.x - speedInPixels) < currentState.getBlockSize()
-				&& Math.abs(distance.y) < currentState.getBlockSize())
-		{
-			if (spriteType == 0 && Types.ACTIONS
-					.fromVector(currentState.getAvatarOrientation(1 - playerID)) != Types.ACTIONS.ACTION_LEFT)
-			{
+		if ((Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_NIL ||
+				Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_RIGHT) &&
+				Math.abs(distance.x - speedInPixels) < currentState.getBlockSize() &&
+				Math.abs(distance.y) < currentState.getBlockSize()) {
+			if (spriteType==0 &&
+					Types.ACTIONS.fromVector(currentState.getAvatarOrientation(1-playerID))!=
+					Types.ACTIONS.ACTION_LEFT) {
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				actions[playerID] = Types.ACTIONS.ACTION_NIL;
 				actions[1 - playerID] = Types.ACTIONS.ACTION_LEFT;
@@ -670,13 +672,13 @@ public class Brain
 			}
 			return true;
 		}
-		if (Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_LEFT
-				&& Math.abs(distance.x + speedInPixels) < currentState.getBlockSize()
-				&& Math.abs(distance.y) < currentState.getBlockSize())
-		{
-			if (spriteType == 0 && Types.ACTIONS
-					.fromVector(currentState.getAvatarOrientation(1 - playerID)) != Types.ACTIONS.ACTION_RIGHT)
-			{
+		if ((Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_NIL ||
+				Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_LEFT) &&
+				Math.abs(distance.x + speedInPixels) < currentState.getBlockSize() &&
+				Math.abs(distance.y) < currentState.getBlockSize()) {
+			if (spriteType==0 &&
+					Types.ACTIONS.fromVector(currentState.getAvatarOrientation(1-playerID))!=
+					Types.ACTIONS.ACTION_RIGHT) {
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				actions[playerID] = Types.ACTIONS.ACTION_NIL;
 				actions[1 - playerID] = Types.ACTIONS.ACTION_RIGHT;
