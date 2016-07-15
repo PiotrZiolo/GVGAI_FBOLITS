@@ -62,7 +62,7 @@ public class Brain
 		this.approachingSpriteMovesLimit = 100;
 		this.numberOfAdvancesForANewTry = 5;
 	}
-	
+
 	/**
 	 * Returns the map of spriteTypeFeatures.
 	 */
@@ -70,7 +70,7 @@ public class Brain
 	{
 		return memory.getSpriteTypeFeaturesMap();
 	}
-	
+
 	/**
 	 * Cleans imaginationMemory.
 	 */
@@ -87,20 +87,22 @@ public class Brain
 	 * @param elapsedTimer
 	 *            Timer when the action returned is due.
 	 * @param justImagine
-	 *            If set to true, all knowledge updates will be saved to imaginationMemory. 
+	 *            If set to true, all knowledge updates will be saved to
+	 *            imaginationMemory.
 	 * @param recursiveImplications
-	 *            Whether to check recursive changes like e.g. changingValuesOfOtherObjects or allowingVictory.
+	 *            Whether to check recursive changes like e.g.
+	 *            changingValuesOfOtherObjects or allowingVictory.
 	 * @param range
-	 *            0 - All types.
-	 *            1 - Only new types.
-	 *            2 - Only the category given by category.
+	 *            0 - All types. 1 - Only new types. 2 - Only the category given
+	 *            by category.
 	 * @param category
 	 *            Category to be evaluated.
 	 */
-	public void learn(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, boolean justImagine, boolean recursiveImplications, int range, int category)
+	public void learn(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, boolean justImagine,
+			boolean recursiveImplications, int range, int category)
 	{
 		boolean productionVersion = false;
-		
+
 		if (justImagine)
 		{
 			imaginationMemory = memory;
@@ -137,22 +139,25 @@ public class Brain
 						{
 							for (int i = 0; i < observations.size(); i++)
 							{
-								if (range == 0 || range == 2 || memory.getSpriteTypeFeaturesByType(observations.get(i).itype) == null)
+								if (range == 0 || range == 2
+										|| memory.getSpriteTypeFeaturesByType(observations.get(i).itype) == null)
 								{
 									SpriteTypeFeatures spriteTypeFeatures;
 									if (productionVersion)
 									{
-										spriteTypeFeatures = testSprite(stateObs, observations.get(i), recursiveImplications);
+										spriteTypeFeatures = testSprite(stateObs, observations.get(i),
+												recursiveImplications);
 									}
 									else
 									{
-										spriteTypeFeatures = getSpriteTypeFeaturesForCategory(observations.get(i).category,
-												observations.get(i).itype);
+										spriteTypeFeatures = getSpriteTypeFeaturesForCategory(
+												observations.get(i).category, observations.get(i).itype);
 									}
-	
+
 									if (spriteTypeFeatures != null)
 									{
-										memory.setSpriteTypeFeaturesByType(observations.get(i).itype, spriteTypeFeatures);
+										memory.setSpriteTypeFeaturesByType(observations.get(i).itype,
+												spriteTypeFeatures);
 									}
 								}
 							}
@@ -161,7 +166,25 @@ public class Brain
 				}
 			}
 		}
-		
+
+		if (range == 0 || (range == 2 && category == 0))
+		{
+			if (productionVersion)
+			{
+				if (stateObs.getNoPlayers() > 1)
+				{
+					SpriteTypeFeatures spriteTypeFeatures = testOtherPlayer(stateObs, oppID, recursiveImplications);
+
+					if (spriteTypeFeatures != null)
+					{
+						// Opponents' features are saved with their ID negative
+						// as type
+						memory.setSpriteTypeFeaturesByType(-oppID, spriteTypeFeatures);
+					}
+				}
+			}
+		}
+
 		if (justImagine)
 		{
 			Memory temporaryMemory = imaginationMemory;
@@ -169,7 +192,7 @@ public class Brain
 			memory = temporaryMemory;
 		}
 	}
-		
+
 	/**
 	 * Overwritten method learn without specifying category.
 	 * 
@@ -178,28 +201,31 @@ public class Brain
 	 * @param elapsedTimer
 	 *            Timer when the action returned is due.
 	 * @param justImagine
-	 *            If set to true, all knowledge updates will be saved to imaginationMemory. 
+	 *            If set to true, all knowledge updates will be saved to
+	 *            imaginationMemory.
 	 * @param recursiveImplications
-	 *            Whether to check recursive changes like e.g. changingValuesOfOtherObjects or allowingVictory.
+	 *            Whether to check recursive changes like e.g.
+	 *            changingValuesOfOtherObjects or allowingVictory.
 	 * @param range
-	 *            0 - All types.
-	 *            1 - Only new types.
+	 *            0 - All types. 1 - Only new types.
 	 */
-	public void learn(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, boolean justImagine, boolean recursiveImplications, int range)
+	public void learn(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, boolean justImagine,
+			boolean recursiveImplications, int range)
 	{
 		learn(stateObs, elapsedTimer, justImagine, recursiveImplications, range, 0);
 	}
 
 	/**
-	 * Updates the knowledge about sprites when a new Event have appeared
-	 * in the history.
+	 * Updates the knowledge about sprites when a new Event have appeared in the
+	 * history.
 	 * 
 	 * @param stateObsJustBeforeAction
 	 *            Observation of the state just before the Event.
 	 * @param stateObsAfterAction
 	 *            Observation of the state just after the Event.
 	 */
-	public void updateKnowledgeAfterEvent(StateObservationMulti stateObsJustBeforeAction, StateObservationMulti stateObsJustAfterAction)
+	public void updateKnowledgeAfterEvent(StateObservationMulti stateObsJustBeforeAction,
+			StateObservationMulti stateObsJustAfterAction)
 	{
 		// Check events history and update the knowledge
 
@@ -237,8 +263,12 @@ public class Brain
 	 *            done.
 	 * @param observation
 	 *            Observation of the sprite to test.
+	 * @param recursiveImplications
+	 *            Whether to check recursive changes like e.g.
+	 *            changingValuesOfOtherObjects or allowingVictory.
 	 */
-	private SpriteTypeFeatures testSprite(StateObservationMulti stateObs, Observation observation, boolean recursiveImplications)
+	private SpriteTypeFeatures testSprite(StateObservationMulti stateObs, Observation observation,
+			boolean recursiveImplications)
 	{
 		SpriteTypeFeatures spriteTypeFeatures = null;
 		stateObs = stateObs.copy();
@@ -331,6 +361,9 @@ public class Brain
 	 *            done.
 	 * @param observation
 	 *            Observation of the sprite to test.
+	 * @param recursiveImplications
+	 *            Whether to check recursive changes like e.g.
+	 *            changingValuesOfOtherObjects or allowingVictory.
 	 */
 	private SpriteTypeFeatures testOtherPlayer(StateObservationMulti stateObs, int oppID, boolean recursiveImplications)
 	{
@@ -953,6 +986,9 @@ public class Brain
 	 * @param actionType
 	 *            Type of action: 0 - use, 1 - move onto, 2 - actions of the
 	 *            other player on our player.
+	 * @param recursiveImplications
+	 *            Whether to check recursive changes like e.g.
+	 *            changingValuesOfOtherObjects or allowingVictory.
 	 */
 	private SpriteTypeFeatures updateKnowledgeAfterActionOnSprite(SpriteTypeFeatures currentSpriteTypeFeatures,
 			StateObservationMulti stateObsJustBeforeAction, StateObservationMulti stateObsJustAfterAction,
@@ -991,11 +1027,11 @@ public class Brain
 					// Treat the other player and sprites differently
 					if (observation.obsID == -oppID)
 					{
-						
+
 					}
 					else
 					{
-						Vector2d spriteCurrentPosition = localizeSprite(stateObsJustAfterAction, observation, 5); 
+						Vector2d spriteCurrentPosition = localizeSprite(stateObsJustAfterAction, observation, 5);
 						if (spriteCurrentPosition != null)
 						{
 							currentSpriteTypeFeatures.destroyable = false;
@@ -1004,18 +1040,22 @@ public class Brain
 						{
 							currentSpriteTypeFeatures.destroyable = true;
 						}
-						
+
 						if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_WINS)
 						{
 							currentSpriteTypeFeatures.givingVictory = true;
 						}
-						
-						currentSpriteTypeFeatures.changingPoints = stateObsJustAfterAction.getGameScore(playerID) - stateObsJustBeforeAction.getGameScore(playerID);
-						
-						// increasingValuesOfOtherObjects and allowingVictory: Looking for changes in changingPoints and givingVictory
-						
-						HashMap<Integer, SpriteTypeFeatures> portalsTypeFeaturesMap = memory.getSpriteTypeFeaturesByCategory(2);
-						
+
+						currentSpriteTypeFeatures.changingPoints = stateObsJustAfterAction.getGameScore(playerID)
+								- stateObsJustBeforeAction.getGameScore(playerID);
+
+						// increasingValuesOfOtherObjects and allowingVictory:
+						// Looking for changes in changingPoints and
+						// givingVictory
+
+						HashMap<Integer, SpriteTypeFeatures> portalsTypeFeaturesMap = memory
+								.getSpriteTypeFeaturesByCategory(2);
+
 					}
 				}
 				else
@@ -1082,8 +1122,8 @@ public class Brain
 				break;
 
 			case 2:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, true, false, 1, true, false, 0,
-						true, true);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, true, false, 1, true,
+						false, 0, true, true);
 				break;
 
 			case 3:
@@ -1091,18 +1131,18 @@ public class Brain
 				break;
 
 			case 4:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, true, false, false, false, 0, false, false,
-						0, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, true, false, false, false, 0,
+						false, false, 0, false, false);
 				break;
 
 			case 5:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, false, false, false, true, 0, false, true,
-						1, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, false, false, false, true, 0,
+						false, true, 1, false, false);
 				break;
 
 			case 6:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, true, false, false, true, 1, false, true, 1,
-						false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, true, false, false, true, 1,
+						false, true, 1, false, false);
 				break;
 
 			default:
@@ -1136,33 +1176,33 @@ public class Brain
 		switch (category)
 		{
 			case 1:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, false, false, 1, true, false,
-						0, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, false, false, 1,
+						true, false, 0, false, false);
 				break;
 
 			case 2:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, true, false, 1, true, false, 0,
-						true, true);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, true, false, 1, true,
+						false, 0, true, true);
 				break;
 
 			case 3:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0.1, true, true, false, false, true, 1, false, true,
-						1, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0.1, true, true, false, false, true, 1,
+						false, true, 1, false, false);
 				break;
 
 			case 4:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, true, false, false, false, 0, false, false,
-						0, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, true, false, false, false, 0,
+						false, false, 0, false, false);
 				break;
 
 			case 5:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, false, false, false, true, 0, false, true,
-						1, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, false, false, false, true, 0,
+						false, true, 1, false, false);
 				break;
 
 			case 6:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0.1, true, true, true, false, false, 1, true, true,
-						0.1, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0.1, true, true, true, false, false, 1,
+						true, true, 0.1, false, false);
 				break;
 
 			default:
