@@ -125,51 +125,45 @@ public class StateHeuristic
 		if (spriteTypeFeaturesMap.containsKey(obs.itype))
 		{
 			SpriteTypeFeatures sprite = spriteTypeFeaturesMap.get(obs.itype);
-			if (sprite.passable || sprite.destroyable)
-			{
-				if (sprite.givingVictory)
-				{
-					score += weights[0] * distance(obs.position, agentPosition);
+			if (sprite.passable || sprite.destroyable) {
+				if (sprite.givingVictory) {
+					score += weights[0]*distance(obs.position, agentPosition);
+					score -= weights[0]*lengthScale;
 				}
-				if (sprite.allowingVictory)
-				{
-					score += weights[1] * distance(obs.position, agentPosition);
+				if (sprite.allowingVictory) {
+					score += weights[1]*distance(obs.position, agentPosition);
+					score -= weights[1]*lengthScale;
 					score -= weights[2];
 				}
-				if (sprite.dangerousToAvatar > 0)
-				{
-					if (avatarHealthPoints == 0)
-						score -= weights[3] * distance(obs.position, agentPosition);
+				if (sprite.dangerousToAvatar>0) {
+					if (avatarHealthPoints==0)
+						score -= weights[3]*distance(obs.position, agentPosition);
 					else
-						score -= weights[3] * sprite.dangerousToAvatar / avatarHealthPoints
-								* distance(obs.position, agentPosition);
+						score -= weights[3]*sprite.dangerousToAvatar/avatarHealthPoints*distance(obs.position, agentPosition);
 				}
-				if (sprite.dangerousOtherwise)
-				{
+				if (sprite.dangerousOtherwise) {
 					score -= weights[4];
-					score -= weights[5] * distance(obs.position, agentPosition);
+					score -= weights[5]*distance(obs.position, agentPosition);
 				}
-				if (sprite.changingPoints != 0)
-				{
-					score += weights[6] * sprite.changingPoints / pointScale * distance(obs.position, agentPosition);
+				if (sprite.changingPoints!=0) {
+					score += weights[6]*sprite.changingPoints/pointScale*distance(obs.position, agentPosition);
+					score -= weights[6]*sprite.changingPoints/pointScale*lengthScale;
 				}
-				if (sprite.changingValuesOfOtherObjects != 0)
-				{
-					score += weights[7] * (sprite.changingValuesOfOtherObjects / pointScale)
-							* distance(obs.position, agentPosition);
+				if (sprite.changingValuesOfOtherObjects!=0) {
+					score += weights[7]*(sprite.changingValuesOfOtherObjects/pointScale)*distance(obs.position, agentPosition);
+					score -= weights[7]*sprite.changingPoints/pointScale*lengthScale*lengthScale;
 				}
 			}
 		}
 		// System.out.println(score);
 		return score;
-	}
-
-	double distance(Vector2d v1, Vector2d v2)
-	{
-		double distance = Math.abs(v1.x - v2.x) + Math.abs(v1.y - v2.y);
-		if (distance == 0)
-			return lengthScale / 0.1;
-		else
-			return lengthScale / Math.pow(distance, 2);
-	}
+    }
+    
+    double distance ( Vector2d v1, Vector2d v2 ) {
+    	double distance = Math.abs(v1.x-v2.x) + Math.abs(v1.y-v2.y);
+    	if (distance==0)
+    		return lengthScale/0.1;
+    	else
+    		return lengthScale/Math.pow(distance, 2);
+    }
 }

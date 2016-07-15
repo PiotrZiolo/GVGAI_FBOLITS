@@ -73,7 +73,7 @@ public class Agent extends AbstractMultiPlayer {
      	spriteTypeFeaturesMap = brain.getSpriteTypeFeaturesMap();
 
      	// After filling spriteTypeFeaturesMap
-        double[] weights = new double[] {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01};	// 8 weights
+        double[] weights = new double[] {0.05, 0.04, 0.04, 0.02, 0.02, 0.02, 0.01, 0.1};	// 8 weights
         double pointScale = 10;
         heuristic =  new StateHeuristic(id, oppID, spriteTypeFeaturesMap, weights, pointScale, stateObs.getWorldDimension());
         
@@ -101,13 +101,6 @@ public class Agent extends AbstractMultiPlayer {
      * @return An action for the current state
      */
     public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer) {
-     	/*System.out.println(stateObs.getNPCPositions(stateObs.getAvatarPosition(id)));
-     	System.out.println(stateObs.getPortalsPositions(stateObs.getAvatarPosition(id)));
-     	System.out.println(stateObs.getImmovablePositions(stateObs.getAvatarPosition(id)).length);
-     	System.out.println(stateObs.getMovablePositions(stateObs.getAvatarPosition(id)));
-     	System.out.println(stateObs.getResourcesPositions(stateObs.getAvatarPosition(id)));
-     	System.out.println(stateObs.getFromAvatarSpritesPositions(stateObs.getAvatarPosition(id)));
-     	System.out.println();*/
     	
     	/*
 		 * // Human player with reporting 
@@ -145,7 +138,8 @@ public class Agent extends AbstractMultiPlayer {
 	    	case 1:
 	    		return oneStepLookAhead(stateObs);
 	    	case 2:
-	    		return heuristicOLMCTS(stateObs, elapsedTimer);
+	    		return Types.ACTIONS.ACTION_NIL;
+	    		//return heuristicOLMCTS(stateObs, elapsedTimer);
 	    	case 3:
 	    		return geneticAlgorithm(stateObs, elapsedTimer);
     		default:	// just in case :)
