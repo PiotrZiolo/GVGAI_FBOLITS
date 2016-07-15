@@ -44,8 +44,8 @@ public class Brain
 		this.playerID = 0;
 		this.memory = new Memory();
 		this.testingSpriteAttemptsLimit = 1;
-		this.approachingSpriteLimit = 3;
-		this.approachingSpriteMovesLimit = 100;
+		this.approachingSpriteLimit = 1;
+		this.approachingSpriteMovesLimit = 30;
 		this.numberOfAdvancesForANewTry = 5;
 	}
 
@@ -60,8 +60,8 @@ public class Brain
 		this.playerID = playerID;
 		this.memory = new Memory();
 		this.testingSpriteAttemptsLimit = 1;
-		this.approachingSpriteLimit = 3;
-		this.approachingSpriteMovesLimit = 100;
+		this.approachingSpriteLimit = 1;
+		this.approachingSpriteMovesLimit = 30;
 		this.numberOfAdvancesForANewTry = 5;
 	}
 
@@ -103,11 +103,17 @@ public class Brain
 	public void learn(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, boolean justImagine,
 			boolean recursiveImplications, int range, int category)
 	{
-		boolean productionVersion = false;
+		boolean productionVersion = true;
+
+		this.oppID = (playerID + 1) % stateObs.getNoPlayers();
 
 		if (elapsedTimer == null)
 		{
 			elapsedTimer = this.elapsedTimer;
+		}
+		else
+		{
+			this.elapsedTimer = elapsedTimer;
 		}
 
 		if (justImagine)
@@ -134,6 +140,12 @@ public class Brain
 		arraysOfSprites.add(portalPositions);
 		arraysOfSprites.add(fromAvatarSpritesPositions);
 
+		if (!justImagine)
+		{
+			System.out.println("----------");
+			System.out.println(">>> Game turn: " + stateObs.getGameTick());
+		}
+
 		for (ArrayList<Observation>[] positions : arraysOfSprites)
 		{
 			if (positions != null)
@@ -142,30 +154,45 @@ public class Brain
 				{
 					if (observations.size() > 0)
 					{
+						if (!justImagine)
+						{
+							System.out.println("----------");
+							System.out.println("Checking sprite of type: " + observations.get(0).itype
+									+ " and category: " + observations.get(0).category);
+						}
+
 						if (range == 0 || range == 1 || observations.get(0).category == category)
 						{
-							for (int i = 0; i < observations.size(); i++)
+							if (range == 0 || range == 2
+									|| memory.getSpriteTypeFeaturesByType(observations.get(0).itype) == null)
 							{
-								if (range == 0 || range == 2
-										|| memory.getSpriteTypeFeaturesByType(observations.get(i).itype) == null)
+								SpriteTypeFeatures spriteTypeFeatures;
+								if (productionVersion)
 								{
-									SpriteTypeFeatures spriteTypeFeatures;
-									if (productionVersion)
+									if (!justImagine)
 									{
-										spriteTypeFeatures = testSprite(stateObs, observations.get(i),
-												recursiveImplications);
+										System.out.println("Testing sprite of type: " + observations.get(0).itype
+												+ " and category: " + observations.get(0).category);
+										System.out.println("Before action: " + elapsedTimer.remainingTimeMillis());
 									}
-									else
+									spriteTypeFeatures = testSprite(stateObs, observations.get(0),
+											recursiveImplications);
+									if (!justImagine)
 									{
-										spriteTypeFeatures = getSpriteTypeFeaturesForCategory(
-												observations.get(i).category, observations.get(i).itype);
+										System.out.println("After action: " + elapsedTimer.remainingTimeMillis());
+										spriteTypeFeatures.print();
+										System.out.println("----------");
 									}
+								}
+								else
+								{
+									spriteTypeFeatures = getSpriteTypeFeaturesForCategory(observations.get(0).category,
+											observations.get(0).itype);
+								}
 
-									if (spriteTypeFeatures != null)
-									{
-										memory.setSpriteTypeFeaturesByType(observations.get(i).itype,
-												spriteTypeFeatures);
-									}
+								if (spriteTypeFeatures != null)
+								{
+									memory.setSpriteTypeFeaturesByType(observations.get(0).itype, spriteTypeFeatures);
 								}
 							}
 						}
@@ -174,19 +201,35 @@ public class Brain
 			}
 		}
 
+		if (!justImagine)
+		{
+			System.out.println("----------");
+			System.out.println("Checking sprite of type: " + (-1 - oppID) + " and category: " + 0);
+		}
 		if (range == 0 || (range == 2 && category == 0))
 		{
 			if (productionVersion)
 			{
 				if (stateObs.getNoPlayers() > 1)
 				{
+					if (!justImagine)
+					{
+						System.out.println("Testing sprite of type: " + (-1 - oppID) + " and category: " + 0);
+						System.out.println("Before action: " + elapsedTimer.remainingTimeMillis());
+					}
 					SpriteTypeFeatures spriteTypeFeatures = testOtherPlayer(stateObs, oppID, recursiveImplications);
+					if (!justImagine)
+					{
+						System.out.println("After action: " + elapsedTimer.remainingTimeMillis());
+						spriteTypeFeatures.print();
+						System.out.println("----------");
+					}
 
 					if (spriteTypeFeatures != null)
 					{
 						// Opponents' features are saved with their ID negative
 						// as type
-						memory.setSpriteTypeFeaturesByType(-oppID, spriteTypeFeatures);
+						memory.setSpriteTypeFeaturesByType(-1 - oppID, spriteTypeFeatures);
 					}
 				}
 			}
@@ -310,8 +353,8 @@ public class Brain
 
 					if (actionStates != null)
 					{
-						spriteTypeFeatures = updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0], actionStates[1],
-								observation, 1, recursiveImplications);
+						spriteTypeFeatures = updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0],
+								actionStates[1], observation, 1, recursiveImplications);
 						movingOntoTested = true;
 					}
 				}
@@ -323,8 +366,8 @@ public class Brain
 
 					if (actionStates != null)
 					{
-						spriteTypeFeatures = updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0], actionStates[1],
-								observation, 0, recursiveImplications);
+						spriteTypeFeatures = updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0],
+								actionStates[1], observation, 0, recursiveImplications);
 						useTested = true;
 					}
 				}
@@ -336,8 +379,8 @@ public class Brain
 
 					if (actionStates != null)
 					{
-						spriteTypeFeatures = updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0], actionStates[1],
-								observation, 2, recursiveImplications);
+						spriteTypeFeatures = updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0],
+								actionStates[1], observation, 2, recursiveImplications);
 						useTested = true;
 					}
 				}
@@ -378,7 +421,7 @@ public class Brain
 		// code as for sprites.
 		// Type and ID are assumed to be the negative of oppID, category is set
 		// to 0.
-		Observation opponentObservation = new Observation(-oppID, -oppID, stateObs.getAvatarPosition(oppID),
+		Observation opponentObservation = new Observation(-1 - oppID, -1 - oppID, stateObs.getAvatarPosition(oppID),
 				stateObs.getAvatarPosition(playerID), 0);
 
 		return testSprite(stateObs, opponentObservation, recursiveImplications);
@@ -398,7 +441,7 @@ public class Brain
 	 */
 	public StateObservationMulti approachSprite(StateObservationMulti stateObs, Observation observation)
 	{
-		if (!stateObs.isAvatarAlive(1 - playerID))
+		if (!stateObs.isAvatarAlive(oppID))
 			return null;
 
 		StateObservationMulti currentState = stateObs.copy();
@@ -408,7 +451,7 @@ public class Brain
 		Vector2d playerPreviousPosition = stateObs.getAvatarPosition(playerID);
 		Vector2d playerPreviousOrientation = stateObs.getAvatarOrientation(playerID);
 		ArrayList<Types.ACTIONS> playerGoodActions = stateObs.getAvailableActions(playerID);
-		ArrayList<Types.ACTIONS> opponentGoodActions = stateObs.getAvailableActions(1 - playerID);
+		ArrayList<Types.ACTIONS> opponentGoodActions = stateObs.getAvailableActions(oppID);
 		Types.ACTIONS playerLastAction = Types.ACTIONS.ACTION_NIL;
 
 		Vector2d observationPosition = observation.position;
@@ -416,19 +459,28 @@ public class Brain
 				(int) (observationPosition.y / stateObs.getBlockSize()) };
 
 		// in this while avatar is trying to minimize distance to goal
-		System.out.println("playerPreviousPosition = " + playerPreviousPosition);
-		System.out.println("observationPosition = " + observationPosition);
-		//System.out.println("playerID = " + playerID);
-		while (true) {
-			
-			// finding object position - first in the same place as last time, than in the neighborhood
+		// System.out.println("playerPreviousPosition = " +
+		// playerPreviousPosition);
+		// System.out.println("observationPosition = " + observationPosition);
+		// System.out.println("playerID = " + playerID);
+		while (true)
+		{
+
+			// finding object position - first in the same place as last time,
+			// than in the neighborhood
 			observationPosition = FindObject(blockWhereObservationWasLastSeen, stateObs, observation.obsID);
-		
-			//System.out.println(observationPosition + " " + playerPreviousPosition + " " + playerPreviousOrientation + " " + observation.itype);
-			// check whether avatar reached the object and return opponent if he is the object.
-			if (isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition, playerPreviousPosition,
-					currentState, playerPreviousOrientation, observation.itype)) {
-				System.out.println("Standard approach successful.");
+			if (observationPosition == null)
+				return null;
+
+			// System.out.println(observationPosition + " " +
+			// playerPreviousPosition + " " + playerPreviousOrientation + " " +
+			// observation.itype);
+			// check whether avatar reached the object and return opponent if he
+			// is the object.
+			if (isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition, playerPreviousPosition, currentState,
+					playerPreviousOrientation, observation.itype))
+			{
+				// System.out.println("Standard approach successful.");
 
 				if (currentState.isGameOver())
 					return null;
@@ -442,9 +494,9 @@ public class Brain
 			// choose actions for players
 			Types.ACTIONS[] actions = new Types.ACTIONS[2];
 			if (opponentGoodActions.contains(Types.ACTIONS.ACTION_NIL))
-				actions[1 - playerID] = Types.ACTIONS.ACTION_NIL;
+				actions[oppID] = Types.ACTIONS.ACTION_NIL;
 			else
-				actions[1 - playerID] = opponentGoodActions.get(new Random().nextInt(opponentGoodActions.size()));
+				actions[oppID] = opponentGoodActions.get(new Random().nextInt(opponentGoodActions.size()));
 
 			// System.out.println("playerGoodActions = " +
 			// playerGoodActions.toString());
@@ -458,15 +510,17 @@ public class Brain
 
 			// advance
 			//
-			//System.out.println("goalPosition = " + observationPosition);
-			System.out.println("actions = " + actions[playerID].toString());
-			System.out.println("avatarPositionB = " + temporaryState.getAvatarPosition(playerID));
-			if (advanceLimit==0)
+			// System.out.println("goalPosition = " + observationPosition);
+			// System.out.println("actions = " + actions[playerID].toString());
+			// System.out.println("avatarPositionB = " +
+			// temporaryState.getAvatarPosition(playerID));
+			if (advanceLimit == 0)
 				return null;
 			temporaryState.advance(actions);
 			advanceLimit--;
-			System.out.println("avatarPositionA = " + temporaryState.getAvatarPosition(playerID));
-			
+			// System.out.println("avatarPositionA = " +
+			// temporaryState.getAvatarPosition(playerID));
+
 			// check whether no one died
 			boolean goodMove = true;
 			if (!temporaryState.isAvatarAlive(playerID))
@@ -474,16 +528,18 @@ public class Brain
 				playerGoodActions.remove(actions[playerID]);
 				goodMove = false;
 			}
-			if (goodMove && !temporaryState.isAvatarAlive(1-playerID)) {
-				opponentGoodActions.remove(actions[1-playerID]);
+			if (goodMove && !temporaryState.isAvatarAlive(oppID))
+			{
+				opponentGoodActions.remove(actions[oppID]);
 				goodMove = false;
 			}
 
 			// check whether player changed position or direction
 			Vector2d playerNewPosition = temporaryState.getAvatarPosition(playerID);
 			Vector2d playerNewOrientation = temporaryState.getAvatarOrientation(playerID);
-			if (goodMove && playerNewPosition.equals(playerPreviousPosition) &&
-					playerNewOrientation.equals(playerPreviousOrientation)) {
+			if (goodMove && playerNewPosition.equals(playerPreviousPosition)
+					&& playerNewOrientation.equals(playerPreviousOrientation))
+			{
 				playerGoodActions.remove(actions[playerID]);
 				goodMove = false;
 			}
@@ -491,8 +547,9 @@ public class Brain
 			// check whether player haven't move back
 			Vector2d previousDistance = playerPreviousPosition.copy().subtract(observationPosition);
 			Vector2d newDistance = playerNewPosition.copy().subtract(observationPosition);
-			if (goodMove && (Math.abs(previousDistance.x) < Math.abs(newDistance.x) ||
-					Math.abs(previousDistance.y) < Math.abs(newDistance.y))) {
+			if (goodMove && (Math.abs(previousDistance.x) < Math.abs(newDistance.x)
+					|| Math.abs(previousDistance.y) < Math.abs(newDistance.y)))
+			{
 				playerGoodActions.remove(actions[playerID]);
 				goodMove = false;
 			}
@@ -504,7 +561,7 @@ public class Brain
 				if (!playerNewPosition.equals(playerPreviousPosition))
 				{
 					playerGoodActions = (ArrayList<Types.ACTIONS>) stateObs.getAvailableActions(playerID).clone();
-					opponentGoodActions = (ArrayList<Types.ACTIONS>) stateObs.getAvailableActions(1 - playerID).clone();
+					opponentGoodActions = (ArrayList<Types.ACTIONS>) stateObs.getAvailableActions(oppID).clone();
 				}
 				playerPreviousPosition = playerNewPosition;
 				playerPreviousOrientation = playerNewOrientation;
@@ -513,33 +570,47 @@ public class Brain
 		}
 		// return null;
 
-		// in this while avatar is trying to go along the shortest path to goal using BFS
-		while(true) {
+		// in this while avatar is trying to go along the shortest path to goal
+		// using BFS
+		while (true)
+		{
 			PathFinder pathFinder = new PathFinder();
-			System.out.println("playerPreviousPosition = " + playerPreviousPosition);
-			System.out.println("observationPosition = " + observationPosition);
-			System.out.println("playerPreviousPosition = " + currentState.getAvatarPosition(playerID));
-			System.out.println("playerID = " + playerID);
+			// System.out.println("playerPreviousPosition = " +
+			// playerPreviousPosition);
+			// System.out.println("observationPosition = " +
+			// observationPosition);
+			// System.out.println("playerPreviousPosition = " +
+			// currentState.getAvatarPosition(playerID));
+			// System.out.println("playerID = " + playerID);
+			System.out.println("Pathfinding");
+			System.out.println("Before pathfinding: " + elapsedTimer.remainingTimeMillis());
 			Deque<Types.ACTIONS> playerMoveSequenceToGoal = pathFinder.pathFinder(playerPreviousPosition,
 					observationPosition, currentState, playerID);
+			System.out.println("After pathfinding: " + elapsedTimer.remainingTimeMillis());
 
 			Iterator<Types.ACTIONS> iterator = playerMoveSequenceToGoal.descendingIterator();
 			Types.ACTIONS forceMove = null;
 
-			while(iterator.hasNext()) {
-				System.out.println("actions = " + iterator.next().toString());
-			}
-			
-			iterator = playerMoveSequenceToGoal.descendingIterator();
-			System.out.println("BFS started");
-			while(iterator.hasNext()) {
-				// finding object position - first in the same place as last time, than in the neighborhood
-				observationPosition = FindObject(blockWhereObservationWasLastSeen, stateObs, observation.obsID);
+			// while(iterator.hasNext()) {
+			// System.out.println("actions = " + iterator.next().toString());
+			// }
 
-				// check whether avatar reached the object and return opponent if he is the object.
+			iterator = playerMoveSequenceToGoal.descendingIterator();
+			// System.out.println("BFS started");
+			while (iterator.hasNext())
+			{
+				// finding object position - first in the same place as last
+				// time, than in the neighborhood
+				observationPosition = FindObject(blockWhereObservationWasLastSeen, stateObs, observation.obsID);
+				if (observationPosition == null)
+					return null;
+
+				// check whether avatar reached the object and return opponent
+				// if he is the object.
 				if (isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition, playerPreviousPosition,
-						currentState, playerPreviousOrientation, observation.itype)) {
-					System.out.println("Advanced approach successful.");
+						currentState, playerPreviousOrientation, observation.itype))
+				{
+					// System.out.println("Advanced approach successful.");
 					if (currentState.isGameOver())
 						return null;
 					return currentState;
@@ -552,9 +623,9 @@ public class Brain
 				// choose actions for players
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				if (opponentGoodActions.contains(Types.ACTIONS.ACTION_NIL))
-					actions[1 - playerID] = Types.ACTIONS.ACTION_NIL;
+					actions[oppID] = Types.ACTIONS.ACTION_NIL;
 				else
-					actions[1 - playerID] = opponentGoodActions.get(new Random().nextInt(opponentGoodActions.size()));
+					actions[oppID] = opponentGoodActions.get(new Random().nextInt(opponentGoodActions.size()));
 
 				// System.out.println("playerGoodActions = " +
 				// playerGoodActions.toString());
@@ -565,17 +636,22 @@ public class Brain
 				temporaryState = currentState.copy();
 
 				// advance
-				//System.out.println("avatarPosition = " + temporaryState.getAvatarPosition(playerID));
-				//System.out.println("goalPosition = " + observationPosition);
-				System.out.println("actions = " + actions[playerID].toString());
-				System.out.println("avatarPositionB = " + temporaryState.getAvatarPosition(playerID));
-				if (advanceLimit==0)
+				// System.out.println("avatarPosition = " +
+				// temporaryState.getAvatarPosition(playerID));
+				// System.out.println("goalPosition = " + observationPosition);
+				// System.out.println("actions = " +
+				// actions[playerID].toString());
+				// System.out.println("avatarPositionB = " +
+				// temporaryState.getAvatarPosition(playerID));
+				if (advanceLimit == 0)
 					return null;
 				temporaryState.advance(actions);
 				advanceLimit--;
-				System.out.println("avatarPositionA = " + temporaryState.getAvatarPosition(playerID));
-				//System.out.println("avatarPosition2 = " + temporaryState.getAvatarPosition(playerID));
-				
+				// System.out.println("avatarPositionA = " +
+				// temporaryState.getAvatarPosition(playerID));
+				// System.out.println("avatarPosition2 = " +
+				// temporaryState.getAvatarPosition(playerID));
+
 				// check whether no one died
 				boolean goodMove = true;
 				if (!temporaryState.isAvatarAlive(playerID))
@@ -586,18 +662,19 @@ public class Brain
 					// playerGoodActions.remove(actions[playerID]);
 					// goodMove = false;
 				}
-				if (!temporaryState.isAvatarAlive(1 - playerID))
+				if (!temporaryState.isAvatarAlive(oppID))
 				{
-					opponentGoodActions.remove(actions[1 - playerID]);
+					opponentGoodActions.remove(actions[oppID]);
 					goodMove = false;
 				}
 
 				// check whether player changed position or direction
 				Vector2d playerNewPosition = temporaryState.getAvatarPosition(playerID);
 				Vector2d playerNewOrientation = temporaryState.getAvatarOrientation(playerID);
-				
-				if (playerNewPosition.equals(playerPreviousPosition) &&
-						playerNewOrientation.equals(playerPreviousOrientation)) {
+
+				if (playerNewPosition.equals(playerPreviousPosition)
+						&& playerNewOrientation.equals(playerPreviousOrientation))
+				{
 					break; // look for path again
 				}
 				if (playerNewPosition.equals(playerPreviousPosition)
@@ -611,10 +688,12 @@ public class Brain
 				}
 
 				// if goodMove=true advance to next step
-				if (goodMove) {
+				if (goodMove)
+				{
 					currentState = temporaryState.copy();
-					if (!playerNewPosition.equals(playerPreviousPosition)) {
-						opponentGoodActions = (ArrayList<Types.ACTIONS>)stateObs.getAvailableActions(1-playerID).clone();
+					if (!playerNewPosition.equals(playerPreviousPosition))
+					{
+						opponentGoodActions = (ArrayList<Types.ACTIONS>) stateObs.getAvailableActions(oppID).clone();
 					}
 					playerPreviousPosition = playerNewPosition;
 					playerPreviousOrientation = playerNewOrientation;
@@ -630,58 +709,62 @@ public class Brain
 
 		double speedInPixels = currentState.getBlockSize() * currentState.getAvatarSpeed(playerID);
 		Vector2d distance = observationPosition.copy().subtract(avatarPosition);
-		if ((Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_NIL ||
-				Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_DOWN) &&
-				Math.abs(distance.x) < currentState.getBlockSize() &&
-				Math.abs(distance.y - speedInPixels) < currentState.getBlockSize()) {
-			if (spriteType==0 &&
-					Types.ACTIONS.fromVector(currentState.getAvatarOrientation(1-playerID))!=
-					Types.ACTIONS.ACTION_UP) {
+		if ((Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_NIL
+				|| Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_DOWN)
+				&& Math.abs(distance.x) < currentState.getBlockSize()
+				&& Math.abs(distance.y - speedInPixels) < currentState.getBlockSize())
+		{
+			if (spriteType == 0
+					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_UP)
+			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				actions[playerID] = Types.ACTIONS.ACTION_NIL;
-				actions[1 - playerID] = Types.ACTIONS.ACTION_UP;
+				actions[oppID] = Types.ACTIONS.ACTION_UP;
 				currentState.advance(actions);
 			}
 			return true;
 		}
-		if ((Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_NIL ||
-				Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_UP) &&
-				Math.abs(distance.x) < currentState.getBlockSize() &&
-				Math.abs(distance.y + speedInPixels) < currentState.getBlockSize()) {
-			if (spriteType==0 &&
-					Types.ACTIONS.fromVector(currentState.getAvatarOrientation(1-playerID))!=
-					Types.ACTIONS.ACTION_DOWN) {
+		if ((Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_NIL
+				|| Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_UP)
+				&& Math.abs(distance.x) < currentState.getBlockSize()
+				&& Math.abs(distance.y + speedInPixels) < currentState.getBlockSize())
+		{
+			if (spriteType == 0
+					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_DOWN)
+			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				actions[playerID] = Types.ACTIONS.ACTION_NIL;
-				actions[1 - playerID] = Types.ACTIONS.ACTION_DOWN;
+				actions[oppID] = Types.ACTIONS.ACTION_DOWN;
 				currentState.advance(actions);
 			}
 			return true;
 		}
-		if ((Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_NIL ||
-				Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_RIGHT) &&
-				Math.abs(distance.x - speedInPixels) < currentState.getBlockSize() &&
-				Math.abs(distance.y) < currentState.getBlockSize()) {
-			if (spriteType==0 &&
-					Types.ACTIONS.fromVector(currentState.getAvatarOrientation(1-playerID))!=
-					Types.ACTIONS.ACTION_LEFT) {
+		if ((Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_NIL
+				|| Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_RIGHT)
+				&& Math.abs(distance.x - speedInPixels) < currentState.getBlockSize()
+				&& Math.abs(distance.y) < currentState.getBlockSize())
+		{
+			if (spriteType == 0
+					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_LEFT)
+			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				actions[playerID] = Types.ACTIONS.ACTION_NIL;
-				actions[1 - playerID] = Types.ACTIONS.ACTION_LEFT;
+				actions[oppID] = Types.ACTIONS.ACTION_LEFT;
 				currentState.advance(actions);
 			}
 			return true;
 		}
-		if ((Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_NIL ||
-				Types.ACTIONS.fromVector(avatarOrientation)==Types.ACTIONS.ACTION_LEFT) &&
-				Math.abs(distance.x + speedInPixels) < currentState.getBlockSize() &&
-				Math.abs(distance.y) < currentState.getBlockSize()) {
-			if (spriteType==0 &&
-					Types.ACTIONS.fromVector(currentState.getAvatarOrientation(1-playerID))!=
-					Types.ACTIONS.ACTION_RIGHT) {
+		if ((Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_NIL
+				|| Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_LEFT)
+				&& Math.abs(distance.x + speedInPixels) < currentState.getBlockSize()
+				&& Math.abs(distance.y) < currentState.getBlockSize())
+		{
+			if (spriteType == 0
+					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_RIGHT)
+			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				actions[playerID] = Types.ACTIONS.ACTION_NIL;
-				actions[1 - playerID] = Types.ACTIONS.ACTION_RIGHT;
+				actions[oppID] = Types.ACTIONS.ACTION_RIGHT;
 				currentState.advance(actions);
 			}
 			return true;
@@ -869,6 +952,8 @@ public class Brain
 								.advance(new Types.ACTIONS[] { (playerID == 0) ? action : Types.ACTIONS.ACTION_NIL,
 										(playerID == 1) ? action : Types.ACTIONS.ACTION_NIL });
 
+						//System.out.println("Action: " + action);
+
 						break;
 
 					// Action of the other player on our player
@@ -885,6 +970,8 @@ public class Brain
 				 * position of the sprite.
 				 */
 
+				//System.out.println("Testing if action succeeded");
+
 				switch (actionType)
 				{
 					// Use
@@ -899,12 +986,18 @@ public class Brain
 						if (spriteCurrentPosition == null)
 						{
 							succeeded = true;
+							//System.out.println("Succeeded");
 						}
 						else if (spriteCurrentPosition != null && isSpriteOneMoveFromAvatar(stateObsJustAfterAction,
 								stateObsJustBeforeAction.getAvatarPosition(playerID),
 								stateObsJustBeforeAction.getAvatarOrientation(playerID), spriteCurrentPosition))
 						{
 							succeeded = true;
+							//System.out.println("Succeeded");
+						}
+						else
+						{
+							//System.out.println("Not succeeded");
 						}
 
 						break;
@@ -1014,15 +1107,17 @@ public class Brain
 		{
 			event = eventsIterator.next();
 
-			if (event.gameStep == stateObsJustAfterAction.getGameTick())
+			if (event.gameStep == stateObsJustAfterAction.getGameTick() - 1)
 			{
 				eventHappened = true;
+				//System.out.println("Event happened");
 			}
 		}
 
 		if (!eventHappened)
 		{
 			event = null;
+			//System.out.println("Event not happened");
 		}
 
 		// Process different types of situations
@@ -1034,12 +1129,12 @@ public class Brain
 				if (eventHappened)
 				{
 					// Treat the other player and sprites differently
-					if (observation.obsID == -oppID)
+					if (observation.obsID == -1 - oppID)
 					{
-						if (stateObsJustAfterAction.isAvatarAlive(oppID) 
-								&& (stateObsJustAfterAction.getAvatarHealthPoints(oppID) == stateObsJustBeforeAction.getAvatarHealthPoints(oppID)))
+						if (stateObsJustAfterAction.isAvatarAlive(oppID) && (stateObsJustAfterAction
+								.getAvatarHealthPoints(oppID) == stateObsJustBeforeAction.getAvatarHealthPoints(oppID)))
 						{
-							//currentSpriteTypeFeatures.destroyable = false;
+							// currentSpriteTypeFeatures.destroyable = false;
 						}
 						else
 						{
@@ -1063,7 +1158,7 @@ public class Brain
 					{
 						currentSpriteTypeFeatures.givingVictory = true;
 					}
-					
+
 					if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES)
 					{
 						currentSpriteTypeFeatures.givingDefeat = true;
@@ -1078,7 +1173,8 @@ public class Brain
 						// Looking for changes in changingPoints and
 						// givingVictory
 
-						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures, stateObsJustBeforeAction, stateObsJustAfterAction, observation);
+						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures,
+								stateObsJustBeforeAction, stateObsJustAfterAction, observation);
 					}
 				}
 				else
@@ -1092,27 +1188,29 @@ public class Brain
 			case 1:
 				if (eventHappened)
 				{
-					currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction.getAvatarHealthPoints(playerID) - stateObsJustAfterAction.getAvatarHealthPoints(playerID);
-					
+					currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction
+							.getAvatarHealthPoints(playerID) - stateObsJustAfterAction.getAvatarHealthPoints(playerID);
+
 					if (!stateObsJustAfterAction.isAvatarAlive(playerID))
 					{
 						if (stateObsJustBeforeAction.getAvatarMaxHealthPoints(playerID) != 0)
 						{
-							currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction.getAvatarMaxHealthPoints(playerID);
+							currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction
+									.getAvatarMaxHealthPoints(playerID);
 						}
 						else
 						{
 							currentSpriteTypeFeatures.dangerousToAvatar = 100;
 						}
 					}
-					
+
 					// Treat the other player and sprites differently
-					if (observation.obsID == -oppID)
+					if (observation.obsID == -1 - oppID)
 					{
-						if (stateObsJustAfterAction.isAvatarAlive(oppID) 
-								&& (stateObsJustAfterAction.getAvatarHealthPoints(oppID) == stateObsJustBeforeAction.getAvatarHealthPoints(oppID)))
+						if (stateObsJustAfterAction.isAvatarAlive(oppID) && (stateObsJustAfterAction
+								.getAvatarHealthPoints(oppID) == stateObsJustBeforeAction.getAvatarHealthPoints(oppID)))
 						{
-							//currentSpriteTypeFeatures.destroyable = false;
+							// currentSpriteTypeFeatures.destroyable = false;
 						}
 						else
 						{
@@ -1131,14 +1229,17 @@ public class Brain
 							currentSpriteTypeFeatures.destroyable = true;
 						}
 					}
-					
+
 					// Check if avatar is on the same position as the sprite
 					// Treat the other player and sprites differently
-					if (observation.obsID == -oppID)
+					if (observation.obsID == -1 - oppID)
 					{
-						// We control the other avatar in the simulation, hence it's in the same place
-						if (stateObsJustAfterAction.getAvatarPosition(playerID).x == stateObsJustAfterAction.getAvatarPosition(oppID).x
-								&& stateObsJustAfterAction.getAvatarPosition(playerID).y == stateObsJustAfterAction.getAvatarPosition(oppID).y)
+						// We control the other avatar in the simulation, hence
+						// it's in the same place
+						if (stateObsJustAfterAction.getAvatarPosition(playerID).x == stateObsJustAfterAction
+								.getAvatarPosition(oppID).x
+								&& stateObsJustAfterAction.getAvatarPosition(playerID).y == stateObsJustAfterAction
+										.getAvatarPosition(oppID).y)
 						{
 							currentSpriteTypeFeatures.passable = true;
 						}
@@ -1152,21 +1253,25 @@ public class Brain
 						Vector2d spriteCurrentPosition = localizeSprite(stateObsJustAfterAction, observation, 3);
 						if (spriteCurrentPosition != null)
 						{
-							Vector2d distance = stateObsJustAfterAction.getAvatarPosition(playerID).subtract(spriteCurrentPosition);
+							Vector2d distance = stateObsJustAfterAction.getAvatarPosition(playerID)
+									.subtract(spriteCurrentPosition);
 
-							if (Math.abs(distance.x) < stateObsJustAfterAction.getBlockSize() 
+							if (Math.abs(distance.x) < stateObsJustAfterAction.getBlockSize()
 									&& Math.abs(distance.y) < stateObsJustAfterAction.getBlockSize())
 							{
 								currentSpriteTypeFeatures.passable = true;
+								//System.out.println("Passable");
 							}
 							else
 							{
 								currentSpriteTypeFeatures.passable = false;
+								//System.out.println("Not passable");
 							}
 						}
 						else
 						{
 							currentSpriteTypeFeatures.collectable = true;
+							//System.out.println("Collectable");
 						}
 					}
 
@@ -1174,7 +1279,7 @@ public class Brain
 					{
 						currentSpriteTypeFeatures.givingVictory = true;
 					}
-					
+
 					if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES)
 					{
 						currentSpriteTypeFeatures.givingDefeat = true;
@@ -1189,20 +1294,24 @@ public class Brain
 						// Looking for changes in changingPoints and
 						// givingVictory
 
-						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures, stateObsJustBeforeAction, stateObsJustAfterAction, observation);
+						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures,
+								stateObsJustBeforeAction, stateObsJustAfterAction, observation);
 					}
 				}
 				else
 				{
 					currentSpriteTypeFeatures.destroyable = false;
-					
+
 					// Check if avatar is on the same position as the sprite
 					// Treat the other player and sprites differently
-					if (observation.obsID == -oppID)
+					if (observation.obsID == -1 - oppID)
 					{
-						// We control the other avatar in the simulation, hence it's in the same place
-						if (stateObsJustAfterAction.getAvatarPosition(playerID).x == stateObsJustAfterAction.getAvatarPosition(oppID).x
-								&& stateObsJustAfterAction.getAvatarPosition(playerID).y == stateObsJustAfterAction.getAvatarPosition(oppID).y)
+						// We control the other avatar in the simulation, hence
+						// it's in the same place
+						if (stateObsJustAfterAction.getAvatarPosition(playerID).x == stateObsJustAfterAction
+								.getAvatarPosition(oppID).x
+								&& stateObsJustAfterAction.getAvatarPosition(playerID).y == stateObsJustAfterAction
+										.getAvatarPosition(oppID).y)
 						{
 							currentSpriteTypeFeatures.passable = true;
 						}
@@ -1214,21 +1323,29 @@ public class Brain
 					else
 					{
 						currentSpriteTypeFeatures.collectable = false;
-						
+						//System.out.println("Not collectable");
+
 						Vector2d spriteCurrentPosition = localizeSprite(stateObsJustAfterAction, observation, 3);
 						if (spriteCurrentPosition != null)
 						{
-							Vector2d distance = stateObsJustAfterAction.getAvatarPosition(playerID).subtract(spriteCurrentPosition);
+							Vector2d distance = stateObsJustAfterAction.getAvatarPosition(playerID)
+									.subtract(spriteCurrentPosition);
 
-							if (Math.abs(distance.x) < stateObsJustAfterAction.getBlockSize() 
+							if (Math.abs(distance.x) < stateObsJustAfterAction.getBlockSize()
 									&& Math.abs(distance.y) < stateObsJustAfterAction.getBlockSize())
 							{
 								currentSpriteTypeFeatures.passable = true;
+								//System.out.println("Passable");
 							}
 							else
 							{
 								currentSpriteTypeFeatures.passable = false;
+								//System.out.println("Not passable");
 							}
+						}
+						else
+						{
+							//System.out.println("Object not found");
 						}
 					}
 				}
@@ -1239,25 +1356,27 @@ public class Brain
 			case 2:
 				if (eventHappened)
 				{
-					currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction.getAvatarHealthPoints(playerID) - stateObsJustAfterAction.getAvatarHealthPoints(playerID);
-					
+					currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction
+							.getAvatarHealthPoints(playerID) - stateObsJustAfterAction.getAvatarHealthPoints(playerID);
+
 					if (!stateObsJustAfterAction.isAvatarAlive(playerID))
 					{
 						if (stateObsJustBeforeAction.getAvatarMaxHealthPoints(playerID) != 0)
 						{
-							currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction.getAvatarMaxHealthPoints(playerID);
+							currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction
+									.getAvatarMaxHealthPoints(playerID);
 						}
 						else
 						{
 							currentSpriteTypeFeatures.dangerousToAvatar = 100;
 						}
 					}
-					
+
 					if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_WINS)
 					{
 						currentSpriteTypeFeatures.givingVictory = true;
 					}
-					
+
 					if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES)
 					{
 						currentSpriteTypeFeatures.givingDefeat = true;
@@ -1265,14 +1384,15 @@ public class Brain
 
 					currentSpriteTypeFeatures.changingPoints = stateObsJustAfterAction.getGameScore(playerID)
 							- stateObsJustBeforeAction.getGameScore(playerID);
-					
+
 					if (recursiveImplications)
 					{
 						// changingValuesOfOtherObjects and allowingVictory:
 						// Looking for changes in changingPoints and
 						// givingVictory
 
-						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures, stateObsJustBeforeAction, stateObsJustAfterAction, observation);
+						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures,
+								stateObsJustBeforeAction, stateObsJustAfterAction, observation);
 					}
 				}
 				else
@@ -1286,9 +1406,10 @@ public class Brain
 
 		return currentSpriteTypeFeatures;
 	}
-	
+
 	/**
-	 * Checks for changes in features between states stateObsJustBeforeAction and stateObsJustAfterAction.
+	 * Checks for changes in features between states stateObsJustBeforeAction
+	 * and stateObsJustAfterAction.
 	 * 
 	 * @param currentSpriteTypeFeatures
 	 *            Current knowledge about the sprite.
@@ -1307,16 +1428,14 @@ public class Brain
 		currentSpriteTypeFeatures.changingValuesOfOtherObjects = 0;
 		currentSpriteTypeFeatures.allowingVictory = false;
 
-		HashMap<Integer, SpriteTypeFeatures> portalsTypeFeaturesMap = memory
-				.getSpriteTypeFeaturesByCategory(2);
+		HashMap<Integer, SpriteTypeFeatures> portalsTypeFeaturesMap = memory.getSpriteTypeFeaturesByCategory(2);
 		HashMap<Integer, SpriteTypeFeatures> portalsTypeFeaturesMapImagined = imaginationMemory
 				.getSpriteTypeFeaturesByCategory(2);
 
 		boolean victoryConditionAppeared = false;
 
 		// Check old portals
-		for (Map.Entry<Integer, SpriteTypeFeatures> spriteTypeFeaturesMapEntry : portalsTypeFeaturesMap
-				.entrySet())
+		for (Map.Entry<Integer, SpriteTypeFeatures> spriteTypeFeaturesMapEntry : portalsTypeFeaturesMap.entrySet())
 		{
 			if (portalsTypeFeaturesMapImagined.containsKey(spriteTypeFeaturesMapEntry.getKey()))
 			{
@@ -1325,8 +1444,7 @@ public class Brain
 						- spriteTypeFeaturesMapEntry.getValue().changingPoints;
 
 				if (!victoryConditionAppeared && !spriteTypeFeaturesMapEntry.getValue().givingVictory
-						&& portalsTypeFeaturesMapImagined
-								.get(spriteTypeFeaturesMapEntry.getKey()).givingVictory)
+						&& portalsTypeFeaturesMapImagined.get(spriteTypeFeaturesMapEntry.getKey()).givingVictory)
 				{
 					currentSpriteTypeFeatures.allowingVictory = true;
 					victoryConditionAppeared = true;
@@ -1349,18 +1467,17 @@ public class Brain
 				currentSpriteTypeFeatures.changingValuesOfOtherObjects += spriteTypeFeaturesMapImaginedEntry
 						.getValue().changingPoints;
 
-				if (!victoryConditionAppeared
-						&& spriteTypeFeaturesMapImaginedEntry.getValue().givingVictory)
+				if (!victoryConditionAppeared && spriteTypeFeaturesMapImaginedEntry.getValue().givingVictory)
 				{
 					currentSpriteTypeFeatures.allowingVictory = true;
 					victoryConditionAppeared = true;
 				}
 			}
 		}
-		
+
 		return currentSpriteTypeFeatures;
 	}
-	
+
 	/**
 	 * Returns features optimized for Asteroids.
 	 * 
@@ -1447,8 +1564,8 @@ public class Brain
 				break;
 
 			case 2:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, true, false, 0, true,
-						false, 0, 1, true);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, true, false, 0,
+						true, false, 0, 1, true);
 				break;
 
 			case 3:
@@ -1559,15 +1676,21 @@ public class Brain
 				{
 					for (int j = -distance; j <= distance; j = j + 1)
 					{
-						if (!(i == 0 && j == 0))
+						// System.out.println("Searching for object on: "
+						// + ((worldXDimension +
+						// blockWhereObservationWasLastSeen[0] + i) %
+						// worldXDimension) + ","
+						// + ((worldYDimension +
+						// blockWhereObservationWasLastSeen[1] + j) %
+						// worldYDimension));
+						suspects = stateObs
+								.getObservationGrid()[(worldXDimension + blockWhereObservationWasLastSeen[0] + i)
+										% worldXDimension][(worldYDimension + blockWhereObservationWasLastSeen[1] + j)
+												% worldYDimension];
+						for (Observation suspect : suspects)
 						{
-							suspects = stateObs.getObservationGrid()[(blockWhereObservationWasLastSeen[0] + i)
-									% worldXDimension][(blockWhereObservationWasLastSeen[1] + j) % worldYDimension];
-							for (Observation suspect : suspects)
-							{
-								if (suspect.obsID == observation.obsID)
-									return suspect.position;
-							}
+							if (suspect.obsID == observation.obsID)
+								return suspect.position;
 						}
 					}
 				}
@@ -1575,15 +1698,21 @@ public class Brain
 				{
 					for (int j = -distance; j <= distance; j = j + 2 * distance)
 					{
-						if (!(i == 0 && j == 0))
+						// System.out.println("Searching for object on: "
+						// + ((worldXDimension +
+						// blockWhereObservationWasLastSeen[0] + i) %
+						// worldXDimension) + ","
+						// + ((worldYDimension +
+						// blockWhereObservationWasLastSeen[1] + j) %
+						// worldYDimension));
+						suspects = stateObs
+								.getObservationGrid()[(worldXDimension + blockWhereObservationWasLastSeen[0] + i)
+										% worldXDimension][(worldYDimension + blockWhereObservationWasLastSeen[1] + j)
+												% worldYDimension];
+						for (Observation suspect : suspects)
 						{
-							suspects = stateObs.getObservationGrid()[(blockWhereObservationWasLastSeen[0] + i)
-									% worldXDimension][(blockWhereObservationWasLastSeen[1] + j) % worldYDimension];
-							for (Observation suspect : suspects)
-							{
-								if (suspect.obsID == observation.obsID)
-									return suspect.position;
-							}
+							if (suspect.obsID == observation.obsID)
+								return suspect.position;
 						}
 					}
 				}

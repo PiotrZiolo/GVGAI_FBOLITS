@@ -125,4 +125,24 @@ public class SpriteTypeFeatures
 		this.changingValuesOfOtherObjects = 0;
 		this.allowingVictory = allowingVictory;
 	}
+	
+	public void print()
+	{
+		System.out.println("[" 
+				+ this.category + ", "
+				+ this.type + ", "
+				+ this.dangerousToAvatar + ", "
+				+ this.dangerousOtherwise + ", "
+				+ this.destroyable + ", "
+				+ this.collectable + ", "
+				+ this.givingVictory + ", "
+				+ this.givingDefeat + ", "
+				+ this.changingPoints + ", "
+				+ this.passable + ", "
+				+ this.moving + ", "
+				+ this.speed + ", "
+				+ this.changingValuesOfOtherObjects + ", "
+				+ this.allowingVictory
+				+ "]");
+	}
 }

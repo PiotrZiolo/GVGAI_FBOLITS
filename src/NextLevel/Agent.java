@@ -1,5 +1,6 @@
 package NextLevel;
 
+import core.game.Event;
 import core.game.Observation;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
@@ -10,7 +11,9 @@ import tools.Utils;
 import tools.Vector2d;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 public class Agent extends AbstractMultiPlayer {
@@ -125,6 +128,18 @@ public class Agent extends AbstractMultiPlayer {
     	//printState(stateObs, 0, true);
     	
     	brain.learn(stateObs, elapsedTimer, false, false, 1);
+    	TreeSet<Event> eventsHistory = stateObs.getEventsHistory();
+		Iterator<Event> eventsIterator = eventsHistory.descendingIterator();
+		Event event;
+		
+		if (eventsIterator.hasNext())
+		{
+			event = eventsIterator.next();
+			if (event.gameStep == stateObs.getGameTick() - 1)
+			{
+				brain.learn(stateObs, elapsedTimer, false, false, 2, 2);
+			}
+		}
     	
     	switch (algorithmID) {
 	    	case 1:

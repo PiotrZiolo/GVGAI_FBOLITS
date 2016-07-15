@@ -25,7 +25,7 @@ public class TestMultiPlayer
         String nextLevel = "NextLevel.Agent";
 
         //Set here the controllers used in the games (need 2 separated by space).
-        String controllers = nextLevel + " " + oneStepController;
+        String controllers = nextLevel + " " + sampleOLMCTSController;
 
         //Available games:
         String gamesPath = "examples/2player/";
