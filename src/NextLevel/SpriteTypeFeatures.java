@@ -3,11 +3,16 @@ package NextLevel;
 public class SpriteTypeFeatures
 {
 	/**
-	 * amount of health it can take from avatar
+	 * Category of the sprite
+	 */
+	public int category;
+	/**
+	 * Type of the sprite
 	 */
 	public int type;
+	
 	/**
-	 * amount of health it can take from avatar
+	 * Amount of health it can take from avatar
 	 */
 	public double dangerousToAvatar;
 	/**
@@ -34,7 +39,7 @@ public class SpriteTypeFeatures
 	/**
 	 * Amount of points it give
 	 */
-	public int changingPoints;
+	public double changingPoints;
 	/**
 	 * Can avatar pass through it?
 	 */
@@ -61,6 +66,7 @@ public class SpriteTypeFeatures
 	 */
 	public SpriteTypeFeatures()
 	{
+		this.category = 4;
 		this.type = 0;
 		this.dangerousToAvatar = 0;
 		this.dangerousOtherwise = false;
@@ -79,8 +85,9 @@ public class SpriteTypeFeatures
 	/**
 	 * Public constructor with default values
 	 */
-	public SpriteTypeFeatures(int type)
+	public SpriteTypeFeatures(int category, int type)
 	{
+		this.category = category;
 		this.type = type;
 		this.dangerousToAvatar = 0;
 		this.dangerousOtherwise = false;
@@ -99,10 +106,11 @@ public class SpriteTypeFeatures
 	/**
 	 * Public constructor with given values
 	 */
-	public SpriteTypeFeatures(int type, double dangerousToAvatar, boolean dangerousOtherwise, boolean destroyable,
-			boolean collectable, boolean givingVictory, boolean givingDefeat, int givingPoints, boolean passable,
+	public SpriteTypeFeatures(int category, int type, double dangerousToAvatar, boolean dangerousOtherwise, boolean destroyable,
+			boolean collectable, boolean givingVictory, boolean givingDefeat, double changingPoints, boolean passable,
 			boolean moving, double speed, boolean increasingValuesOfOtherObjects, boolean allowingVictory)
 	{
+		this.category = category;
 		this.type = type;
 		this.dangerousToAvatar = dangerousToAvatar;
 		this.dangerousOtherwise = dangerousOtherwise;
@@ -110,7 +118,7 @@ public class SpriteTypeFeatures
 		this.collectable = collectable;
 		this.givingVictory = givingVictory;
 		this.givingDefeat = givingDefeat;
-		this.changingPoints = givingPoints;
+		this.changingPoints = changingPoints;
 		this.passable = passable;
 		this.moving = moving;
 		this.speed = speed;

@@ -53,11 +53,11 @@ public class Agent extends AbstractMultiPlayer {
 
      	brain = new Brain(id);
      	
-     	brain.learn(stateObs, elapsedTimer);
+     	brain.learn(stateObs, elapsedTimer, false, true, 0);
      	Observation obs = stateObs.getImmovablePositions()[1].get(0);
      	brain.approachSprite(stateObs, obs);
 
-     	spriteTypeFeaturesMap = brain.getSpriteTypeFeatures();
+     	spriteTypeFeaturesMap = brain.getSpriteTypeFeaturesMap();
 
      	// After filling spriteTypeFeaturesMap
         double[] weights = new double[] {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01};	// 8 weights
@@ -106,6 +106,8 @@ public class Agent extends AbstractMultiPlayer {
 		 */
     	
     	printState(stateObs, 0, true);
+    	
+    	brain.learn(stateObs, elapsedTimer, false, false, 1);
     	
     	switch (algorithmID) {
 	    	case 1:
