@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TreeSet;
 
 import core.game.Observation;
@@ -33,6 +34,7 @@ public class Brain
 	private int numberOfAdvancesForANewTry; // The number of state advances to
 											// make before trying chasing a
 											// sprite again
+	private ElapsedCpuTimer elapsedTimer; // Timer for the current operation;
 
 	/**
 	 * public constructor
@@ -102,6 +104,11 @@ public class Brain
 			boolean recursiveImplications, int range, int category)
 	{
 		boolean productionVersion = false;
+
+		if (elapsedTimer == null)
+		{
+			elapsedTimer = this.elapsedTimer;
+		}
 
 		if (justImagine)
 		{
@@ -303,7 +310,7 @@ public class Brain
 
 					if (actionStates != null)
 					{
-						updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0], actionStates[1],
+						spriteTypeFeatures = updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0], actionStates[1],
 								observation, 1, recursiveImplications);
 						movingOntoTested = true;
 					}
@@ -316,7 +323,7 @@ public class Brain
 
 					if (actionStates != null)
 					{
-						updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0], actionStates[1],
+						spriteTypeFeatures = updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0], actionStates[1],
 								observation, 0, recursiveImplications);
 						useTested = true;
 					}
@@ -329,7 +336,7 @@ public class Brain
 
 					if (actionStates != null)
 					{
-						updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0], actionStates[1],
+						spriteTypeFeatures = updateKnowledgeAfterActionOnSprite(spriteTypeFeatures, actionStates[0], actionStates[1],
 								observation, 2, recursiveImplications);
 						useTested = true;
 					}
@@ -1027,7 +1034,15 @@ public class Brain
 					// Treat the other player and sprites differently
 					if (observation.obsID == -oppID)
 					{
-
+						if (stateObsJustAfterAction.isAvatarAlive(oppID) 
+								&& (stateObsJustAfterAction.getAvatarHealthPoints(oppID) == stateObsJustBeforeAction.getAvatarHealthPoints(oppID)))
+						{
+							//currentSpriteTypeFeatures.destroyable = false;
+						}
+						else
+						{
+							currentSpriteTypeFeatures.destroyable = true;
+						}
 					}
 					else
 					{
@@ -1040,22 +1055,28 @@ public class Brain
 						{
 							currentSpriteTypeFeatures.destroyable = true;
 						}
+					}
 
-						if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_WINS)
-						{
-							currentSpriteTypeFeatures.givingVictory = true;
-						}
+					if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_WINS)
+					{
+						currentSpriteTypeFeatures.givingVictory = true;
+					}
+					
+					if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES)
+					{
+						currentSpriteTypeFeatures.givingDefeat = true;
+					}
 
-						currentSpriteTypeFeatures.changingPoints = stateObsJustAfterAction.getGameScore(playerID)
-								- stateObsJustBeforeAction.getGameScore(playerID);
+					currentSpriteTypeFeatures.changingPoints = stateObsJustAfterAction.getGameScore(playerID)
+							- stateObsJustBeforeAction.getGameScore(playerID);
 
-						// increasingValuesOfOtherObjects and allowingVictory:
+					if (recursiveImplications)
+					{
+						// changingValuesOfOtherObjects and allowingVictory:
 						// Looking for changes in changingPoints and
 						// givingVictory
 
-						HashMap<Integer, SpriteTypeFeatures> portalsTypeFeaturesMap = memory
-								.getSpriteTypeFeaturesByCategory(2);
-
+						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures, stateObsJustBeforeAction, stateObsJustAfterAction, observation);
 					}
 				}
 				else
@@ -1069,11 +1090,145 @@ public class Brain
 			case 1:
 				if (eventHappened)
 				{
+					currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction.getAvatarHealthPoints(playerID) - stateObsJustAfterAction.getAvatarHealthPoints(playerID);
+					
+					if (!stateObsJustAfterAction.isAvatarAlive(playerID))
+					{
+						if (stateObsJustBeforeAction.getAvatarMaxHealthPoints(playerID) != 0)
+						{
+							currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction.getAvatarMaxHealthPoints(playerID);
+						}
+						else
+						{
+							currentSpriteTypeFeatures.dangerousToAvatar = 100;
+						}
+					}
+					
+					// Treat the other player and sprites differently
+					if (observation.obsID == -oppID)
+					{
+						if (stateObsJustAfterAction.isAvatarAlive(oppID) 
+								&& (stateObsJustAfterAction.getAvatarHealthPoints(oppID) == stateObsJustBeforeAction.getAvatarHealthPoints(oppID)))
+						{
+							//currentSpriteTypeFeatures.destroyable = false;
+						}
+						else
+						{
+							currentSpriteTypeFeatures.destroyable = true;
+						}
+					}
+					else
+					{
+						Vector2d spriteCurrentPosition = localizeSprite(stateObsJustAfterAction, observation, 5);
+						if (spriteCurrentPosition != null)
+						{
+							currentSpriteTypeFeatures.destroyable = false;
+						}
+						else
+						{
+							currentSpriteTypeFeatures.destroyable = true;
+						}
+					}
+					
+					// Check if avatar is on the same position as the sprite
+					// Treat the other player and sprites differently
+					if (observation.obsID == -oppID)
+					{
+						// We control the other avatar in the simulation, hence it's in the same place
+						if (stateObsJustAfterAction.getAvatarPosition(playerID).x == stateObsJustAfterAction.getAvatarPosition(oppID).x
+								&& stateObsJustAfterAction.getAvatarPosition(playerID).y == stateObsJustAfterAction.getAvatarPosition(oppID).y)
+						{
+							currentSpriteTypeFeatures.passable = true;
+						}
+						else
+						{
+							currentSpriteTypeFeatures.passable = false;
+						}
+					}
+					else
+					{
+						Vector2d spriteCurrentPosition = localizeSprite(stateObsJustAfterAction, observation, 3);
+						if (spriteCurrentPosition != null)
+						{
+							Vector2d distance = stateObsJustAfterAction.getAvatarPosition(playerID).subtract(spriteCurrentPosition);
 
+							if (Math.abs(distance.x) < stateObsJustAfterAction.getBlockSize() 
+									&& Math.abs(distance.y) < stateObsJustAfterAction.getBlockSize())
+							{
+								currentSpriteTypeFeatures.passable = true;
+							}
+							else
+							{
+								currentSpriteTypeFeatures.passable = false;
+							}
+						}
+						else
+						{
+							currentSpriteTypeFeatures.collectable = true;
+						}
+					}
+
+					if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_WINS)
+					{
+						currentSpriteTypeFeatures.givingVictory = true;
+					}
+					
+					if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES)
+					{
+						currentSpriteTypeFeatures.givingDefeat = true;
+					}
+
+					currentSpriteTypeFeatures.changingPoints = stateObsJustAfterAction.getGameScore(playerID)
+							- stateObsJustBeforeAction.getGameScore(playerID);
+
+					if (recursiveImplications)
+					{
+						// changingValuesOfOtherObjects and allowingVictory:
+						// Looking for changes in changingPoints and
+						// givingVictory
+
+						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures, stateObsJustBeforeAction, stateObsJustAfterAction, observation);
+					}
 				}
 				else
 				{
+					currentSpriteTypeFeatures.destroyable = false;
+					
+					// Check if avatar is on the same position as the sprite
+					// Treat the other player and sprites differently
+					if (observation.obsID == -oppID)
+					{
+						// We control the other avatar in the simulation, hence it's in the same place
+						if (stateObsJustAfterAction.getAvatarPosition(playerID).x == stateObsJustAfterAction.getAvatarPosition(oppID).x
+								&& stateObsJustAfterAction.getAvatarPosition(playerID).y == stateObsJustAfterAction.getAvatarPosition(oppID).y)
+						{
+							currentSpriteTypeFeatures.passable = true;
+						}
+						else
+						{
+							currentSpriteTypeFeatures.passable = false;
+						}
+					}
+					else
+					{
+						currentSpriteTypeFeatures.collectable = false;
+						
+						Vector2d spriteCurrentPosition = localizeSprite(stateObsJustAfterAction, observation, 3);
+						if (spriteCurrentPosition != null)
+						{
+							Vector2d distance = stateObsJustAfterAction.getAvatarPosition(playerID).subtract(spriteCurrentPosition);
 
+							if (Math.abs(distance.x) < stateObsJustAfterAction.getBlockSize() 
+									&& Math.abs(distance.y) < stateObsJustAfterAction.getBlockSize())
+							{
+								currentSpriteTypeFeatures.passable = true;
+							}
+							else
+							{
+								currentSpriteTypeFeatures.passable = false;
+							}
+						}
+					}
 				}
 
 				break;
@@ -1082,11 +1237,46 @@ public class Brain
 			case 2:
 				if (eventHappened)
 				{
+					currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction.getAvatarHealthPoints(playerID) - stateObsJustAfterAction.getAvatarHealthPoints(playerID);
+					
+					if (!stateObsJustAfterAction.isAvatarAlive(playerID))
+					{
+						if (stateObsJustBeforeAction.getAvatarMaxHealthPoints(playerID) != 0)
+						{
+							currentSpriteTypeFeatures.dangerousToAvatar = stateObsJustBeforeAction.getAvatarMaxHealthPoints(playerID);
+						}
+						else
+						{
+							currentSpriteTypeFeatures.dangerousToAvatar = 100;
+						}
+					}
+					
+					if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_WINS)
+					{
+						currentSpriteTypeFeatures.givingVictory = true;
+					}
+					
+					if (stateObsJustAfterAction.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES)
+					{
+						currentSpriteTypeFeatures.givingDefeat = true;
+					}
 
+					currentSpriteTypeFeatures.changingPoints = stateObsJustAfterAction.getGameScore(playerID)
+							- stateObsJustBeforeAction.getGameScore(playerID);
+					
+					if (recursiveImplications)
+					{
+						// changingValuesOfOtherObjects and allowingVictory:
+						// Looking for changes in changingPoints and
+						// givingVictory
+
+						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures, stateObsJustBeforeAction, stateObsJustAfterAction, observation);
+					}
 				}
 				else
 				{
-
+					currentSpriteTypeFeatures.dangerousToAvatar = 0;
+					currentSpriteTypeFeatures.givingDefeat = false;
 				}
 
 				break;
@@ -1094,7 +1284,81 @@ public class Brain
 
 		return currentSpriteTypeFeatures;
 	}
+	
+	/**
+	 * Checks for changes in features between states stateObsJustBeforeAction and stateObsJustAfterAction.
+	 * 
+	 * @param currentSpriteTypeFeatures
+	 *            Current knowledge about the sprite.
+	 * @param stateObsJustBeforeAction
+	 *            Observation of the state just before action.
+	 * @param stateObsAfterAction
+	 *            Observation of the state just after action.
+	 * @param observation
+	 *            Observation on which the action was made.
+	 */
+	private SpriteTypeFeatures processImplicationsOfActionOnOtherSprites(SpriteTypeFeatures currentSpriteTypeFeatures,
+			StateObservationMulti stateObsJustBeforeAction, StateObservationMulti stateObsJustAfterAction,
+			Observation observation)
+	{
+		learn(stateObsJustAfterAction, null, true, false, 2, 2);
+		currentSpriteTypeFeatures.changingValuesOfOtherObjects = 0;
+		currentSpriteTypeFeatures.allowingVictory = false;
 
+		HashMap<Integer, SpriteTypeFeatures> portalsTypeFeaturesMap = memory
+				.getSpriteTypeFeaturesByCategory(2);
+		HashMap<Integer, SpriteTypeFeatures> portalsTypeFeaturesMapImagined = imaginationMemory
+				.getSpriteTypeFeaturesByCategory(2);
+
+		boolean victoryConditionAppeared = false;
+
+		// Check old portals
+		for (Map.Entry<Integer, SpriteTypeFeatures> spriteTypeFeaturesMapEntry : portalsTypeFeaturesMap
+				.entrySet())
+		{
+			if (portalsTypeFeaturesMapImagined.containsKey(spriteTypeFeaturesMapEntry.getKey()))
+			{
+				currentSpriteTypeFeatures.changingValuesOfOtherObjects += portalsTypeFeaturesMapImagined
+						.get(spriteTypeFeaturesMapEntry.getKey()).changingPoints
+						- spriteTypeFeaturesMapEntry.getValue().changingPoints;
+
+				if (!victoryConditionAppeared && !spriteTypeFeaturesMapEntry.getValue().givingVictory
+						&& portalsTypeFeaturesMapImagined
+								.get(spriteTypeFeaturesMapEntry.getKey()).givingVictory)
+				{
+					currentSpriteTypeFeatures.allowingVictory = true;
+					victoryConditionAppeared = true;
+				}
+			}
+			else
+			{
+				// Portals dissapeared
+				currentSpriteTypeFeatures.changingValuesOfOtherObjects += -spriteTypeFeaturesMapEntry
+						.getValue().changingPoints;
+			}
+		}
+
+		// Check new portals
+		for (Map.Entry<Integer, SpriteTypeFeatures> spriteTypeFeaturesMapImaginedEntry : portalsTypeFeaturesMapImagined
+				.entrySet())
+		{
+			if (!portalsTypeFeaturesMap.containsKey(spriteTypeFeaturesMapImaginedEntry.getKey()))
+			{
+				currentSpriteTypeFeatures.changingValuesOfOtherObjects += spriteTypeFeaturesMapImaginedEntry
+						.getValue().changingPoints;
+
+				if (!victoryConditionAppeared
+						&& spriteTypeFeaturesMapImaginedEntry.getValue().givingVictory)
+				{
+					currentSpriteTypeFeatures.allowingVictory = true;
+					victoryConditionAppeared = true;
+				}
+			}
+		}
+		
+		return currentSpriteTypeFeatures;
+	}
+	
 	/**
 	 * Returns features optimized for Asteroids.
 	 * 
@@ -1123,7 +1387,7 @@ public class Brain
 
 			case 2:
 				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, true, false, 1, true,
-						false, 0, true, true);
+						false, 0, 1, true);
 				break;
 
 			case 3:
@@ -1132,17 +1396,17 @@ public class Brain
 
 			case 4:
 				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, true, false, false, false, 0,
-						false, false, 0, false, false);
+						false, false, 0, 0, false);
 				break;
 
 			case 5:
 				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, false, false, false, true, 0,
-						false, true, 1, false, false);
+						false, true, 1, 0, false);
 				break;
 
 			case 6:
 				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, true, false, false, true, 1,
-						false, true, 1, false, false);
+						false, true, 1, 0, false);
 				break;
 
 			default:
@@ -1176,33 +1440,33 @@ public class Brain
 		switch (category)
 		{
 			case 1:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, false, false, 1,
-						true, false, 0, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, false, false, 0,
+						true, false, 0, 0, false);
 				break;
 
 			case 2:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, true, false, 1, true,
-						false, 0, true, true);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, true, false, 0, true,
+						false, 0, 1, true);
 				break;
 
 			case 3:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0.1, true, true, false, false, true, 1,
-						false, true, 1, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false, 0,
+						false, true, 1, 0, false);
 				break;
 
 			case 4:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, true, false, false, false, 0,
-						false, false, 0, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false, 0,
+						false, false, 0, 0, false);
 				break;
 
 			case 5:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, false, false, false, true, 0,
-						false, true, 1, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false, 0,
+						false, true, 1, 0, false);
 				break;
 
 			case 6:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0.1, true, true, true, false, false, 1,
-						true, true, 0.1, false, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false, 0,
+						false, true, 0, 0, false);
 				break;
 
 			default:
@@ -1234,26 +1498,26 @@ public class Brain
 		double speedInPixels = stateObs.getBlockSize() * stateObs.getAvatarSpeed(playerID);
 
 		if (Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_DOWN
-				&& Math.abs(distance.x) < stateObs.getBlockSize()
-				&& Math.abs(distance.y - speedInPixels) < stateObs.getBlockSize())
+				&& Math.abs(distanceX) < stateObs.getBlockSize()
+				&& Math.abs(distanceY - speedInPixels) < stateObs.getBlockSize())
 		{
 			return true;
 		}
 		if (Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_UP
-				&& Math.abs(distance.x) < stateObs.getBlockSize()
-				&& Math.abs(distance.y + speedInPixels) < stateObs.getBlockSize())
+				&& Math.abs(distanceX) < stateObs.getBlockSize()
+				&& Math.abs(distanceY - speedInPixels) < stateObs.getBlockSize())
 		{
 			return true;
 		}
 		if (Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_RIGHT
-				&& Math.abs(distance.x - speedInPixels) < stateObs.getBlockSize()
-				&& Math.abs(distance.y) < stateObs.getBlockSize())
+				&& Math.abs(distanceX - speedInPixels) < stateObs.getBlockSize()
+				&& Math.abs(distanceY) < stateObs.getBlockSize())
 		{
 			return true;
 		}
 		if (Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_LEFT
-				&& Math.abs(distance.x + speedInPixels) < stateObs.getBlockSize()
-				&& Math.abs(distance.y) < stateObs.getBlockSize())
+				&& Math.abs(distanceX - speedInPixels) < stateObs.getBlockSize()
+				&& Math.abs(distanceY) < stateObs.getBlockSize())
 		{
 			return true;
 		}

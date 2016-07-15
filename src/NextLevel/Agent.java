@@ -52,8 +52,9 @@ public class Agent extends AbstractMultiPlayer {
         // Fill spriteTypeFeaturesMap
 
      	brain = new Brain(id);
-     	
-     	brain.learn(stateObs, elapsedTimer, false, true, 0);
+     	StateObservationMulti stateObsCopy = stateObs.copy();
+     	stateObsCopy.advance(new Types.ACTIONS[] { Types.ACTIONS.ACTION_NIL, Types.ACTIONS.ACTION_NIL });
+     	brain.learn(stateObsCopy, elapsedTimer, false, true, 0);
      	Observation obs = stateObs.getImmovablePositions()[1].get(0);
      	brain.approachSprite(stateObs, obs);
 

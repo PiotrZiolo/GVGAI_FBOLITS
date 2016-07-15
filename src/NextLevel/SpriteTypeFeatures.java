@@ -55,7 +55,7 @@ public class SpriteTypeFeatures
 	/**
 	 * does collecting/destroying it increase value of other objects?
 	 */
-	public boolean changingValuesOfOtherObjects;
+	public double changingValuesOfOtherObjects;
 	/**
 	 * does collecting/destroying it allow to achieve victory?
 	 */
@@ -78,7 +78,7 @@ public class SpriteTypeFeatures
 		this.passable = false;
 		this.moving = false;
 		this.speed = 0;
-		this.changingValuesOfOtherObjects = false;
+		this.changingValuesOfOtherObjects = 0;
 		this.allowingVictory = false;
 	}
 	
@@ -99,7 +99,7 @@ public class SpriteTypeFeatures
 		this.passable = false;
 		this.moving = false;
 		this.speed = 0;
-		this.changingValuesOfOtherObjects = false;
+		this.changingValuesOfOtherObjects = 0;
 		this.allowingVictory = false;
 	}
 
@@ -108,7 +108,7 @@ public class SpriteTypeFeatures
 	 */
 	public SpriteTypeFeatures(int category, int type, double dangerousToAvatar, boolean dangerousOtherwise, boolean destroyable,
 			boolean collectable, boolean givingVictory, boolean givingDefeat, double changingPoints, boolean passable,
-			boolean moving, double speed, boolean increasingValuesOfOtherObjects, boolean allowingVictory)
+			boolean moving, double speed, double increasingValuesOfOtherObjects, boolean allowingVictory)
 	{
 		this.category = category;
 		this.type = type;
@@ -122,7 +122,7 @@ public class SpriteTypeFeatures
 		this.passable = passable;
 		this.moving = moving;
 		this.speed = speed;
-		this.changingValuesOfOtherObjects = increasingValuesOfOtherObjects;
+		this.changingValuesOfOtherObjects = 0;
 		this.allowingVictory = allowingVictory;
 	}
 }
