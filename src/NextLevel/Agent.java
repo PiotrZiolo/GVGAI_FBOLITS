@@ -138,8 +138,7 @@ public class Agent extends AbstractMultiPlayer {
 	    	case 1:
 	    		return oneStepLookAhead(stateObs);
 	    	case 2:
-	    		return Types.ACTIONS.ACTION_NIL;
-	    		//return heuristicOLMCTS(stateObs, elapsedTimer);
+	    		return heuristicOLMCTS(stateObs, elapsedTimer);
 	    	case 3:
 	    		return geneticAlgorithm(stateObs, elapsedTimer);
     		default:	// just in case :)

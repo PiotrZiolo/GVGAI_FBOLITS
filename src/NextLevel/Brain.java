@@ -35,6 +35,7 @@ public class Brain
 											// make before trying chasing a
 											// sprite again
 	private ElapsedCpuTimer elapsedTimer; // Timer for the current operation;
+	private boolean fastThinking;
 
 	/**
 	 * public constructor
@@ -45,8 +46,9 @@ public class Brain
 		this.memory = new Memory();
 		this.testingSpriteAttemptsLimit = 1;
 		this.approachingSpriteLimit = 1;
-		this.approachingSpriteMovesLimit = 30;
+		this.approachingSpriteMovesLimit = 50;
 		this.numberOfAdvancesForANewTry = 5;
+		this.fastThinking = false;
 	}
 
 	/**
@@ -61,8 +63,9 @@ public class Brain
 		this.memory = new Memory();
 		this.testingSpriteAttemptsLimit = 1;
 		this.approachingSpriteLimit = 1;
-		this.approachingSpriteMovesLimit = 30;
+		this.approachingSpriteMovesLimit = 50;
 		this.numberOfAdvancesForANewTry = 5;
+		this.fastThinking = false;
 	}
 
 	/**
@@ -104,12 +107,17 @@ public class Brain
 			boolean recursiveImplications, int range, int category)
 	{
 		boolean productionVersion = true;
-
+		
 		this.oppID = (playerID + 1) % stateObs.getNoPlayers();
 
 		if (elapsedTimer == null)
 		{
 			elapsedTimer = this.elapsedTimer;
+			
+			if (elapsedTimer.remainingTimeMillis() < 100)
+			{
+				this.fastThinking = true;
+			}
 		}
 		else
 		{
@@ -125,19 +133,19 @@ public class Brain
 		this.oppID = (playerID + 1) % stateObs.getNoPlayers();
 
 		Vector2d avatarPosition = stateObs.getAvatarPosition(playerID);
+		ArrayList<Observation>[] portalPositions = stateObs.getPortalsPositions(avatarPosition);
 		ArrayList<Observation>[] npcPositions = stateObs.getNPCPositions(avatarPosition);
 		ArrayList<Observation>[] immovablePositions = stateObs.getImmovablePositions(avatarPosition);
 		ArrayList<Observation>[] movablePositions = stateObs.getMovablePositions(avatarPosition);
 		ArrayList<Observation>[] resourcesPositions = stateObs.getResourcesPositions(avatarPosition);
-		ArrayList<Observation>[] portalPositions = stateObs.getPortalsPositions(avatarPosition);
 		ArrayList<Observation>[] fromAvatarSpritesPositions = stateObs.getFromAvatarSpritesPositions(avatarPosition);
 
 		ArrayList<ArrayList<Observation>[]> arraysOfSprites = new ArrayList<ArrayList<Observation>[]>();
+		arraysOfSprites.add(portalPositions);
 		arraysOfSprites.add(npcPositions);
 		arraysOfSprites.add(immovablePositions);
 		arraysOfSprites.add(movablePositions);
 		arraysOfSprites.add(resourcesPositions);
-		arraysOfSprites.add(portalPositions);
 		arraysOfSprites.add(fromAvatarSpritesPositions);
 
 		if (!justImagine)
@@ -739,8 +747,6 @@ public class Brain
 	{
 
 		double speedInPixels = currentState.getBlockSize() * currentState.getAvatarSpeed(playerID);
-		// System.out.println(avatarPosition + " " + observationPosition + "
-		// bug");
 		Vector2d distance = observationPosition.copy().subtract(avatarPosition);
 
 		if ((Types.ACTIONS.fromVector(avatarOrientation) == Types.ACTIONS.ACTION_NIL
@@ -748,7 +754,8 @@ public class Brain
 				&& Math.abs(distance.x) < currentState.getBlockSize()
 				&& Math.abs(distance.y - speedInPixels) < currentState.getBlockSize())
 		{
-			if (spriteType == -1 - oppID
+			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL
+					&& spriteType == -1 - oppID
 					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_UP)
 			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
@@ -763,7 +770,8 @@ public class Brain
 				&& Math.abs(distance.x) < currentState.getBlockSize()
 				&& Math.abs(distance.y + speedInPixels) < currentState.getBlockSize())
 		{
-			if (spriteType == -1 - oppID
+			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL
+					&& spriteType == -1 - oppID
 					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_DOWN)
 			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
@@ -778,7 +786,8 @@ public class Brain
 				&& Math.abs(distance.x - speedInPixels) < currentState.getBlockSize()
 				&& Math.abs(distance.y) < currentState.getBlockSize())
 		{
-			if (spriteType == -1 - oppID
+			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL
+					&& spriteType == -1 - oppID
 					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_LEFT)
 			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
@@ -793,7 +802,8 @@ public class Brain
 				&& Math.abs(distance.x + speedInPixels) < currentState.getBlockSize()
 				&& Math.abs(distance.y) < currentState.getBlockSize())
 		{
-			if (spriteType == -1 - oppID
+			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL
+					&& spriteType == -1 - oppID
 					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_RIGHT)
 			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
@@ -830,8 +840,10 @@ public class Brain
 					{
 						if (suspect.obsID == searchedID)
 						{
-							blockWhereObservationWasLastSeen[0] += i;
-							blockWhereObservationWasLastSeen[1] += j;
+							blockWhereObservationWasLastSeen[0] = (worldWidth + blockWhereObservationWasLastSeen[0] + i)
+									% worldWidth;
+							blockWhereObservationWasLastSeen[1] = (worldHeight + blockWhereObservationWasLastSeen[1]
+									+ j) % worldHeight;
 							return suspect.position;
 						}
 					}
@@ -985,8 +997,9 @@ public class Brain
 						}
 						else
 						{
-							Vector2d spritePosition = stateObsJustBeforeAction.getAvatarPosition(playerID).copy().subtract(observation.position);
-							
+							Vector2d spritePosition = stateObsJustBeforeAction.getAvatarPosition(playerID).copy()
+									.subtract(observation.position);
+
 							if (Math.abs(spritePosition.x) > Math.abs(spritePosition.y))
 							{
 								if (spritePosition.x > 0)
@@ -1237,7 +1250,7 @@ public class Brain
 					{
 						// changingValuesOfOtherObjects and allowingVictory:
 						// Looking for changes in changingPoints and
-						// givingVictory
+						// allowingVictory
 
 						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures,
 								stateObsJustBeforeAction, stateObsJustAfterAction, observation);
@@ -1308,10 +1321,12 @@ public class Brain
 										.getAvatarPosition(oppID).y)
 						{
 							currentSpriteTypeFeatures.passable = true;
+							System.out.println("Passable");
 						}
 						else
 						{
 							currentSpriteTypeFeatures.passable = false;
+							System.out.println("Not passable");
 						}
 					}
 					else
@@ -1337,7 +1352,9 @@ public class Brain
 						else
 						{
 							currentSpriteTypeFeatures.collectable = true;
+							currentSpriteTypeFeatures.passable = true;
 							System.out.println("Collectable");
+							System.out.println("Passable");
 						}
 					}
 
@@ -1353,14 +1370,14 @@ public class Brain
 
 					currentSpriteTypeFeatures.changingPoints = stateObsJustAfterAction.getGameScore(playerID)
 							- stateObsJustBeforeAction.getGameScore(playerID);
-					
+
 					System.out.println("Points: " + currentSpriteTypeFeatures.changingPoints);
 
 					if (recursiveImplications)
 					{
 						// changingValuesOfOtherObjects and allowingVictory:
 						// Looking for changes in changingPoints and
-						// givingVictory
+						// allowingVictory
 
 						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures,
 								stateObsJustBeforeAction, stateObsJustAfterAction, observation);
@@ -1382,16 +1399,18 @@ public class Brain
 										.getAvatarPosition(oppID).y)
 						{
 							currentSpriteTypeFeatures.passable = true;
+							System.out.println("Passable");
 						}
 						else
 						{
 							currentSpriteTypeFeatures.passable = false;
+							System.out.println("Not passable");
 						}
 					}
 					else
 					{
 						currentSpriteTypeFeatures.collectable = false;
-						// System.out.println("Not collectable");
+						System.out.println("Not collectable");
 
 						Vector2d spriteCurrentPosition = localizeSprite(stateObsJustAfterAction, observation, 3);
 						if (spriteCurrentPosition != null)
@@ -1403,17 +1422,17 @@ public class Brain
 									&& Math.abs(distance.y) < stateObsJustAfterAction.getBlockSize())
 							{
 								currentSpriteTypeFeatures.passable = true;
-								// System.out.println("Passable");
+								System.out.println("Passable");
 							}
 							else
 							{
 								currentSpriteTypeFeatures.passable = false;
-								// System.out.println("Not passable");
+								System.out.println("Not passable");
 							}
 						}
 						else
 						{
-							// System.out.println("Object not found");
+							System.out.println("Object not found");
 						}
 					}
 				}
@@ -1457,7 +1476,7 @@ public class Brain
 					{
 						// changingValuesOfOtherObjects and allowingVictory:
 						// Looking for changes in changingPoints and
-						// givingVictory
+						// allowingVictory
 
 						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures,
 								stateObsJustBeforeAction, stateObsJustAfterAction, observation);
@@ -1505,6 +1524,7 @@ public class Brain
 		// Check old portals
 		for (Map.Entry<Integer, SpriteTypeFeatures> spriteTypeFeaturesMapEntry : portalsTypeFeaturesMap.entrySet())
 		{
+			//System.out.println("Old portal type: " + spriteTypeFeaturesMapEntry.getKey());
 			if (portalsTypeFeaturesMapImagined.containsKey(spriteTypeFeaturesMapEntry.getKey()))
 			{
 				currentSpriteTypeFeatures.changingValuesOfOtherObjects += portalsTypeFeaturesMapImagined
@@ -1514,6 +1534,7 @@ public class Brain
 				if (!victoryConditionAppeared && !spriteTypeFeaturesMapEntry.getValue().givingVictory
 						&& portalsTypeFeaturesMapImagined.get(spriteTypeFeaturesMapEntry.getKey()).givingVictory)
 				{
+					System.out.println("Allowing victory portal opened");
 					currentSpriteTypeFeatures.allowingVictory = true;
 					victoryConditionAppeared = true;
 				}
@@ -1530,6 +1551,7 @@ public class Brain
 		for (Map.Entry<Integer, SpriteTypeFeatures> spriteTypeFeaturesMapImaginedEntry : portalsTypeFeaturesMapImagined
 				.entrySet())
 		{
+			//System.out.println("New portal type: " + spriteTypeFeaturesMapImaginedEntry.getKey());
 			if (!portalsTypeFeaturesMap.containsKey(spriteTypeFeaturesMapImaginedEntry.getKey()))
 			{
 				currentSpriteTypeFeatures.changingValuesOfOtherObjects += spriteTypeFeaturesMapImaginedEntry
@@ -1538,6 +1560,7 @@ public class Brain
 				if (!victoryConditionAppeared && spriteTypeFeaturesMapImaginedEntry.getValue().givingVictory)
 				{
 					currentSpriteTypeFeatures.allowingVictory = true;
+					System.out.println("Allowing victory new portal");
 					victoryConditionAppeared = true;
 				}
 			}
