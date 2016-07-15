@@ -92,17 +92,21 @@ public class PathFinder
 
 		// now we determine which block to which block we can approximate to
 		boolean[] positions_objects = new boolean[positions.size()];
-		for(int i=0;i<positions.size();i++){
-			for(int x=-1;x<=1;x+=2){
-				for(Observation obs : stateObs.getObservationGrid()[(width+positions.get(i)[0]+x)%width][(height+positions.get(i)[1])%height])
+		for (int i = 0; i < positions.size(); i++)
+		{
+			for (int x = -1; x <= 1; x += 2)
+			{
+				for (Observation obs : stateObs.getObservationGrid()[(width + positions.get(i)[0] + x)
+						% width][(height + positions.get(i)[1]) % height])
 					positions_objects[i] = obs.category == 4;
 				if (positions_objects[i])
 					break;
 			}
 			if (positions_objects[i])
 				break;
-			for(int y=-1;y<=1;y+=2)
-				for(Observation obs : stateObs.getObservationGrid()[(width+positions.get(i)[0])%width][(height+positions.get(i)[1]+y)%height])
+			for (int y = -1; y <= 1; y += 2)
+				for (Observation obs : stateObs.getObservationGrid()[(width + positions.get(i)[0])
+						% width][(height + positions.get(i)[1] + y) % height])
 					positions_objects[i] = obs.category == 4;
 			if (positions_objects[i])
 				break;
@@ -145,24 +149,24 @@ public class PathFinder
 
 		// eliminate immovable objects
 		ArrayList<Observation>[] obs = stateObs.getImmovablePositions();
-		if (obs!=null)
-			for(int i=0;i<obs.length;i++)
-				for(Observation o : obs[i])
-					V[(int)o.position.x/stateObs.getBlockSize()][(int)o.position.y/stateObs.getBlockSize()]=2;
+		if (obs != null)
+			for (int i = 0; i < obs.length; i++)
+				for (Observation o : obs[i])
+					V[(int) o.position.x / stateObs.getBlockSize()][(int) o.position.y / stateObs.getBlockSize()] = 2;
 
 		// eliminate portals objects
 		obs = stateObs.getPortalsPositions();
-		if (obs!=null)
-			for(int i=0;i<obs.length;i++)
-				for(Observation o : obs[i])
-					V[(int)o.position.x/stateObs.getBlockSize()][(int)o.position.y/stateObs.getBlockSize()]=2;
-		
-		V[goal[0]][goal[1]]=0;
-			
-		//this line is after the elimination to prevent endless loop
-		V[start[0]][start[1]]=1;
-		//System.out.println("start <- " + start[0] + " ; " + start[1]);
-		//FIFO
+		if (obs != null)
+			for (int i = 0; i < obs.length; i++)
+				for (Observation o : obs[i])
+					V[(int) o.position.x / stateObs.getBlockSize()][(int) o.position.y / stateObs.getBlockSize()] = 2;
+
+		V[goal[0]][goal[1]] = 0;
+
+		// this line is after the elimination to prevent endless loop
+		V[start[0]][start[1]] = 1;
+		// System.out.println("start <- " + start[0] + " ; " + start[1]);
+		// FIFO
 		LinkedList<int[]> list = new LinkedList<int[]>();
 		list.add(new int[] { start[0], start[1] });
 
