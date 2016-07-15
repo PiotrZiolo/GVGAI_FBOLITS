@@ -206,10 +206,12 @@ public class PathFinder
 				}
 			}
 			// print(V);
-
 		}
 
 		// check if the goal is reached
+		
+		int pathLengthLimit = 200;
+		
 		if (V[goal[0]][goal[1]] == 1)
 		{
 			Deque<Types.ACTIONS> path = new ArrayDeque<Types.ACTIONS>();
@@ -219,6 +221,12 @@ public class PathFinder
 			while(current[0]!=start[0] || current[1]!=start[1]){
 				path.add(getDirection(current, prev[(width+current[0])%width][(height+current[1])%height]));
 				current=prev[mod(current[0],width)][mod(current[1],height)];
+				pathLengthLimit--;
+				if (pathLengthLimit==0) {
+					path = new ArrayDeque<Types.ACTIONS>();
+					path.add(Types.ACTIONS.ACTION_NIL);
+					return path;
+				}
 			}
 			return path;
 		}
