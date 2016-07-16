@@ -40,6 +40,7 @@ public class Brain
 	/**
 	 * public constructor
 	 */
+    @SuppressWarnings("unchecked")
 	public Brain() {
 		this.playerID = 0;
 		this.memory = new Memory();
@@ -56,6 +57,7 @@ public class Brain
 	 * @param playerID
 	 *            ID of this agent.
 	 */
+    @SuppressWarnings("unchecked")
 	public Brain(int playerID) {
 		this.playerID = playerID;
 		this.memory = new Memory();
@@ -99,6 +101,7 @@ public class Brain
 	 * @param category
 	 *            Category to be evaluated.
 	 */
+    @SuppressWarnings("unchecked")
 	public void learn(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, boolean justImagine,
 			boolean recursiveImplications, int range, int category) {
 		boolean productionVersion = true;
@@ -182,7 +185,7 @@ public class Brain
 									//if (!justImagine)
 									//{
 										//System.out.println("After action: " + elapsedTimer.remainingTimeMillis());
-										spriteTypeFeatures.print();
+										//spriteTypeFeatures.print();
 										//System.out.println("----------");
 									//}
 								}
@@ -443,6 +446,8 @@ public class Brain
 	 * @param observation
 	 *            Observation of the sprite to approach.
 	 */
+	 
+    @SuppressWarnings("unchecked")
 	public StateObservationMulti approachSprite(StateObservationMulti stateObs, Observation observation)
 	{
 		int pathFinderLimit = (fastThinking) ? 1 : 10;
@@ -698,8 +703,7 @@ public class Brain
 				if (!temporaryState.isAvatarAlive(playerID))
 				{
 					//System.out.println("Player killed.");
-					return null; // do poprawy - na razie jak zginê id¹c do
-									// obiektu to siê poddaje
+					return null; 
 
 					// playerGoodActions.remove(actions[playerID]);
 					// goodMove = false;
@@ -816,6 +820,7 @@ public class Brain
 		return false;
 	}
 
+    @SuppressWarnings("unchecked")
 	private Vector2d FindObject(int[] blockWhereObservationWasLastSeen, StateObservationMulti stateObs, int searchedID)
 	{
 		int worldWidth = (int) stateObs.getWorldDimension().getWidth() / stateObs.getBlockSize();
@@ -852,6 +857,7 @@ public class Brain
 		return null;
 	}
 
+    @SuppressWarnings("unchecked")
 	private Types.ACTIONS chooseDirection(Vector2d observationPosition, Vector2d playerNewPosition,
 			ArrayList<Types.ACTIONS> playerGoodActions, Types.ACTIONS lastAction)
 	{
@@ -1745,6 +1751,7 @@ public class Brain
 	 * @param searchBreadth
 	 *            How far from the observation position to search.
 	 */
+    @SuppressWarnings("unchecked")
 	private Vector2d localizeSprite(StateObservationMulti stateObs, Observation observation, int searchBreadth)
 	{
 		ArrayList<Observation> suspects;
@@ -1752,13 +1759,14 @@ public class Brain
 		int[] blockWhereObservationWasLastSeen = { (int) (observation.position.x / stateObs.getBlockSize()),
 				(int) (observation.position.y / stateObs.getBlockSize()) };
 
-		int worldXDimension = (int) (stateObs.getWorldDimension().getWidth() / stateObs.getBlockSize());
-		int worldYDimension = (int) (stateObs.getWorldDimension().getHeight() / stateObs.getBlockSize());
+		int worldXDimension = stateObs.getObservationGrid().length; // (int) (stateObs.getWorldDimension().getWidth() / stateObs.getBlockSize());
+		int worldYDimension = stateObs.getObservationGrid()[0].length; // (int) (stateObs.getWorldDimension().getHeight() / stateObs.getBlockSize());
 
 		boolean objectLocalized = false;
 		int distance = 0;
 
-		while (!objectLocalized && distance <= searchBreadth)
+		while (!objectLocalized && distance <= searchBreadth && worldXDimension + blockWhereObservationWasLastSeen[0] - distance >= 0
+			    && worldYDimension + blockWhereObservationWasLastSeen[1] - distance >= 0)
 		{
 			for (int i = -distance; i <= distance; i = i + 1)
 			{
