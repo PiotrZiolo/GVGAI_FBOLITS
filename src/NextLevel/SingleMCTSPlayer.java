@@ -37,8 +37,7 @@ public class SingleMCTSPlayer
      */
     public void init(StateObservationMulti a_gameState, int ROLLOUT_DEPTH, double K)
     {
-        //Set the game observation to a newly root node.
-        //System.out.println("learning_style = " + learning_style);
+        //Set the game observation to a newly root node
     	SingleMCTSPlayer.ROLLOUT_DEPTH = ROLLOUT_DEPTH;
     	SingleMCTSPlayer.K = ROLLOUT_DEPTH;
         m_root = new SingleTreeNode(m_rnd, a_gameState);

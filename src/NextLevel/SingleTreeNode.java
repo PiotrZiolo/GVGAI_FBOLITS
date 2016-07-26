@@ -72,8 +72,9 @@ public class SingleTreeNode
         int numIters = 0;
 
         int remainingLimit = 12;
-        while(remaining > 2*avgTimeTaken && remaining > remainingLimit){
-            StateObservationMulti state = rootState.copy();
+		while (remaining > 2 * avgTimeTaken && remaining > remainingLimit)
+		{
+			StateObservationMulti state = rootState.copy();
 
             ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
             SingleTreeNode selected = treePolicy(state);
@@ -81,10 +82,11 @@ public class SingleTreeNode
             backUp(selected, delta);
 
             numIters++;
-            acumTimeTaken += (elapsedTimerIteration.elapsedMillis()) ;
-            //System.out.println(elapsedTimerIteration.elapsedMillis() + " --> " + acumTimeTaken + " (" + remaining + ")");
-            avgTimeTaken  = acumTimeTaken/numIters;
-            remaining = elapsedTimer.remainingTimeMillis();
+            acumTimeTaken += (elapsedTimerIteration.elapsedMillis());
+            LogHandler.writeLog(elapsedTimerIteration.elapsedMillis() + " --> " + acumTimeTaken + " (" + remaining + ")", 
+            		"SingleTreeNode.mctsSearch", 0);
+			avgTimeTaken = acumTimeTaken / numIters;
+			remaining = elapsedTimer.remainingTimeMillis();
         }
     }
     

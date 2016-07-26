@@ -62,15 +62,21 @@ public class Agent extends AbstractMultiPlayer
 		StateObservationMulti stateObsCopy = stateObs.copy();
 		stateObsCopy.advance(acts);
 		
-		printState(stateObs, 0, true);
+		// printState(stateObsCopy, 0, true);
 		
 		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("First learning start", "Agent.Agent", 3);
+		if (LogHandler.bLoggingOn)
+		{
+			performanceMonitor.startNanoMeasure("First learning start", "Agent.Agent", 3);
+		}
 
 		brain = new Brain(id);
 		brain.learn(stateObsCopy, elapsedTimer, false, true, 0);
 		
-		performanceMonitor.finishNanoMeasure("First learning finish", "Agent.Agent", 3);
+		if (LogHandler.bLoggingOn)
+		{
+			performanceMonitor.finishNanoMeasure("First learning finish", "Agent.Agent", 3);
+		}
 
 		spriteTypeFeaturesMap = brain.getSpriteTypeFeaturesMap();
 
@@ -126,7 +132,10 @@ public class Agent extends AbstractMultiPlayer
 		 */
 
 		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Act learning start", "Agent.act", 3);
+		if (LogHandler.bLoggingOn)
+		{
+			performanceMonitor.startNanoMeasure("Act learning start", "Agent.act", 3);
+		}
 		brain.learn(stateObs, elapsedTimer, false, false, 1);
 		TreeSet<Event> eventsHistory = stateObs.getEventsHistory();
 		Iterator<Event> eventsIterator = eventsHistory.descendingIterator();
@@ -141,7 +150,10 @@ public class Agent extends AbstractMultiPlayer
 			}
 		}
 
-		performanceMonitor.finishNanoMeasure("Act learning finish", "Agent.act", 3);
+		if (LogHandler.bLoggingOn)
+		{
+			performanceMonitor.finishNanoMeasure("Act learning finish", "Agent.act", 3);
+		}
 
 		switch (algorithmID)
 		{

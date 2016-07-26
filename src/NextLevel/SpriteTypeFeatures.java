@@ -128,7 +128,7 @@ public class SpriteTypeFeatures
 	
 	public void print()
 	{
-		System.out.println("[" 
+		LogHandler.writeLog("[" 
 				+ this.category + ", "
 				+ this.type + ", "
 				+ this.dangerousToAvatar + ", "
@@ -143,6 +143,7 @@ public class SpriteTypeFeatures
 				+ this.speed + ", "
 				+ this.changingValuesOfOtherObjects + ", "
 				+ this.allowingVictory
-				+ "]");
+				+ "]", 
+				"SpriteTypeFeatures.print", 0);
 	}
 }

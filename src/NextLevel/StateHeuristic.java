@@ -37,11 +37,10 @@ public class StateHeuristic
 		{
 			this.weights[i] = weights[i];
 		}
-		// if (weights.length < this.weights.length)
-		// {
-		// System.out.println("Not enough weights. Missing values were set to
-		// 0.");
-		// }
+		if (LogHandler.bLoggingOn && weights.length < this.weights.length)
+		{
+			LogHandler.writeLog("Not enough weights. Missing values were set to 0", "StateHeuristic.StateHeuristic", 0);
+		}
 		for (int i = weights.length; i < this.weights.length; i++)
 		{
 			this.weights[i] = weights[i];
@@ -130,7 +129,7 @@ public class StateHeuristic
 		if (spriteTypeFeaturesMap.containsKey(obs.itype))
 		{
 			SpriteTypeFeatures sprite = spriteTypeFeaturesMap.get(obs.itype);
-			// System.out.println("Type: " + sprite.passable);
+			LogHandler.writeLog("Type: " + sprite.passable, "StateHeuristic.observationPayoffFunction", 0);
 			if (sprite.passable || sprite.destroyable)
 			{
 				if (sprite.givingVictory)
