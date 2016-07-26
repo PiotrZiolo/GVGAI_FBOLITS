@@ -26,6 +26,11 @@ public class SingleTreeNode
 
     public StateObservationMulti rootState;
 
+    /**
+     * Inits root node.
+     * @param a_gameState current state of the game.
+     * @param rnd random generator.
+     */
     public SingleTreeNode(Random rnd, StateObservationMulti a_gameState) {
     	this.parent = null;
         this.m_rnd = rnd;
@@ -36,6 +41,13 @@ public class SingleTreeNode
         children = new SingleTreeNode[Agent.availableActions.size()];
     }
 
+    /**
+     * Inits child node.
+     * @param parent parent node.
+     * @param childIdx id of child node.
+     * @param rnd random generator.
+     * @param a_gameState current state of the game.
+     */
     public SingleTreeNode(SingleTreeNode parent, int childIdx, Random rnd, StateObservationMulti a_gameState ) {
         this.parent = parent;
         this.m_rnd = rnd;
@@ -47,8 +59,11 @@ public class SingleTreeNode
             m_depth = 0;
         children = new SingleTreeNode[Agent.availableActions.size()];
     }
-
-
+    
+    /**
+     * Function responsible for searching and developing the tree.
+     * @param elapsedTimer timer counting down available time.
+     */
     public void mctsSearch(ElapsedCpuTimer elapsedTimer) {
 
         double avgTimeTaken = 0;
@@ -72,7 +87,11 @@ public class SingleTreeNode
             remaining = elapsedTimer.remainingTimeMillis();
         }
     }
-
+    
+    /**
+     * Function growing down the tree responsible for searching and developing the tree.
+     * @param state initial state
+     */
     public SingleTreeNode treePolicy(StateObservationMulti state) {
 
         SingleTreeNode cur = this;
@@ -89,8 +108,11 @@ public class SingleTreeNode
 
         return cur;
     }
-
-
+    
+    /**
+     * Expands the node creating new child.
+     * @param state initial state
+     */
     public SingleTreeNode expand(StateObservationMulti state) {
 
         int bestAction = 0;
@@ -115,7 +137,7 @@ public class SingleTreeNode
         //get actions available to the opponent and assume they will do a random action
         //ArrayList<Types.ACTIONS> oppActions = state.getAvailableActions(Agent.oppID);
         //acts[Agent.oppID] = oppActions.get(m_rnd.nextInt(oppActions.size()));
-        acts[Agent.oppID] = getNotLosingAction(state, Agent.oppID, Types.ACTIONS.ACTION_NIL);
+        acts[Agent.oppID] = getAction(state, Agent.oppID, Types.ACTIONS.ACTION_NIL, false);
 
         state.advance(acts);
 
@@ -123,7 +145,11 @@ public class SingleTreeNode
         children[bestAction] = tn;
         return tn;
     }
-
+    
+    /**
+     * UTC function choosing best branch.
+     * @param state state needed to get available actions
+     */
     public SingleTreeNode uct(StateObservationMulti state) {
 
         SingleTreeNode selected = null;
@@ -166,14 +192,17 @@ public class SingleTreeNode
         //get actions available to the opponent and assume they will do a random action
         //ArrayList<Types.ACTIONS> oppActions = state.getAvailableActions(Agent.oppID);
         //acts[Agent.oppID] = oppActions.get(m_rnd.nextInt(oppActions.size()));
-        acts[Agent.oppID] = getNotLosingAction(state, Agent.oppID, Types.ACTIONS.ACTION_NIL);
+        acts[Agent.oppID] = getAction(state, Agent.oppID, Types.ACTIONS.ACTION_NIL, false);
 
         state.advance(acts);
 
         return selected;
     }
 
-
+    /**
+     * Function simulating random game until reaching ROLLOUT_DEPTH.
+     * @param state state when the roll to get available actions
+     */
     public double rollOut(StateObservationMulti state)
     {
         int thisDepth = this.m_depth;
@@ -185,7 +214,7 @@ public class SingleTreeNode
             for (int i = 0; i < Agent.no_players; i++) {
                 //ArrayList<Types.ACTIONS> availableActions = state.getAvailableActions(i);
                 //acts[i] = availableActions.get(m_rnd.nextInt(availableActions.size()));
-                acts[i] = getNotLosingAction(state, i, Types.ACTIONS.ACTION_NIL);
+                acts[i] = getAction(state, i, Types.ACTIONS.ACTION_NIL, false);
             }
             state.advance(acts);
             thisDepth++;
@@ -204,6 +233,10 @@ public class SingleTreeNode
         return delta;
     }
 
+    /**
+     * Function evaluating game state.
+     * @param a_gameState evaluated state
+     */
     public double value(StateObservationMulti a_gameState) {
 
         boolean gameOver = a_gameState.isGameOver();
@@ -221,7 +254,12 @@ public class SingleTreeNode
 
         return rawScore;
     }
-
+    
+    /**
+     * Condition for roll out termination.
+     * @param rollerState current state
+     * @param depth current roll out depth
+     */
     public boolean finishRollout(StateObservationMulti rollerState, int depth)
     {
         if(depth >= SingleMCTSPlayer.ROLLOUT_DEPTH)      //rollout end condition.
@@ -232,7 +270,12 @@ public class SingleTreeNode
 
         return false;
     }
-
+    
+    /**
+     * Function changing score of node with roll out result.
+     * @param node node for which score is changed
+     * @param result roll out result
+     */
     public void backUp(SingleTreeNode node, double result)
     {
         SingleTreeNode n = node;
@@ -243,8 +286,10 @@ public class SingleTreeNode
             n = n.parent;
         }
     }
-
-
+    
+    /**
+     * Returns most visited action among root's children.
+     */
     public Types.ACTIONS mostVisitedAction() {
         int selected = -1;
         double bestValue = -Double.MAX_VALUE;
@@ -287,7 +332,10 @@ public class SingleTreeNode
         }
         return rootState.getAvailableActions(Agent.id).get(selected);
     }
-
+    
+    /**
+     * Returns most action among root's children.
+     */
     public int bestAction()
     {
         int selected = -1;
@@ -315,8 +363,10 @@ public class SingleTreeNode
 
         return selected;
     }
-
-
+    
+    /**
+     * Check whether node isn't fully expanded (it hasn't got all children initialized.
+     */
     public boolean notFullyExpanded() {
         for (SingleTreeNode tn : children) {
             if (tn == null) {
@@ -325,28 +375,37 @@ public class SingleTreeNode
         }
         return false;
     }
+
     
-    private Types.ACTIONS getNotLosingAction(StateObservationMulti state, int playerID, Types.ACTIONS oppmove)
+    /**
+     * Returns action for roll out.
+     * @param state current state
+     * @param playerID 
+     */
+    private Types.ACTIONS getAction(StateObservationMulti state, int playerID, Types.ACTIONS oppmove, boolean notLosingAction)
     {
-        /*int no_players = state.getNoPlayers();
-        int oppID = (playerID + 1) % no_players;
-        ArrayList<Types.ACTIONS> availableActions = state.getAvailableActions(playerID);
-        java.util.Collections.shuffle(availableActions);
-
-        //Look for the opponent actions that would not kill him.
-        for (Types.ACTIONS action : availableActions) {
-            Types.ACTIONS[] acts = new Types.ACTIONS[no_players];
-            acts[oppID] = oppmove;
-            acts[playerID] = action;
-
-            StateObservationMulti stateCopy = state.copy();
-            stateCopy.advance(acts);
-
-            if(stateCopy.getMultiGameWinner()[playerID] != Types.WINNER.PLAYER_LOSES)
-            	return action;
-        }*/
-
-        ArrayList<Types.ACTIONS> availableActions = state.getAvailableActions(playerID);
-        return availableActions.get(new Random().nextInt(availableActions.size()));
+    	if (notLosingAction) {
+	        int no_players = state.getNoPlayers();
+	        int oppID = (playerID + 1) % no_players;
+	        ArrayList<Types.ACTIONS> availableActions = state.getAvailableActions(playerID);
+	        java.util.Collections.shuffle(availableActions);
+	
+	        //Look for the opponent actions that would not kill him.
+	        for (Types.ACTIONS action : availableActions) {
+	            Types.ACTIONS[] acts = new Types.ACTIONS[no_players];
+	            acts[oppID] = oppmove;
+	            acts[playerID] = action;
+	
+	            StateObservationMulti stateCopy = state.copy();
+	            stateCopy.advance(acts);
+	
+	            if(stateCopy.getMultiGameWinner()[playerID] != Types.WINNER.PLAYER_LOSES)
+	            	return action;
+	        }
+	    	return Types.ACTIONS.ACTION_NIL;
+    	} else {
+    		ArrayList<Types.ACTIONS> availableActions = state.getAvailableActions(playerID);
+    		return availableActions.get(new Random().nextInt(availableActions.size()));
+    	}
 	}
 }

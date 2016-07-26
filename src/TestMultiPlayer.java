@@ -25,7 +25,7 @@ public class TestMultiPlayer
         String nextLevel = "NextLevel.Agent";
 
         //Set here the controllers used in the games (need 2 separated by space).
-        String controllers = sampleOLMCTSController + " " + nextLevel;
+        String controllers = nextLevel + " " + sampleOLMCTSController;
 
         //Available games:
         String gamesPath = "examples/2player/";
@@ -40,7 +40,7 @@ public class TestMultiPlayer
         int seed = new Random().nextInt();
 
         //Game and level to play
-        int gameIdx = 1;
+        int gameIdx = 9;
         int levelIdx = 0; //level names from 0 to 4 (game_lvlN.txt).
         String game = gamesPath + games[gameIdx] + ".txt";
         String level1 = gamesPath + games[gameIdx] + "_lvl" + levelIdx +".txt";

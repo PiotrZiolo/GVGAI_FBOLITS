@@ -30,7 +30,7 @@ public class StateHeuristic
 			double[] weights, double pointScale, Dimension worldDimension)
 	{
 
-		this.lengthScale = worldDimension.getHeight() + worldDimension.getWidth();
+		this.lengthScale = Math.pow(worldDimension.getHeight() + worldDimension.getWidth(), 2);
 		this.pointScale = pointScale;
 		this.weights = new double[10];
 		for (int i = 0; i < weights.length; i++)
