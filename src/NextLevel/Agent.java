@@ -64,12 +64,13 @@ public class Agent extends AbstractMultiPlayer
 		
 		printState(stateObs, 0, true);
 		
-		PerformanceMonitor.startNanoMeasure("First learning start", "Agent.Agent", 3);
+		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		performanceMonitor.startNanoMeasure("First learning start", "Agent.Agent", 3);
 
 		brain = new Brain(id);
 		brain.learn(stateObsCopy, elapsedTimer, false, true, 0);
 		
-		PerformanceMonitor.finishNanoMeasure("First learning finish", "Agent.Agent", 3);
+		performanceMonitor.finishNanoMeasure("First learning finish", "Agent.Agent", 3);
 
 		spriteTypeFeaturesMap = brain.getSpriteTypeFeaturesMap();
 
@@ -124,7 +125,8 @@ public class Agent extends AbstractMultiPlayer
 		 * 
 		 */
 
-		PerformanceMonitor.startNanoMeasure("Act learning start", "Agent.act", 3);
+		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		performanceMonitor.startNanoMeasure("Act learning start", "Agent.act", 3);
 		brain.learn(stateObs, elapsedTimer, false, false, 1);
 		TreeSet<Event> eventsHistory = stateObs.getEventsHistory();
 		Iterator<Event> eventsIterator = eventsHistory.descendingIterator();
@@ -139,7 +141,7 @@ public class Agent extends AbstractMultiPlayer
 			}
 		}
 
-		PerformanceMonitor.finishNanoMeasure("Act learning finish", "Agent.act", 3);
+		performanceMonitor.finishNanoMeasure("Act learning finish", "Agent.act", 3);
 
 		switch (algorithmID)
 		{

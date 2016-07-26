@@ -12,6 +12,7 @@ import core.game.StateObservationMulti;
 import core.game.Event;
 import ontology.Types;
 import ontology.Types.ACTIONS;
+import sun.misc.Perf;
 import tools.ElapsedCpuTimer;
 import tools.Vector2d;
 import java.lang.Math;
@@ -147,8 +148,8 @@ public class Brain
 
 		if (!justImagine)
 		{
-			//System.out.println("----------");
-			//System.out.println(">>> Game turn: " + stateObs.getGameTick());
+			LogHandler.writeLog("----------", "Brain.learn", 3);
+			LogHandler.writeLog(">>> Game turn: " + stateObs.getGameTick(), "Brain.learn", 3);
 		}
 
 		for (ArrayList<Observation>[] positions : arraysOfSprites)
@@ -159,12 +160,12 @@ public class Brain
 				{
 					if (observations.size() > 0)
 					{
-						//if (!justImagine)
-						//{
-							//System.out.println("----------");
-							//System.out.println("Checking sprite of type: " + observations.get(0).itype
-							//		+ " and category: " + observations.get(0).category);
-						//}
+						if (!justImagine)
+						{
+							LogHandler.writeLog("----------", "Brain.learn", 3);
+							LogHandler.writeLog("Checking sprite of type: " + observations.get(0).itype
+									+ " and category: " + observations.get(0).category, "Brain.learn", 3);
+						}
 
 						if (range == 0 || range == 1 || observations.get(0).category == category)
 						{
@@ -174,20 +175,21 @@ public class Brain
 								SpriteTypeFeatures spriteTypeFeatures;
 								if (productionVersion)
 								{
-									//if (!justImagine)
-									//{
-										//System.out.println("Testing sprite of type: " + observations.get(0).itype
-										//		+ " and category: " + observations.get(0).category);
-										//System.out.println("Before action: " + elapsedTimer.remainingTimeMillis());
-									//}
+									PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+									if (!justImagine)
+									{
+										LogHandler.writeLog("Testing sprite of type: " + observations.get(0).itype
+												+ " and category: " + observations.get(0).category, "Brain.learn", 3);
+										performanceMonitor.startNanoMeasure("Before action", "Brain.learn", 3);
+									}
 									spriteTypeFeatures = testSprite(stateObs, observations.get(0),
 											recursiveImplications);
-									//if (!justImagine)
-									//{
-										//System.out.println("After action: " + elapsedTimer.remainingTimeMillis());
-										//spriteTypeFeatures.print();
-										//System.out.println("----------");
-									//}
+									if (!justImagine)
+									{
+										performanceMonitor.finishNanoMeasure("After action", "Brain.learn", 3);
+										spriteTypeFeatures.print();
+										LogHandler.writeLog("----------", "Brain.learn", 3);
+									}
 								}
 								else
 								{
