@@ -169,7 +169,6 @@ public class Agent extends AbstractMultiPlayer
 	}
 
 	/**
-	 *
 	 * Very simple one step lookahead agent. Pass player ID to all state
 	 * observation methods to query the right player. Omitting the player ID
 	 * will result in it being set to the default 0 (first player, whichever

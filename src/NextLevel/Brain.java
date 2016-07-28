@@ -12,7 +12,6 @@ import core.game.StateObservationMulti;
 import core.game.Event;
 import ontology.Types;
 import ontology.Types.ACTIONS;
-import sun.misc.Perf;
 import tools.ElapsedCpuTimer;
 import tools.Vector2d;
 import java.lang.Math;
@@ -41,8 +40,9 @@ public class Brain
 	/**
 	 * public constructor
 	 */
-    @SuppressWarnings("unchecked")
-	public Brain() {
+	@SuppressWarnings("unchecked")
+	public Brain()
+	{
 		this.playerID = 0;
 		this.memory = new Memory();
 		this.testingSpriteAttemptsLimit = 1;
@@ -58,8 +58,9 @@ public class Brain
 	 * @param playerID
 	 *            ID of this agent.
 	 */
-    @SuppressWarnings("unchecked")
-	public Brain(int playerID) {
+	@SuppressWarnings("unchecked")
+	public Brain(int playerID)
+	{
 		this.playerID = playerID;
 		this.memory = new Memory();
 		this.testingSpriteAttemptsLimit = 1;
@@ -72,14 +73,16 @@ public class Brain
 	/**
 	 * Returns the map of spriteTypeFeatures.
 	 */
-	public HashMap<Integer, SpriteTypeFeatures> getSpriteTypeFeaturesMap() {
+	public HashMap<Integer, SpriteTypeFeatures> getSpriteTypeFeaturesMap()
+	{
 		return memory.getSpriteTypeFeaturesMap();
 	}
 
 	/**
 	 * Cleans imaginationMemory.
 	 */
-	public void cleanImaginationMemory() {
+	public void cleanImaginationMemory()
+	{
 		imaginationMemory = null;
 	}
 
@@ -91,27 +94,26 @@ public class Brain
 	 * @param elapsedTimer
 	 *            Timer when the action returned is due.
 	 * @param justImagine
-	 *            If set to true, all knowledge updates will be saved to
-	 *            imaginationMemory.
+	 *            If set to true, all knowledge updates will be saved to imaginationMemory.
 	 * @param recursiveImplications
-	 *            Whether to check recursive changes like e.g.
-	 *            changingValuesOfOtherObjects or allowingVictory.
+	 *            Whether to check recursive changes like e.g. changingValuesOfOtherObjects or allowingVictory.
 	 * @param range
-	 *            0 - All types. 1 - Only new types. 2 - Only the category given
-	 *            by category.
+	 *            0 - All types. 1 - Only new types. 2 - Only the category given by category.
 	 * @param category
 	 *            Category to be evaluated.
 	 */
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	public void learn(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, boolean justImagine,
-			boolean recursiveImplications, int range, int category) {
+			boolean recursiveImplications, int range, int category)
+	{
 		boolean productionVersion = true;
-		
+
 		this.oppID = (playerID + 1) % stateObs.getNoPlayers();
 
-		if (elapsedTimer == null) {
+		if (elapsedTimer == null)
+		{
 			elapsedTimer = this.elapsedTimer;
-			
+
 			if (elapsedTimer.remainingTimeMillis() < 100)
 			{
 				this.fastThinking = true;
@@ -121,7 +123,7 @@ public class Brain
 		{
 			this.elapsedTimer = elapsedTimer;
 		}
-		
+
 		if (justImagine)
 		{
 			imaginationMemory = memory;
@@ -178,8 +180,10 @@ public class Brain
 									PerformanceMonitor performanceMonitor = new PerformanceMonitor();
 									if (LogHandler.bLoggingOn && !justImagine)
 									{
-										LogHandler.writeLog("Testing sprite of type: " + observations.get(0).itype
-												+ " and category: " + observations.get(0).category, "Brain.learn", 3);
+										LogHandler.writeLog(
+												"Testing sprite of type: " + observations.get(0).itype
+														+ " and category: " + observations.get(0).category,
+												"Brain.learn", 3);
 										performanceMonitor.startNanoMeasure("Before action", "Brain.learn", 3);
 									}
 									spriteTypeFeatures = testSprite(stateObs, observations.get(0),
@@ -222,7 +226,8 @@ public class Brain
 					PerformanceMonitor performanceMonitor = new PerformanceMonitor();
 					if (LogHandler.bLoggingOn && !justImagine)
 					{
-						LogHandler.writeLog("Testing sprite of type: " + (-1 - oppID) + " and category: " + 0, "Brain.learn", 3);
+						LogHandler.writeLog("Testing sprite of type: " + (-1 - oppID) + " and category: " + 0,
+								"Brain.learn", 3);
 						performanceMonitor.startNanoMeasure("Before action", "Brain.learn", 3);
 					}
 					SpriteTypeFeatures spriteTypeFeatures = testOtherPlayer(stateObs, oppID, recursiveImplications);
@@ -258,11 +263,9 @@ public class Brain
 	 * @param elapsedTimer
 	 *            Timer when the action returned is due.
 	 * @param justImagine
-	 *            If set to true, all knowledge updates will be saved to
-	 *            imaginationMemory.
+	 *            If set to true, all knowledge updates will be saved to imaginationMemory.
 	 * @param recursiveImplications
-	 *            Whether to check recursive changes like e.g.
-	 *            changingValuesOfOtherObjects or allowingVictory.
+	 *            Whether to check recursive changes like e.g. changingValuesOfOtherObjects or allowingVictory.
 	 * @param range
 	 *            0 - All types. 1 - Only new types.
 	 */
@@ -273,8 +276,7 @@ public class Brain
 	}
 
 	/**
-	 * Updates the knowledge about sprites when a new Event have appeared in the
-	 * history.
+	 * Updates the knowledge about sprites when a new Event have appeared in the history.
 	 * 
 	 * @param stateObsJustBeforeAction
 	 *            Observation of the state just before the Event.
@@ -312,17 +314,14 @@ public class Brain
 	}
 
 	/**
-	 * Updates the knowledge about different sprites if new Events have appeared
-	 * in the history.
+	 * Updates the knowledge about different sprites if new Events have appeared in the history.
 	 * 
 	 * @param stateObs
-	 *            Observation of the initial state from which testing is to be
-	 *            done.
+	 *            Observation of the initial state from which testing is to be done.
 	 * @param observation
 	 *            Observation of the sprite to test.
 	 * @param recursiveImplications
-	 *            Whether to check recursive changes like e.g.
-	 *            changingValuesOfOtherObjects or allowingVictory.
+	 *            Whether to check recursive changes like e.g. changingValuesOfOtherObjects or allowingVictory.
 	 */
 	private SpriteTypeFeatures testSprite(StateObservationMulti stateObs, Observation observation,
 			boolean recursiveImplications)
@@ -411,17 +410,14 @@ public class Brain
 	}
 
 	/**
-	 * Updates the knowledge about different sprites if new Events have appeared
-	 * in the history.
+	 * Updates the knowledge about different sprites if new Events have appeared in the history.
 	 * 
 	 * @param stateObs
-	 *            Observation of the initial state from which testing is to be
-	 *            done.
+	 *            Observation of the initial state from which testing is to be done.
 	 * @param observation
 	 *            Observation of the sprite to test.
 	 * @param recursiveImplications
-	 *            Whether to check recursive changes like e.g.
-	 *            changingValuesOfOtherObjects or allowingVictory.
+	 *            Whether to check recursive changes like e.g. changingValuesOfOtherObjects or allowingVictory.
 	 */
 	private SpriteTypeFeatures testOtherPlayer(StateObservationMulti stateObs, int oppID, boolean recursiveImplications)
 	{
@@ -438,17 +434,15 @@ public class Brain
 	/**
 	 * Tries to approach the sprite given in observation. Returns a state in
 	 * which the avatar is one step from the sprite and in the direction of the
-	 * sprite. If it was impossible in a certain number of tries, null is
-	 * returned.
+	 * sprite. If it was impossible in a certain number of tries, null is returned.
 	 * 
 	 * @param stateObs
-	 *            Observation of the initial state from which testing is to be
-	 *            done.
+	 *            Observation of the initial state from which testing is to be done.
 	 * @param observation
 	 *            Observation of the sprite to approach.
 	 */
-	 
-    @SuppressWarnings("unchecked")
+
+	@SuppressWarnings("unchecked")
 	public StateObservationMulti approachSprite(StateObservationMulti stateObs, Observation observation)
 	{
 		int pathFinderLimit = (fastThinking) ? 1 : 10;
@@ -457,26 +451,26 @@ public class Brain
 			LogHandler.writeLog("Opponent died", "Brain.approachSprite", 0);
 			return null;
 		}
-		
+
 		StateObservationMulti currentState = stateObs.copy();
 		StateObservationMulti temporaryState;
 		int advanceLimit = approachingSpriteMovesLimit;
-		
+
 		Vector2d playerPreviousPosition = stateObs.getAvatarPosition(playerID);
 		Vector2d playerPreviousOrientation = stateObs.getAvatarOrientation(playerID);
 		ArrayList<Types.ACTIONS> playerGoodActions = stateObs.getAvailableActions(playerID);
 		ArrayList<Types.ACTIONS> opponentGoodActions = stateObs.getAvailableActions(oppID);
 		Types.ACTIONS playerLastAction = Types.ACTIONS.ACTION_NIL;
-		
+
 		Vector2d observationPosition = observation.position;
-		if (observationPosition == playerPreviousPosition) 
+		if (observationPosition == playerPreviousPosition)
 		{
 			LogHandler.writeLog("Object is in the same place as player", "Brain.approachSprite", 0);
 			return null;
 		}
 		int[] blockWhereObservationWasLastSeen = { (int) (observationPosition.x / stateObs.getBlockSize()),
 				(int) (observationPosition.y / stateObs.getBlockSize()) };
-		
+
 		// in this while avatar is trying to minimize distance to goal
 		LogHandler.writeLog("PlayerPreviousPosition = " + playerPreviousPosition, "Brain.approachSprite", 0);
 		LogHandler.writeLog("ObservationPosition = " + observationPosition, "Brain.approachSprite", 0);
@@ -496,8 +490,8 @@ public class Brain
 				return null;
 			}
 
-			LogHandler.writeLog(observationPosition + " " + playerPreviousPosition + " " 
-					+ playerPreviousOrientation + " " + observation.itype, "Brain.approachSprite", 0);
+			LogHandler.writeLog(observationPosition + " " + playerPreviousPosition + " " + playerPreviousOrientation
+					+ " " + observation.itype, "Brain.approachSprite", 0);
 			// check whether avatar reached the object and return opponent if he
 			// is the object.
 			if (isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition, playerPreviousPosition, currentState,
@@ -540,7 +534,8 @@ public class Brain
 			//
 			LogHandler.writeLog("goalPosition = " + observationPosition, "Brain.approachSprite", 0);
 			LogHandler.writeLog("actions = " + actions[playerID].toString(), "Brain.approachSprite", 0);
-			LogHandler.writeLog("avatarPositionB = " + temporaryState.getAvatarPosition(playerID), "Brain.approachSprite", 0);
+			LogHandler.writeLog("avatarPositionB = " + temporaryState.getAvatarPosition(playerID),
+					"Brain.approachSprite", 0);
 
 			if (advanceLimit == 0)
 			{
@@ -549,7 +544,8 @@ public class Brain
 			}
 			temporaryState.advance(actions);
 			advanceLimit--;
-			LogHandler.writeLog("avatarPositionA = " + temporaryState.getAvatarPosition(playerID), "Brain.approachSprite", 0);
+			LogHandler.writeLog("avatarPositionA = " + temporaryState.getAvatarPosition(playerID),
+					"Brain.approachSprite", 0);
 
 			// check whether no one died
 			boolean goodMove = true;
@@ -604,12 +600,13 @@ public class Brain
 		for (int paths = 0; paths < pathFinderLimit; paths++)
 		{
 			PathFinder pathFinder = new PathFinder();
-			
+
 			LogHandler.writeLog("playerPreviousPosition = " + playerPreviousPosition, "Brain.approachSprite", 0);
 			LogHandler.writeLog("observationPosition = " + observationPosition, "Brain.approachSprite", 0);
-			LogHandler.writeLog("playerPreviousPosition = " + currentState.getAvatarPosition(playerID), "Brain.approachSprite", 0);
+			LogHandler.writeLog("playerPreviousPosition = " + currentState.getAvatarPosition(playerID),
+					"Brain.approachSprite", 0);
 			LogHandler.writeLog("playerID = " + playerID, "Brain.approachSprite", 0);
-			
+
 			Deque<Types.ACTIONS> playerMoveSequenceToGoal = pathFinder.pathFinder(playerPreviousPosition,
 					observationPosition, currentState, playerID);
 			LogHandler.writeLog("playerID = " + playerID, "Brain.approachSprite", 0);
@@ -676,10 +673,12 @@ public class Brain
 				temporaryState = currentState.copy();
 
 				// advance
-				LogHandler.writeLog("avatarPosition = " + temporaryState.getAvatarPosition(playerID), "Brain.approachSprite", 0);
+				LogHandler.writeLog("avatarPosition = " + temporaryState.getAvatarPosition(playerID),
+						"Brain.approachSprite", 0);
 				LogHandler.writeLog("goalPosition = " + observationPosition, "Brain.approachSprite", 0);
 				LogHandler.writeLog("actions = " + actions[playerID].toString(), "Brain.approachSprite", 0);
-				LogHandler.writeLog("avatarPositionB = " + temporaryState.getAvatarPosition(playerID), "Brain.approachSprite", 0);
+				LogHandler.writeLog("avatarPositionB = " + temporaryState.getAvatarPosition(playerID),
+						"Brain.approachSprite", 0);
 				if (advanceLimit == 0)
 				{
 					LogHandler.writeLog("AdvancedLimit reached", "Brain.approachSprite", 0);
@@ -687,15 +686,17 @@ public class Brain
 				}
 				temporaryState.advance(actions);
 				advanceLimit--;
-				LogHandler.writeLog("avatarPositionA = " + temporaryState.getAvatarPosition(playerID), "Brain.approachSprite", 0);
-				LogHandler.writeLog("avatarPosition2 = " + temporaryState.getAvatarPosition(playerID), "Brain.approachSprite", 0);
+				LogHandler.writeLog("avatarPositionA = " + temporaryState.getAvatarPosition(playerID),
+						"Brain.approachSprite", 0);
+				LogHandler.writeLog("avatarPosition2 = " + temporaryState.getAvatarPosition(playerID),
+						"Brain.approachSprite", 0);
 
 				// check whether no one died
 				boolean goodMove = true;
 				if (!temporaryState.isAvatarAlive(playerID))
 				{
 					LogHandler.writeLog("Player killed", "Brain.approachSprite", 0);
-					return null; 
+					return null;
 
 					// playerGoodActions.remove(actions[playerID]);
 					// goodMove = false;
@@ -754,7 +755,8 @@ public class Brain
 				&& Math.abs(distance.x) < currentState.getBlockSize()
 				&& Math.abs(distance.y - speedInPixels) < currentState.getBlockSize())
 		{
-			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL && spriteType == -1 - oppID
+			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL
+					&& spriteType == -1 - oppID
 					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_UP)
 			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
@@ -769,7 +771,8 @@ public class Brain
 				&& Math.abs(distance.x) < currentState.getBlockSize()
 				&& Math.abs(distance.y + speedInPixels) < currentState.getBlockSize())
 		{
-			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL && spriteType == -1 - oppID
+			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL
+					&& spriteType == -1 - oppID
 					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_DOWN)
 			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
@@ -784,7 +787,8 @@ public class Brain
 				&& Math.abs(distance.x - speedInPixels) < currentState.getBlockSize()
 				&& Math.abs(distance.y) < currentState.getBlockSize())
 		{
-			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL && spriteType == -1 - oppID
+			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL
+					&& spriteType == -1 - oppID
 					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_LEFT)
 			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
@@ -799,7 +803,8 @@ public class Brain
 				&& Math.abs(distance.x + speedInPixels) < currentState.getBlockSize()
 				&& Math.abs(distance.y) < currentState.getBlockSize())
 		{
-			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL && spriteType == -1 - oppID
+			if (Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_NIL
+					&& spriteType == -1 - oppID
 					&& Types.ACTIONS.fromVector(currentState.getAvatarOrientation(oppID)) != Types.ACTIONS.ACTION_RIGHT)
 			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
@@ -812,7 +817,7 @@ public class Brain
 		return false;
 	}
 
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	private Vector2d FindObject(int[] blockWhereObservationWasLastSeen, StateObservationMulti stateObs, int searchedID)
 	{
 		int worldWidth = (int) stateObs.getWorldDimension().getWidth() / stateObs.getBlockSize();
@@ -831,15 +836,16 @@ public class Brain
 			{
 				for (int j = -1; j <= 1; j++)
 				{
-					suspects = stateObs.getObservationGrid()
-							[(worldWidth + blockWhereObservationWasLastSeen[0] + i) % worldWidth]
-							[(worldHeight + blockWhereObservationWasLastSeen[1] + j) % worldHeight];
+					suspects = stateObs.getObservationGrid()[(worldWidth + blockWhereObservationWasLastSeen[0] + i)
+							% worldWidth][(worldHeight + blockWhereObservationWasLastSeen[1] + j) % worldHeight];
 					for (Observation suspect : suspects)
 					{
 						if (suspect.obsID == searchedID)
 						{
-							blockWhereObservationWasLastSeen[0] = (worldWidth + blockWhereObservationWasLastSeen[0] + i) % worldWidth;
-							blockWhereObservationWasLastSeen[1] = (worldHeight + blockWhereObservationWasLastSeen[1] + j) % worldHeight;
+							blockWhereObservationWasLastSeen[0] = (worldWidth + blockWhereObservationWasLastSeen[0] + i)
+									% worldWidth;
+							blockWhereObservationWasLastSeen[1] = (worldHeight + blockWhereObservationWasLastSeen[1]
+									+ j) % worldHeight;
 							return suspect.position;
 						}
 					}
@@ -849,7 +855,7 @@ public class Brain
 		return null;
 	}
 
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	private Types.ACTIONS chooseDirection(Vector2d observationPosition, Vector2d playerNewPosition,
 			ArrayList<Types.ACTIONS> playerGoodActions, Types.ACTIONS lastAction)
 	{
@@ -937,13 +943,11 @@ public class Brain
 	 * number of tries, null is returned.
 	 * 
 	 * @param stateObs
-	 *            Observation of the initial state from which testing is to be
-	 *            done.
+	 *            Observation of the initial state from which testing is to be done.
 	 * @param observation
 	 *            Observation of the sprite to approach.
 	 * @param actionType
-	 *            Type of action: 0 - use, 1 - move onto, 2 - actions of the
-	 *            other player on our player.
+	 *            Type of action: 0 - use, 1 - move onto, 2 - actions of the other player on our player.
 	 */
 	private StateObservationMulti[] makeActionOnSprite(StateObservationMulti stateObs, Observation observation,
 			int actionType)
@@ -1038,9 +1042,9 @@ public class Brain
 				}
 
 				/*
-				 * Assess if succeeded There are two conditions for success: - a
-				 * new event with the avatar and the sprite, - not changed
-				 * position of the sprite.
+				 * Assess if succeeded There are two conditions for success:
+				 * - a new event with the avatar and the sprite,
+				 * - not changed position of the sprite.
 				 */
 
 				LogHandler.writeLog("Testing if action succeeded", "Brain.makeActionOnSprite", 0);
@@ -1247,8 +1251,7 @@ public class Brain
 					if (recursiveImplications)
 					{
 						// changingValuesOfOtherObjects and allowingVictory:
-						// Looking for changes in changingPoints and
-						// allowingVictory
+						// Looking for changes in changingPoints and allowingVictory
 
 						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures,
 								stateObsJustBeforeAction, stateObsJustAfterAction, observation);
@@ -1369,13 +1372,13 @@ public class Brain
 					currentSpriteTypeFeatures.changingPoints = stateObsJustAfterAction.getGameScore(playerID)
 							- stateObsJustBeforeAction.getGameScore(playerID);
 
-					LogHandler.writeLog("Points: " + currentSpriteTypeFeatures.changingPoints, "Brain.updateKnowledgeAfterActionOnSprite", 0);
+					LogHandler.writeLog("Points: " + currentSpriteTypeFeatures.changingPoints,
+							"Brain.updateKnowledgeAfterActionOnSprite", 0);
 
 					if (recursiveImplications)
 					{
 						// changingValuesOfOtherObjects and allowingVictory:
-						// Looking for changes in changingPoints and
-						// allowingVictory
+						// Looking for changes in changingPoints and allowingVictory
 
 						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures,
 								stateObsJustBeforeAction, stateObsJustAfterAction, observation);
@@ -1389,8 +1392,7 @@ public class Brain
 					// Treat the other player and sprites differently
 					if (observation.obsID == -1 - oppID)
 					{
-						// We control the other avatar in the simulation, hence
-						// it's in the same place
+						// We control the other avatar in the simulation, hence it's in the same place
 						if (stateObsJustAfterAction.getAvatarPosition(playerID).x == stateObsJustAfterAction
 								.getAvatarPosition(oppID).x
 								&& stateObsJustAfterAction.getAvatarPosition(playerID).y == stateObsJustAfterAction
@@ -1473,8 +1475,7 @@ public class Brain
 					if (recursiveImplications)
 					{
 						// changingValuesOfOtherObjects and allowingVictory:
-						// Looking for changes in changingPoints and
-						// allowingVictory
+						// Looking for changes in changingPoints and allowingVictory
 
 						currentSpriteTypeFeatures = processImplicationsOfActionOnOtherSprites(currentSpriteTypeFeatures,
 								stateObsJustBeforeAction, stateObsJustAfterAction, observation);
@@ -1522,7 +1523,8 @@ public class Brain
 		// Check old portals
 		for (Map.Entry<Integer, SpriteTypeFeatures> spriteTypeFeaturesMapEntry : portalsTypeFeaturesMap.entrySet())
 		{
-			LogHandler.writeLog("Old portal type: " + spriteTypeFeaturesMapEntry.getKey(), "Brain.processImplicationsOfActionOnOtherSprites", 0);
+			LogHandler.writeLog("Old portal type: " + spriteTypeFeaturesMapEntry.getKey(),
+					"Brain.processImplicationsOfActionOnOtherSprites", 0);
 			if (portalsTypeFeaturesMapImagined.containsKey(spriteTypeFeaturesMapEntry.getKey()))
 			{
 				currentSpriteTypeFeatures.changingValuesOfOtherObjects += portalsTypeFeaturesMapImagined
@@ -1532,7 +1534,8 @@ public class Brain
 				if (!victoryConditionAppeared && !spriteTypeFeaturesMapEntry.getValue().givingVictory
 						&& portalsTypeFeaturesMapImagined.get(spriteTypeFeaturesMapEntry.getKey()).givingVictory)
 				{
-					LogHandler.writeLog("Allowing victory portal opened", "Brain.processImplicationsOfActionOnOtherSprites", 0);
+					LogHandler.writeLog("Allowing victory portal opened",
+							"Brain.processImplicationsOfActionOnOtherSprites", 0);
 					currentSpriteTypeFeatures.allowingVictory = true;
 					victoryConditionAppeared = true;
 				}
@@ -1549,7 +1552,8 @@ public class Brain
 		for (Map.Entry<Integer, SpriteTypeFeatures> spriteTypeFeaturesMapImaginedEntry : portalsTypeFeaturesMapImagined
 				.entrySet())
 		{
-			LogHandler.writeLog("New portal type: " + spriteTypeFeaturesMapImaginedEntry.getKey(), "Brain.processImplicationsOfActionOnOtherSprites", 0);
+			LogHandler.writeLog("New portal type: " + spriteTypeFeaturesMapImaginedEntry.getKey(),
+					"Brain.processImplicationsOfActionOnOtherSprites", 0);
 			if (!portalsTypeFeaturesMap.containsKey(spriteTypeFeaturesMapImaginedEntry.getKey()))
 			{
 				currentSpriteTypeFeatures.changingValuesOfOtherObjects += spriteTypeFeaturesMapImaginedEntry
@@ -1558,7 +1562,8 @@ public class Brain
 				if (!victoryConditionAppeared && spriteTypeFeaturesMapImaginedEntry.getValue().givingVictory)
 				{
 					currentSpriteTypeFeatures.allowingVictory = true;
-					LogHandler.writeLog("Allowing victory new portal", "Brain.processImplicationsOfActionOnOtherSprites", 0);
+					LogHandler.writeLog("Allowing victory new portal",
+							"Brain.processImplicationsOfActionOnOtherSprites", 0);
 					victoryConditionAppeared = true;
 				}
 			}
@@ -1744,7 +1749,7 @@ public class Brain
 	 * @param searchBreadth
 	 *            How far from the observation position to search.
 	 */
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	private Vector2d localizeSprite(StateObservationMulti stateObs, Observation observation, int searchBreadth)
 	{
 		ArrayList<Observation> suspects;
@@ -1758,8 +1763,9 @@ public class Brain
 		boolean objectLocalized = false;
 		int distance = 0;
 
-		while (!objectLocalized && distance <= searchBreadth && worldXDimension + blockWhereObservationWasLastSeen[0] - distance >= 0
-			    && worldYDimension + blockWhereObservationWasLastSeen[1] - distance >= 0)
+		while (!objectLocalized && distance <= searchBreadth
+				&& worldXDimension + blockWhereObservationWasLastSeen[0] - distance >= 0
+				&& worldYDimension + blockWhereObservationWasLastSeen[1] - distance >= 0)
 		{
 			for (int i = -distance; i <= distance; i = i + 1)
 			{

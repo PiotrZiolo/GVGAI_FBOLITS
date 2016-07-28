@@ -330,15 +330,15 @@ public class SingleTreeNode
         } else if(allEqual)
         {
             //If all are equal, we opt to choose for the one with the best Q.
-            selected = bestAction();
+            //selected = bestAction();
         }
-        return rootState.getAvailableActions(Agent.id).get(selected);
+        return (allEqual) ? bestAction() : rootState.getAvailableActions(Agent.id).get(selected);
     }
     
     /**
      * Returns most action among root's children.
      */
-    public int bestAction()
+    public Types.ACTIONS bestAction()
     {
         int selected = -1;
         double bestValue = -Double.MAX_VALUE;
@@ -363,7 +363,7 @@ public class SingleTreeNode
             selected = 0;
         }
 
-        return selected;
+        return rootState.getAvailableActions(Agent.id).get(selected);
     }
     
     /**
