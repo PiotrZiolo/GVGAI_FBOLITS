@@ -1,13 +1,13 @@
 package NextLevel;
 
-import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPGameKnowledge;
-import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPGameKnowledgeExplorer;
-import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPState;
-import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateEvaluator;
-import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateEvaluatorTeacher;
-import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateHandler;
-import baseStructure.moveController.AgentMoveController;
-import baseStructure.treeSearchPlanners.OLMCTSPlanner.OLMCTSPlanner;
+import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPGameKnowledge;
+import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPGameKnowledgeExplorer;
+import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPState;
+import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateEvaluator;
+import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateEvaluatorTeacher;
+import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateHandler;
+import NextLevel.moveController.AgentMoveController;
+import NextLevel.treeSearchPlanners.OLMCTSPlanner.OLMCTSPlanner;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
 import ontology.Types;

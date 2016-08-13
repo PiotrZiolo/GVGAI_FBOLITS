@@ -1,6 +1,6 @@
 package NextLevel.moveController;
 
-import baseStructure.GameKnowledge;
+import NextLevel.GameKnowledge;
 
 public class PathFinder
 {

@@ -1,7 +1,7 @@
 package NextLevel.treeSearchPlanners;
 
-import baseStructure.GameKnowledge;
-import baseStructure.StateEvaluator;
+import NextLevel.GameKnowledge;
+import NextLevel.StateEvaluator;
 
 public class TreePolicyMoveEvaluator
 {

@@ -1,7 +1,7 @@
 package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
 
-import baseStructure.GameKnowledge;
-import baseStructure.moveController.PathFinder;
+import NextLevel.GameKnowledge;
+import NextLevel.moveController.PathFinder;
 
 public class FBTPPathFinder extends PathFinder
 {

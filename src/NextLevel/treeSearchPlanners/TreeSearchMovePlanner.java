@@ -1,13 +1,13 @@
 package NextLevel.treeSearchPlanners;
 
-import baseStructure.GameKnowledge;
-import baseStructure.GameKnowledgeExplorer;
-import baseStructure.MovePlanner;
-import baseStructure.State;
-import baseStructure.StateEvaluator;
-import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPState;
-import baseStructure.moveController.AgentMoveController;
-import baseStructure.utils.LogHandler;
+import NextLevel.GameKnowledge;
+import NextLevel.GameKnowledgeExplorer;
+import NextLevel.MovePlanner;
+import NextLevel.State;
+import NextLevel.StateEvaluator;
+import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPState;
+import NextLevel.moveController.AgentMoveController;
+import NextLevel.utils.LogHandler;
 import ontology.Types;
 import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;

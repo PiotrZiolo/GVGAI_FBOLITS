@@ -1,8 +1,8 @@
 package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
 
-import baseStructure.GameKnowledge;
-import baseStructure.State;
-import baseStructure.StateEvaluator;
+import NextLevel.GameKnowledge;
+import NextLevel.State;
+import NextLevel.StateEvaluator;
 
 public class FBTPStateEvaluator extends StateEvaluator
 {

@@ -1,8 +1,8 @@
 package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
 
-import baseStructure.GameKnowledge;
-import baseStructure.GameKnowledgeExplorer;
-import baseStructure.moveController.AgentMoveController;
+import NextLevel.GameKnowledge;
+import NextLevel.GameKnowledgeExplorer;
+import NextLevel.moveController.AgentMoveController;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import tools.ElapsedCpuTimer;

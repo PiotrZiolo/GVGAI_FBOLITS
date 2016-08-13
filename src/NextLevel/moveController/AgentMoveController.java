@@ -1,6 +1,6 @@
 package NextLevel.moveController;
 
-import baseStructure.GameKnowledge;
+import NextLevel.GameKnowledge;
 import core.game.StateObservation;
 import ontology.Types;
 

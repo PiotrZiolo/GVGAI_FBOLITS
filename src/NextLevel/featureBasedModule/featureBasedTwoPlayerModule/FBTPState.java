@@ -1,6 +1,6 @@
 package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
 
-import baseStructure.State;
+import NextLevel.State;
 import core.game.StateObservationMulti;
 
 public class FBTPState extends State

@@ -1,7 +1,7 @@
 package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
 
-import baseStructure.State;
-import baseStructure.StateHandler;
+import NextLevel.State;
+import NextLevel.StateHandler;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 

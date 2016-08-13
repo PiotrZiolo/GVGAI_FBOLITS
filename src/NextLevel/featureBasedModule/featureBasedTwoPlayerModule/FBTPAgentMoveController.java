@@ -1,7 +1,7 @@
 package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
 
-import baseStructure.GameKnowledge;
-import baseStructure.moveController.AgentMoveController;
+import NextLevel.GameKnowledge;
+import NextLevel.moveController.AgentMoveController;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import ontology.Types;

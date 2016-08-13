@@ -1,6 +1,6 @@
 package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
 
-import baseStructure.GameKnowledge;
+import NextLevel.GameKnowledge;
 
 public class FBTPGameKnowledge extends GameKnowledge
 {
