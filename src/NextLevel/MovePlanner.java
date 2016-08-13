@@ -1,6 +1,6 @@
 package NextLevel;
 
-import baseStructure.moveController.AgentMoveController;
+import NextLevel.moveController.AgentMoveController;
 import ontology.Types;
 import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
