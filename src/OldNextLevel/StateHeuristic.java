@@ -1,4 +1,4 @@
-package NextLevel;
+package OldNextLevel;
 
 import core.game.Observation;
 //import core.game.StateObservation;
@@ -6,11 +6,12 @@ import core.game.StateObservationMulti;
 import ontology.Types;
 //import ontology.Types;
 import tools.Vector2d;
-import NextLevel.SpriteTypeFeatures;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import OldNextLevel.SpriteTypeFeatures;
 
 /**
  * Created with IntelliJ IDEA. User: ssamot Date: 11/02/14 Time: 15:44 This is a

@@ -1,4 +1,4 @@
-package NextLevel;
+package OldNextLevel;
 
 import java.util.Random;
 import core.game.StateObservationMulti;

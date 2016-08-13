@@ -1,4 +1,4 @@
-package NextLevel;
+package NextLevel.utils;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;

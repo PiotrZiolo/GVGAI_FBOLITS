@@ -1,9 +1,9 @@
-package NextLevel;
+package OldNextLevel;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-import NextLevel.Agent;
+import OldNextLevel.Agent;
 import core.game.StateObservationMulti;
 import ontology.Types;
 import tools.ElapsedCpuTimer;
