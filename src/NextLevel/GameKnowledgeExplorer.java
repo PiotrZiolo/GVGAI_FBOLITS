@@ -6,9 +6,9 @@ import tools.ElapsedCpuTimer;
 
 public class GameKnowledgeExplorer
 {
-	private StateObservation stateObs; 
-	private GameKnowledge gameKnowledge;
-	private AgentMoveController agentMoveController;
+	protected StateObservation stateObs; 
+	protected GameKnowledge gameKnowledge;
+	protected AgentMoveController agentMoveController;
 	
 	public GameKnowledgeExplorer()
 	{

@@ -2,11 +2,11 @@ package NextLevel;
 
 public class GameKnowledge
 {
-	private int playerID;
-    private int oppID;
-    private int numOfPlayers;
+	protected int playerID;
+	protected int oppID;
+	protected int numOfPlayers;
     
-	private GameObjectives gameObjectives;
+	protected GameObjectives gameObjectives;
 
 	public int getPlayerID()
 	{

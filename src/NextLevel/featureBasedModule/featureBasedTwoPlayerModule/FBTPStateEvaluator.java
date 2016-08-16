@@ -3,6 +3,7 @@ package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
 import NextLevel.GameKnowledge;
 import NextLevel.State;
 import NextLevel.StateEvaluator;
+import core.game.StateObservationMulti;
 
 public class FBTPStateEvaluator extends StateEvaluator
 {
@@ -13,9 +14,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 		this.gameKnowledge = (FBTPGameKnowledge)gameKnowledge;
 	}
 	
-	public double evaluate(State state)
+	public double evaluate(StateObservationMulti stateObs)
 	{
-		FBTPState fbtpstate = (FBTPState) state;
+		FBTPState fbtpstate = new FBTPState(stateObs);
 		
 		return 0;
 	}

@@ -7,10 +7,10 @@ import tools.ElapsedCpuTimer;
 
 public class MovePlanner
 {
-	private StateEvaluator stateEvaluator;
-	private GameKnowledge gameKnowledge;
-	private GameKnowledgeExplorer gameKnowledgeExplorer; 
-	private AgentMoveController agentMoveController;
+	protected StateEvaluator stateEvaluator;
+	protected GameKnowledge gameKnowledge;
+	protected GameKnowledgeExplorer gameKnowledgeExplorer; 
+	protected AgentMoveController agentMoveController;
 	
 	public MovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
 			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController)
