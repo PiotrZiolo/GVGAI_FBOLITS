@@ -7,7 +7,7 @@ import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateEva
 import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateEvaluatorTeacher;
 import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateHandler;
 import baseStructure.moveController.AgentMoveController;
-import baseStructure.treeSearchPlanners.OLMCTSPlanner.OLMCTSPlanner;
+import baseStructure.treeSearchPlanners.OLMCTSPlanner.TPOLMCTSPlanner;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
 import ontology.Types;
@@ -60,7 +60,7 @@ public class Agent extends AbstractMultiPlayer
 		
 		stateHandler = new FBTPStateHandler();
 		
-		movePlanner = new OLMCTSPlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController);
+		movePlanner = new TPOLMCTSPlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController);
 		
 		// Learning
 		

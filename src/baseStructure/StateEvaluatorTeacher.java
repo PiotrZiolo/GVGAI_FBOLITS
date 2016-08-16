@@ -2,8 +2,8 @@ package baseStructure;
 
 public class StateEvaluatorTeacher
 {
-	private StateEvaluator stateEvaluator;
-	private GameKnowledge gameKnowledge;
+	protected StateEvaluator stateEvaluator;
+	protected GameKnowledge gameKnowledge;
 	
 	public StateEvaluatorTeacher()
 	{

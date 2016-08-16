@@ -1,6 +1,6 @@
 package NextLevel;
 
-import baseStructure.moveController.AgentMoveController;
+import NextLevel.moveController.AgentMoveController;
 import core.game.StateObservation;
 import tools.ElapsedCpuTimer;
 

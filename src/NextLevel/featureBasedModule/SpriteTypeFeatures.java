@@ -1,6 +1,6 @@
 package NextLevel.featureBasedModule;
 
-import OldNextLevel.LogHandler;
+import NextLevel.utils.LogHandler;
 
 public class SpriteTypeFeatures
 {

@@ -1,20 +1,18 @@
-package baseStructure.treeSearchPlanners.OLMCTSPlanner;
+package baseStructure.treeSearchPlanners.OLETSPlanner;
 
 import baseStructure.GameKnowledge;
 import baseStructure.GameKnowledgeExplorer;
 import baseStructure.State;
 import baseStructure.StateEvaluator;
-import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPState;
 import baseStructure.moveController.AgentMoveController;
-import baseStructure.treeSearchPlanners.TreeSearchMovePlanner;
-import baseStructure.utils.LogHandler;
+import baseStructure.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner.TPTreeSearchMovePlanner;
 import ontology.Types;
 import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
 
-public class OLMCTSPlanner extends TreeSearchMovePlanner
+public class TPOLETSPlanner extends TPTreeSearchMovePlanner
 {
-	public OLMCTSPlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
+	public TPOLETSPlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
 			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController)
 	{
 		super(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController);

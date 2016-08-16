@@ -1,8 +1,10 @@
 package baseStructure;
 
+import core.game.StateObservation;
+
 public class StateEvaluator
 {
-	private GameKnowledge gameKnowledge;
+	protected GameKnowledge gameKnowledge;
 	
 	public StateEvaluator()
 	{
@@ -14,7 +16,7 @@ public class StateEvaluator
 		this.gameKnowledge = gameKnowledge;
 	}
 	
-	public double evaluate(State state)
+	public double evaluate(StateObservation stateObs)
 	{
 		// To be overridden in subclasses
 		

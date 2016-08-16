@@ -1,9 +1,9 @@
 package baseStructure.featureBasedModule.featureBasedTwoPlayerModule;
 
-import baseStructure.State;
+import baseStructure.BasicTPState;
 import core.game.StateObservationMulti;
 
-public class FBTPState extends State
+public class FBTPState extends BasicTPState
 {
 	private StateObservationMulti stateObs;
 
