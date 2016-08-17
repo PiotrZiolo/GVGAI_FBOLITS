@@ -59,13 +59,11 @@ public class TPTreeSearchMoveController
 	}
 
 	/**
-	 * @param node
-	 *            Node to be rolled out.
 	 * @param stateObs
 	 *            State observation connected with this node.
 	 * @return Actions for both players.
 	 */
-	public Types.ACTIONS[] chooseMovesInRollout(TPTreeNode node, StateObservationMulti stateObs)
+	public Types.ACTIONS[] chooseMovesInRollout(StateObservationMulti stateObs)
 	{
 		Types.ACTIONS[] acts = new Types.ACTIONS[gameKnowledge.getNumOfPlayers()];
 

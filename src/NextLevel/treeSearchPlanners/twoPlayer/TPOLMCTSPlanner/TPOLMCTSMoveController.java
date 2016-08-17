@@ -6,6 +6,7 @@ import java.util.Random;
 import NextLevel.GameKnowledge;
 import NextLevel.StateEvaluator;
 import NextLevel.treeSearchPlanners.twoPlayer.TPTreeSearchMoveController;
+import NextLevel.utils.LogHandler;
 import core.game.StateObservationMulti;
 import ontology.Types;
 import tools.Utils;
@@ -89,7 +90,7 @@ public class TPOLMCTSMoveController extends TPTreeSearchMoveController
 		TPOLMCTSTreeNode selected = null;
         double bestValue = -Double.MAX_VALUE;
         
-        for (TPOLMCTSTreeNode child : node.children)
+        for (TPOLMCTSTreeNode child : (TPOLMCTSTreeNode[])node.children)
         {
             double childValue = child.totalValue / (child.numVisits + this.epsilon);
 
@@ -131,19 +132,19 @@ public class TPOLMCTSMoveController extends TPTreeSearchMoveController
 	}
 
 	/**
-	 * @param node
-	 *            Node to be rolled out.
 	 * @param stateObs
 	 *            State observation connected with this node.
 	 * @return Actions for both players.
 	 */
-	public Types.ACTIONS[] chooseMovesInRollout(TPOLMCTSTreeNode node, StateObservationMulti stateObs)
+	public Types.ACTIONS[] chooseMovesInRollout(StateObservationMulti stateObs)
 	{
 		Types.ACTIONS[] acts = new Types.ACTIONS[gameKnowledge.getNumOfPlayers()];
 		for (int i = 0; i < gameKnowledge.getNumOfPlayers(); i++)
 		{
 			acts[i] = getRandomAction(stateObs, i, Types.ACTIONS.ACTION_NIL, false);
 		}
+		
+		LogHandler.writeLog(acts[0] + " " + acts[1], "TPOLMCTSMoveController.chooseMovesInRollout", 0);
 
 		return acts;
 	}

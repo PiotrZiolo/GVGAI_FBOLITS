@@ -7,6 +7,7 @@ import NextLevel.GameKnowledgeExplorer;
 import NextLevel.State;
 import NextLevel.StateEvaluator;
 import NextLevel.moveController.AgentMoveController;
+import NextLevel.treeSearchPlanners.twoPlayer.TPTreeNode;
 import NextLevel.treeSearchPlanners.twoPlayer.TPTreeSearchMovePlanner;
 import NextLevel.twoPlayer.BasicTPState;
 import NextLevel.twoPlayer.TPGameKnowledge;
@@ -72,32 +73,6 @@ public class TPOLMCTSMovePlanner extends TPTreeSearchMovePlanner
 		this.rootNode = new TPOLMCTSTreeNode(gameKnowledge.getNumOfPlayerActions());
 	}
 	
-	protected void searchTree()
-	{
-		double avgTimeTaken = 0;
-		double acumTimeTaken = 0;
-		long remaining = mainElapsedTimer.remainingTimeMillis();
-		int numIters = 0;
-
-		while (remaining > 2 * avgTimeTaken && remaining > remainingLimit)
-		{
-			StateObservationMulti stateObs = rootStateObs.copy();
-
-			ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
-			TPOLMCTSTreeNode selectedNode = applyTreePolicy(stateObs);
-			double delta = rollOut(selectedNode, stateObs);
-			backUp(selectedNode, delta);
-
-			numIters++;
-			acumTimeTaken += (elapsedTimerIteration.elapsedMillis());
-			LogHandler.writeLog(
-					elapsedTimerIteration.elapsedMillis() + " --> " + acumTimeTaken + " (" + remaining + ")",
-					"TreeSearchMovePlanner.searchTree", 1);
-			avgTimeTaken = acumTimeTaken / numIters;
-			remaining = mainElapsedTimer.remainingTimeMillis();
-		}
-	}
-	
 	protected TPOLMCTSTreeNode applyTreePolicy(StateObservationMulti stateObs)
 	{
 		TPOLMCTSTreeNode currentNode = rootNode;
@@ -125,13 +100,13 @@ public class TPOLMCTSMovePlanner extends TPTreeSearchMovePlanner
 		return (!stateObs.isGameOver() && !expand && currentNode.depth < rolloutDepth);
 	}
 	
-	protected double rollOut(TPOLMCTSTreeNode selectedNode, StateObservationMulti stateObs)
+	protected double rollOut(TPTreeNode selectedNode, StateObservationMulti stateObs)
 	{
 		int thisDepth = selectedNode.depth;
 
 		while (!isRolloutFinished(stateObs, thisDepth))
 		{
-			stateObs.advance(tpTreeSearchMoveController.chooseMovesInRollout(selectedNode, stateObs));
+			stateObs.advance(tpTreeSearchMoveController.chooseMovesInRollout(stateObs));
 			thisDepth++;
 		}
 
@@ -151,16 +126,7 @@ public class TPOLMCTSMovePlanner extends TPTreeSearchMovePlanner
 		return false;
 	}
 	
-	protected void backUp(TPOLMCTSTreeNode node, double delta)
-	{
-        while(node != null)
-        {
-            updateNode(node, delta);
-            node = node.parent;
-        }
-	}
-	
-	protected void updateNode(TPOLMCTSTreeNode node, double delta)
+	protected void updateNode(TPTreeNode node, double delta)
 	{
 		node.numVisits++;
         node.totalValue += delta;

@@ -4,9 +4,6 @@ import NextLevel.treeSearchPlanners.twoPlayer.TPTreeNode;
 
 public class TPOLMCTSTreeNode extends TPTreeNode
 {
-	public TPOLMCTSTreeNode parent;
-	public TPOLMCTSTreeNode[] children;
-
 	public int actionLeadingToThisNode;
 
 	public TPOLMCTSTreeNode(int numOfActions)
@@ -30,17 +27,5 @@ public class TPOLMCTSTreeNode extends TPTreeNode
 		else
 			depth = 0;
 		children = new TPOLMCTSTreeNode[numOfActions];
-	}
-	
-	public boolean isNotFullyExpanded()
-	{
-		for (TPOLMCTSTreeNode child : children)
-		{
-			if (child == null)
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 }

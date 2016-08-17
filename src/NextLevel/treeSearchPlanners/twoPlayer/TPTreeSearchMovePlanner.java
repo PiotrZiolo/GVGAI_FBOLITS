@@ -134,7 +134,7 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 
 		while (!isRolloutFinished(stateObs, thisDepth))
 		{
-			stateObs.advance(tpTreeSearchMoveController.chooseMovesInRollout(selectedNode, stateObs));
+			stateObs.advance(tpTreeSearchMoveController.chooseMovesInRollout(stateObs));
 			thisDepth++;
 		}
 
