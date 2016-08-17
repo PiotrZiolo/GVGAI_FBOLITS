@@ -1,12 +1,12 @@
-package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
+package NextLevel.twoPlayer;
 
 import java.util.ArrayList;
 
+import NextLevel.GameKnowledge;
 import NextLevel.GameObjectives;
-import NextLevel.twoPlayer.TPGameKnowledge;
 import ontology.Types;
 
-public class FBTPGameKnowledge extends TPGameKnowledge
+public class TPGameKnowledge extends GameKnowledge
 {
 	protected int playerID;
 	protected int oppID;

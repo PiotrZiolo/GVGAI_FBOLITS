@@ -1,10 +1,15 @@
 package NextLevel;
 
+import java.util.ArrayList;
+
+import ontology.Types;
+
 public class GameKnowledge
 {
 	protected int playerID;
-	protected int oppID;
 	protected int numOfPlayers;
+	protected int numOfPlayerActions;
+	protected ArrayList<Types.ACTIONS> playerActions;
     
 	protected GameObjectives gameObjectives;
 
@@ -18,16 +23,6 @@ public class GameKnowledge
 		this.playerID = playerID;
 	}
 
-	public int getOppID()
-	{
-		return oppID;
-	}
-
-	public void setOppID(int oppID)
-	{
-		this.oppID = oppID;
-	}
-
 	public int getNumOfPlayers()
 	{
 		return numOfPlayers;
@@ -36,5 +31,25 @@ public class GameKnowledge
 	public void setNumOfPlayers(int numOfPlayers)
 	{
 		this.numOfPlayers = numOfPlayers;
+	}
+
+	public int getNumOfPlayerActions()
+	{
+		return numOfPlayerActions;
+	}
+
+	public void setNumOfPlayerActions(int numOfPlayerActions)
+	{
+		this.numOfPlayerActions = numOfPlayerActions;
+	}
+
+	public ArrayList<Types.ACTIONS> getPlayerActions()
+	{
+		return playerActions;
+	}
+
+	public void setPlayerActions(ArrayList<Types.ACTIONS> playerActions)
+	{
+		this.playerActions = playerActions;
 	}
 }

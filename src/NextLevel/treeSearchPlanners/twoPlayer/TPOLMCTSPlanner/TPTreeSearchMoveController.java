@@ -1,19 +1,31 @@
 package NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
 
+import java.util.Random;
+
 import NextLevel.GameKnowledge;
 import NextLevel.StateEvaluator;
+import NextLevel.twoPlayer.TPGameKnowledge;
 import core.game.StateObservationMulti;
 import ontology.Types;
 
+/**
+ * This class is responsible for all choices of child nodes during the tree search. 
+ * By assumption StateEvaluator should only be used in this class, not in the planner. 
+ *
+ */
 public class TPTreeSearchMoveController
 {
-	private StateEvaluator stateEvaluator;
-	private GameKnowledge gameKnowledge;
+	protected StateEvaluator stateEvaluator;
+	protected TPGameKnowledge gameKnowledge;
+	protected Random randomGenerator;
+	
+	protected double epsilon = 1e-6;
 
-	public TPTreeSearchMoveController(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge)
+	public TPTreeSearchMoveController(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge, Random randomGenerator)
 	{
 		this.stateEvaluator = stateEvaluator;
-		this.gameKnowledge = gameKnowledge;
+		this.gameKnowledge = (TPGameKnowledge)gameKnowledge;
+		this.randomGenerator = randomGenerator;
 	}
 
 	/**
@@ -27,6 +39,7 @@ public class TPTreeSearchMoveController
 	 */
 	public TPTreeNode expandNode(TPTreeNode node, StateObservationMulti stateObs)
 	{
+		// To be overriden in subclasses
 		return null;
 	}
 
@@ -41,6 +54,7 @@ public class TPTreeSearchMoveController
 	 */
 	public TPTreeNode exploitNode(TPTreeNode node, StateObservationMulti stateObs)
 	{
+		// To be overridden in subclasses
 		return null;
 	}
 

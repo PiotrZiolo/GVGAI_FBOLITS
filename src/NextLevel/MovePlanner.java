@@ -27,4 +27,9 @@ public class MovePlanner
 		
 		return Types.ACTIONS.ACTION_NIL;
 	}
+	
+	public void setParameters()
+	{
+		
+	}
 }

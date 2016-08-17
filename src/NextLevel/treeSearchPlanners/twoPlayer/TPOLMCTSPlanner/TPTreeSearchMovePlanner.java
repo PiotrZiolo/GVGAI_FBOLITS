@@ -2,13 +2,14 @@ package NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
 
 import java.util.Random;
 
-import NextLevel.BasicTPState;
 import NextLevel.GameKnowledge;
 import NextLevel.GameKnowledgeExplorer;
 import NextLevel.MovePlanner;
 import NextLevel.State;
 import NextLevel.StateEvaluator;
 import NextLevel.moveController.AgentMoveController;
+import NextLevel.twoPlayer.BasicTPState;
+import NextLevel.twoPlayer.TPGameKnowledge;
 import NextLevel.utils.LogHandler;
 import core.game.StateObservationMulti;
 import ontology.Types;
@@ -18,26 +19,36 @@ import tools.Utils;
 
 public class TPTreeSearchMovePlanner extends MovePlanner
 {
+	protected TPGameKnowledge gameKnowledge;
 	protected TPTreeNode rootNode;
 	protected BasicTPState rootState;
 	protected StateObservationMulti rootStateObs;
 	protected ElapsedCpuTimer mainElapsedTimer;
 	protected TPTreeSearchMoveController tpTreeSearchMoveController;
-
-	protected double epsilon = 1e-6;
 	protected Random randomGenerator;
+	
+	protected double epsilon = 1e-6;
 
 	// Algorithm parameters
 
-	protected final int remainingLimit = 12;
-	/* protected final int rolloutDepth = 10; */
+	protected int remainingLimit;
+	/* protected int rolloutDepth; */
 
 	public TPTreeSearchMovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
 			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController)
 	{
 		super(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController);
 		
-		tpTreeSearchMoveController = new TPTreeSearchMoveController(stateEvaluator, gameKnowledge);
+		gameKnowledge = (TPGameKnowledge) gameKnowledge;
+		
+		randomGenerator = new Random();
+		
+		tpTreeSearchMoveController = new TPTreeSearchMoveController(stateEvaluator, gameKnowledge, randomGenerator);
+	}
+	
+	public void setParameters(int remainingLimit)
+	{
+		this.remainingLimit = remainingLimit;
 	}
 
 	public ACTIONS chooseAction(State state, ElapsedCpuTimer elapsedTimer, int timeForChoosingMove)
@@ -89,7 +100,7 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 		TPTreeNode currentNode = rootNode;
 		boolean expand = false;
 
-		while (evaluateTreePolicyCondition(currentNode, stateObs, expand))
+		while (isTreePolicyFinished(currentNode, stateObs, expand))
 		{
 			if (currentNode.isNotFullyExpanded())
 			{
@@ -106,9 +117,9 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 		return currentNode;
 	}
 
-	protected boolean evaluateTreePolicyCondition(TPTreeNode currentNode, StateObservationMulti stateObs, boolean expand)
+	protected boolean isTreePolicyFinished(TPTreeNode currentNode, StateObservationMulti stateObs, boolean expand)
 	{
-		return (!stateObs.isGameOver() && !expand /* && currentNode.depth < rolloutDepth */);
+		return (stateObs.isGameOver() || !expand /* || currentNode.depth >= rolloutDepth */);
 	}
 
 	protected double rollOut(TPTreeNode selectedNode, StateObservationMulti stateObs)
@@ -150,7 +161,7 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 	
 	protected void updateNode(TPTreeNode node, double delta)
 	{
-		
+		// To be overriden in subclasses
 	}
 
 	protected Types.ACTIONS getMostVisitedAction()

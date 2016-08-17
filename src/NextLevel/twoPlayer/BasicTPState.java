@@ -1,4 +1,4 @@
-package NextLevel;
+package NextLevel.twoPlayer;
 
 import NextLevel.State;
 import core.game.StateObservationMulti;

@@ -1,23 +1,24 @@
-package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
+package NextLevel.twoPlayer;
 
+import NextLevel.GameKnowledgeExplorer;
 import NextLevel.moveController.AgentMoveController;
-import NextLevel.twoPlayer.TPGameKnowledgeExplorer;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import tools.ElapsedCpuTimer;
 
-public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
+public class TPGameKnowledgeExplorer extends GameKnowledgeExplorer
 {
 	protected StateObservation stateObs; 
-	protected FBTPGameKnowledge gameKnowledge;
+	protected TPGameKnowledge gameKnowledge;
 	protected AgentMoveController agentMoveController;
 	
-	public FBTPGameKnowledgeExplorer()
+	public TPGameKnowledgeExplorer()
 	{
 		
 	}
 	
-	public FBTPGameKnowledgeExplorer(FBTPGameKnowledge gameKnowledge, AgentMoveController agentMoveController)
+	public TPGameKnowledgeExplorer(TPGameKnowledge gameKnowledge,
+			AgentMoveController agentMoveController)
 	{
 		this.gameKnowledge = gameKnowledge;
 		this.agentMoveController = agentMoveController;
