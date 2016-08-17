@@ -1,11 +1,11 @@
-package NextLevel.treeSearchPlanners.OLMCTSPlanner;
+package NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 import NextLevel.GameKnowledge;
 import NextLevel.StateEvaluator;
-import NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner.TPTreeSearchMoveController;
+import NextLevel.treeSearchPlanners.twoPlayer.TPTreeSearchMoveController;
 import core.game.StateObservationMulti;
 import ontology.Types;
 import tools.Utils;

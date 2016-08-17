@@ -16,6 +16,11 @@ public class FBTPState extends BasicTPState
 	{
 		this.stateObs = stateObs;
 	}
+	
+	public void setStateObs(StateObservationMulti stateObs)
+	{
+		this.stateObs = stateObs;
+	}
 
 	public StateObservationMulti getStateObservation()
 	{

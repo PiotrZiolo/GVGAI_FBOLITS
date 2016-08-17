@@ -1,4 +1,4 @@
-package NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
+package NextLevel.treeSearchPlanners.twoPlayer;
 
 import java.util.Random;
 
@@ -34,16 +34,22 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 	protected int remainingLimit;
 	/* protected int rolloutDepth; */
 
+	public TPTreeSearchMovePlanner()
+	{
+
+	}
+	
 	public TPTreeSearchMovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
 			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController)
 	{
-		super(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController);
+		this.stateEvaluator = stateEvaluator;
+		this.gameKnowledge = (TPGameKnowledge) gameKnowledge;
+		this.gameKnowledgeExplorer = gameKnowledgeExplorer;
+		this.agentMoveController = agentMoveController;
 		
-		gameKnowledge = (TPGameKnowledge) gameKnowledge;
+		this.randomGenerator = new Random();
 		
-		randomGenerator = new Random();
-		
-		tpTreeSearchMoveController = new TPTreeSearchMoveController(stateEvaluator, gameKnowledge, randomGenerator);
+		this.tpTreeSearchMoveController = new TPTreeSearchMoveController(stateEvaluator, gameKnowledge, randomGenerator);
 	}
 	
 	public void setParameters(int remainingLimit)
@@ -89,7 +95,7 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 			acumTimeTaken += (elapsedTimerIteration.elapsedMillis());
 			LogHandler.writeLog(
 					elapsedTimerIteration.elapsedMillis() + " --> " + acumTimeTaken + " (" + remaining + ")",
-					"TreeSearchMovePlanner.searchTree", 0);
+					"TreeSearchMovePlanner.searchTree", 1);
 			avgTimeTaken = acumTimeTaken / numIters;
 			remaining = mainElapsedTimer.remainingTimeMillis();
 		}

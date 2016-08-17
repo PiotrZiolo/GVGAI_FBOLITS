@@ -1,7 +1,6 @@
-package NextLevel.treeSearchPlanners.OLMCTSPlanner;
+package NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
 
-import NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner.TPTreeNode;
-import core.game.StateObservationMulti;
+import NextLevel.treeSearchPlanners.twoPlayer.TPTreeNode;
 
 public class TPOLMCTSTreeNode extends TPTreeNode
 {
@@ -12,14 +11,11 @@ public class TPOLMCTSTreeNode extends TPTreeNode
 
 	public TPOLMCTSTreeNode(int numOfActions)
 	{
-		this.parent = parent;
+		this.parent = null;
 		this.totalValue = 0.0;
 		this.numVisits = 0;
-		this.actionLeadingToThisNode = actionLeadingToThisNode;
-		if (parent != null)
-			depth = parent.depth + 1;
-		else
-			depth = 0;
+		this.actionLeadingToThisNode = -1;
+		depth = 0;
 		children = new TPOLMCTSTreeNode[numOfActions];
 	}
 	
@@ -34,5 +30,17 @@ public class TPOLMCTSTreeNode extends TPTreeNode
 		else
 			depth = 0;
 		children = new TPOLMCTSTreeNode[numOfActions];
+	}
+	
+	public boolean isNotFullyExpanded()
+	{
+		for (TPOLMCTSTreeNode child : children)
+		{
+			if (child == null)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 }

@@ -1,4 +1,4 @@
-package NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
+package NextLevel.treeSearchPlanners.twoPlayer;
 
 import java.util.Random;
 

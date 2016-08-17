@@ -1,6 +1,7 @@
 package NextLevel;
 
 import NextLevel.moveController.AgentMoveController;
+import NextLevel.utils.LogHandler;
 import ontology.Types;
 import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
@@ -11,6 +12,11 @@ public class MovePlanner
 	protected GameKnowledge gameKnowledge;
 	protected GameKnowledgeExplorer gameKnowledgeExplorer; 
 	protected AgentMoveController agentMoveController;
+	
+	public MovePlanner()
+	{
+		
+	}
 	
 	public MovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
 			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController)

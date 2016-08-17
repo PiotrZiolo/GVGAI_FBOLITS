@@ -8,7 +8,8 @@ import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateEvaluat
 import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateEvaluatorTeacher;
 import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateHandler;
 import NextLevel.moveController.AgentMoveController;
-import NextLevel.treeSearchPlanners.OLMCTSPlanner.TPOLMCTSMovePlanner;
+import NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner.TPOLMCTSMovePlanner;
+import NextLevel.twoPlayer.TPWinScoreStateEvaluator;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
 import ontology.Types;
@@ -33,8 +34,8 @@ public class Agent extends AbstractMultiPlayer
     private FBTPGameKnowledge gameKnowledge;
     private FBTPAgentMoveController agentMoveController;
 	private FBTPStateHandler stateHandler;
-	private FBTPStateEvaluatorTeacher stateEvaluatorTeacher;
-    private FBTPStateEvaluator stateEvaluator;
+	private StateEvaluatorTeacher stateEvaluatorTeacher;
+    private TPWinScoreStateEvaluator stateEvaluator;
     
     // Algorithm parameters
     
@@ -62,8 +63,8 @@ public class Agent extends AbstractMultiPlayer
 		agentMoveController = new FBTPAgentMoveController(gameKnowledge);
 		gameKnowledgeExplorer = new FBTPGameKnowledgeExplorer(gameKnowledge, agentMoveController);
 		
-		stateEvaluator = new FBTPStateEvaluator(gameKnowledge);
-		stateEvaluatorTeacher = new FBTPStateEvaluatorTeacher(stateEvaluator, gameKnowledge);
+		stateEvaluator = new TPWinScoreStateEvaluator(gameKnowledge);
+		stateEvaluatorTeacher = new StateEvaluatorTeacher(stateEvaluator, gameKnowledge);
 		
 		stateHandler = new FBTPStateHandler();
 		
@@ -90,8 +91,7 @@ public class Agent extends AbstractMultiPlayer
 		gameKnowledgeExplorer.learn(stateObs, playerID, elapsedTimer, timeForLearningDuringMove);
 		stateEvaluatorTeacher.updateEvaluator();
 
-		FBTPState state = new FBTPState();
-		stateHandler.prepareState(state, stateObs);
+		FBTPState state = stateHandler.prepareState(stateObs);
 		
 		movePlanner.setParameters(remainingLimit, rolloutDepth, UCTConstant);
 		Types.ACTIONS action = movePlanner.chooseAction(state, elapsedTimer, timeForChoosingMove);

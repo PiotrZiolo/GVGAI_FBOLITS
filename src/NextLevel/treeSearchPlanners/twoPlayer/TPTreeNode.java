@@ -1,4 +1,4 @@
-package NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
+package NextLevel.treeSearchPlanners.twoPlayer;
 
 public class TPTreeNode
 {
@@ -11,9 +11,9 @@ public class TPTreeNode
 
 	public boolean isNotFullyExpanded()
 	{
-		for (TPTreeNode tn : children)
+		for (TPTreeNode child : children)
 		{
-			if (tn == null)
+			if (child == null)
 			{
 				return true;
 			}
