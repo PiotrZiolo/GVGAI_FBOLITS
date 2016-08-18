@@ -1,14 +1,14 @@
 package baseStructure.featureBasedModule.featureBasedTwoPlayerModule;
 
-import baseStructure.GameKnowledge;
 import baseStructure.moveController.PathFinder;
 
 public class FBTPPathFinder extends PathFinder
 {
-	private FBTPGameKnowledge gameKnowledge;
+	// Real types of fields
+	// protected FBTPGameKnowledge gameKnowledge;
 	
-	public FBTPPathFinder(GameKnowledge gameKnowledge)
+	public FBTPPathFinder(FBTPGameKnowledge gameKnowledge)
 	{
-		this.gameKnowledge = (FBTPGameKnowledge)gameKnowledge;
+		this.gameKnowledge = gameKnowledge;
 	}
 }

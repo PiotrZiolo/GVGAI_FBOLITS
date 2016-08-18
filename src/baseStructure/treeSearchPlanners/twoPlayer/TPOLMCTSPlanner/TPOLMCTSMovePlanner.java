@@ -1,13 +1,13 @@
-package NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
+package baseStructure.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
 
 import java.util.Random;
 
-import NextLevel.StateEvaluator;
-import NextLevel.moveController.AgentMoveController;
-import NextLevel.treeSearchPlanners.TreeNode;
-import NextLevel.treeSearchPlanners.TreeSearchMovePlanner;
-import NextLevel.twoPlayer.TPGameKnowledge;
-import NextLevel.twoPlayer.TPGameKnowledgeExplorer;
+import baseStructure.StateEvaluator;
+import baseStructure.moveController.AgentMoveController;
+import baseStructure.treeSearchPlanners.TreeNode;
+import baseStructure.treeSearchPlanners.TreeSearchMovePlanner;
+import baseStructure.twoPlayer.TPGameKnowledge;
+import baseStructure.twoPlayer.TPGameKnowledgeExplorer;
 import core.game.StateObservation;
 
 public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner

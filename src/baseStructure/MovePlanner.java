@@ -12,6 +12,11 @@ public class MovePlanner
 	protected GameKnowledgeExplorer gameKnowledgeExplorer; 
 	protected AgentMoveController agentMoveController;
 	
+	public MovePlanner()
+	{
+		
+	}
+	
 	public MovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
 			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController)
 	{
@@ -26,5 +31,10 @@ public class MovePlanner
 		// To be overridden in subclasses
 		
 		return Types.ACTIONS.ACTION_NIL;
+	}
+	
+	public void setParameters()
+	{
+		
 	}
 }

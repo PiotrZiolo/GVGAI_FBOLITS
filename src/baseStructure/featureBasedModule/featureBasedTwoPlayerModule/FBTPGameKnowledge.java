@@ -1,7 +1,12 @@
 package baseStructure.featureBasedModule.featureBasedTwoPlayerModule;
 
-import baseStructure.GameKnowledge;
+import java.util.ArrayList;
 
-public class FBTPGameKnowledge extends GameKnowledge
+import baseStructure.GameObjectives;
+import baseStructure.twoPlayer.TPGameKnowledge;
+import ontology.Types;
+
+public class FBTPGameKnowledge extends TPGameKnowledge
 {
+	
 }

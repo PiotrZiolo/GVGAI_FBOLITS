@@ -1,13 +1,14 @@
 package baseStructure;
 
+import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPAgentMoveController;
 import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPGameKnowledge;
 import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPGameKnowledgeExplorer;
 import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPState;
-import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateEvaluator;
-import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateEvaluatorTeacher;
 import baseStructure.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateHandler;
-import baseStructure.moveController.AgentMoveController;
-import baseStructure.treeSearchPlanners.OLMCTSPlanner.TPOLMCTSPlanner;
+import baseStructure.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner.TPOLMCTSMoveController;
+import baseStructure.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner.TPOLMCTSMovePlanner;
+import baseStructure.twoPlayer.SimpleTPStateEvaluator;
+import baseStructure.twoPlayer.TPWinScoreStateEvaluator;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
 import ontology.Types;
@@ -27,14 +28,21 @@ public class Agent extends AbstractMultiPlayer
 	
     // Objects structure
     
-	private MovePlanner movePlanner;
-    private GameKnowledgeExplorer gameKnowledgeExplorer;
-    private GameKnowledge gameKnowledge;
-    private AgentMoveController agentMoveController;
-	private StateHandler stateHandler;
+	private TPOLMCTSMovePlanner movePlanner;
+    private FBTPGameKnowledgeExplorer gameKnowledgeExplorer;
+    private FBTPGameKnowledge gameKnowledge;
+    private FBTPAgentMoveController agentMoveController;
+	private FBTPStateHandler stateHandler;
 	private StateEvaluatorTeacher stateEvaluatorTeacher;
-    private StateEvaluator stateEvaluator;
+    private SimpleTPStateEvaluator stateEvaluator;
+    private TPOLMCTSMoveController moveController;
     
+    // Algorithm parameters
+    
+    private final int remainingLimit = 12;
+	private final int rolloutDepth = 10;
+	private final double uctConstant = Math.sqrt(2);
+	
     /**
 	 * Initializes all variables for the agent
 	 * 
@@ -52,19 +60,20 @@ public class Agent extends AbstractMultiPlayer
 		this.numOfPlayers = stateObs.getNoPlayers();
 		
 		gameKnowledge = new FBTPGameKnowledge();
-		agentMoveController = new AgentMoveController(gameKnowledge);
-		gameKnowledgeExplorer = new FBTPGameKnowledgeExplorer(stateObs, gameKnowledge, agentMoveController, playerID);
-		
-		stateEvaluator = new FBTPStateEvaluator(gameKnowledge);
-		stateEvaluatorTeacher = new FBTPStateEvaluatorTeacher(stateEvaluator, gameKnowledge);
+		agentMoveController = new FBTPAgentMoveController(gameKnowledge);
+		gameKnowledgeExplorer = new FBTPGameKnowledgeExplorer(gameKnowledge, agentMoveController);
 		
 		stateHandler = new FBTPStateHandler();
+		stateEvaluator = new SimpleTPStateEvaluator(gameKnowledge, stateHandler);
+		stateEvaluatorTeacher = new StateEvaluatorTeacher(stateEvaluator, gameKnowledge);
 		
-		movePlanner = new TPOLMCTSPlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController);
+		moveController = new TPOLMCTSMoveController(stateEvaluator, gameKnowledge);
+		moveController.setParameters(uctConstant);
+		movePlanner = new TPOLMCTSMovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController, moveController);
 		
 		// Learning
 		
-		gameKnowledgeExplorer.learn(elapsedTimer, timeForLearningDuringInitialization);
+		gameKnowledgeExplorer.learn(stateObs, playerID, elapsedTimer, timeForLearningDuringInitialization);
 		stateEvaluatorTeacher.initializeEvaluator();
 	}
 
@@ -80,12 +89,12 @@ public class Agent extends AbstractMultiPlayer
 	 */
 	public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer)
 	{
-		gameKnowledgeExplorer.learn(elapsedTimer, timeForLearningDuringMove);
+		gameKnowledgeExplorer.learn(stateObs, playerID, elapsedTimer, timeForLearningDuringMove);
 		stateEvaluatorTeacher.updateEvaluator();
 
-		FBTPState state = new FBTPState();
-		stateHandler.prepareState(state, stateObs);
+		FBTPState state = stateHandler.prepareState(stateObs);
 		
+		movePlanner.setParameters(remainingLimit, rolloutDepth);
 		Types.ACTIONS action = movePlanner.chooseAction(state, elapsedTimer, timeForChoosingMove);
 		
 		return action;

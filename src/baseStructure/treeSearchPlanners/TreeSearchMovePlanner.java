@@ -1,8 +1,8 @@
-package baseStructure.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
+package baseStructure.treeSearchPlanners;
 
 import java.util.Random;
 
-import baseStructure.BasicTPState;
+import baseStructure.BasicState;
 import baseStructure.GameKnowledge;
 import baseStructure.GameKnowledgeExplorer;
 import baseStructure.MovePlanner;
@@ -10,39 +10,61 @@ import baseStructure.State;
 import baseStructure.StateEvaluator;
 import baseStructure.moveController.AgentMoveController;
 import baseStructure.utils.LogHandler;
-import core.game.StateObservationMulti;
+import core.game.StateObservation;
 import ontology.Types;
 import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
 import tools.Utils;
 
-public class TPTreeSearchMovePlanner extends MovePlanner
+public class TreeSearchMovePlanner extends MovePlanner
 {
-	protected TPTreeNode rootNode;
-	protected BasicTPState rootState;
-	protected StateObservationMulti rootStateObs;
+	// Real types of fields
+	// protected StateEvaluator stateEvaluator;
+	// protected GameKnowledge gameKnowledge;
+	// protected GameKnowledgeExplorer gameKnowledgeExplorer; 
+	// protected AgentMoveController agentMoveController;
+	
+	protected TreeNode rootNode;
+	protected BasicState rootState;
+	protected StateObservation rootStateObs;
+	protected TreeSearchMoveController treeSearchMoveController;
+	
 	protected ElapsedCpuTimer mainElapsedTimer;
-	protected TPTreeSearchMoveController tpTreeSearchMoveController;
-
-	protected double epsilon = 1e-6;
 	protected Random randomGenerator;
+	
+	protected double epsilon = 1e-6;
 
 	// Algorithm parameters
 
-	protected final int remainingLimit = 12;
-	/* protected final int rolloutDepth = 10; */
+	protected int remainingLimit;
+	/* protected int rolloutDepth; */
 
-	public TPTreeSearchMovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
-			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController)
+	public TreeSearchMovePlanner()
 	{
-		super(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController);
+
+	}
+	
+	public TreeSearchMovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
+			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController, 
+			TreeSearchMoveController treeSearchMoveController)
+	{
+		this.stateEvaluator = stateEvaluator;
+		this.gameKnowledge = gameKnowledge;
+		this.gameKnowledgeExplorer = gameKnowledgeExplorer;
+		this.agentMoveController = agentMoveController;
+		this.treeSearchMoveController = treeSearchMoveController;
 		
-		tpTreeSearchMoveController = new TPTreeSearchMoveController(stateEvaluator, gameKnowledge);
+		this.randomGenerator = new Random();
+	}
+	
+	public void setParameters(int remainingLimit)
+	{
+		this.remainingLimit = remainingLimit;
 	}
 
 	public ACTIONS chooseAction(State state, ElapsedCpuTimer elapsedTimer, int timeForChoosingMove)
 	{
-		this.rootState = (BasicTPState) state;
+		this.rootState = (BasicState) state;
 		this.rootStateObs = rootState.getStateObservation();
 		this.mainElapsedTimer = elapsedTimer;
 
@@ -55,7 +77,7 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 
 	protected void initialize()
 	{
-		rootNode = new TPTreeNode();
+		rootNode = new TreeNode();
 	}
 
 	protected void searchTree()
@@ -67,10 +89,10 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 
 		while (remaining > 2 * avgTimeTaken && remaining > remainingLimit)
 		{
-			StateObservationMulti stateObs = rootStateObs.copy();
+			StateObservation stateObs = rootStateObs.copy();
 
 			ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
-			TPTreeNode selectedNode = applyTreePolicy(stateObs);
+			TreeNode selectedNode = applyTreePolicy(stateObs);
 			double delta = rollOut(selectedNode, stateObs);
 			backUp(selectedNode, delta);
 
@@ -84,21 +106,21 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 		}
 	}
 
-	protected TPTreeNode applyTreePolicy(StateObservationMulti stateObs)
+	protected TreeNode applyTreePolicy(StateObservation stateObs)
 	{
-		TPTreeNode currentNode = rootNode;
+		TreeNode currentNode = rootNode;
 		boolean expand = false;
 
-		while (evaluateTreePolicyCondition(currentNode, stateObs, expand))
+		while (!isTreePolicyFinished(currentNode, stateObs, expand))
 		{
 			if (currentNode.isNotFullyExpanded())
 			{
-				currentNode = tpTreeSearchMoveController.expandNode(currentNode, stateObs);
+				currentNode = treeSearchMoveController.expandNode(currentNode, stateObs);
 				expand = true;
 			}
 			else
 			{
-				currentNode = tpTreeSearchMoveController.exploitNode(currentNode, stateObs);
+				currentNode = treeSearchMoveController.exploitNode(currentNode, stateObs);
 				expand = false;
 			}
 		}
@@ -106,27 +128,28 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 		return currentNode;
 	}
 
-	protected boolean evaluateTreePolicyCondition(TPTreeNode currentNode, StateObservationMulti stateObs, boolean expand)
+	protected boolean isTreePolicyFinished(TreeNode currentNode, StateObservation stateObs, boolean expand)
 	{
-		return (!stateObs.isGameOver() && !expand /* && currentNode.depth < rolloutDepth */);
+		return (stateObs.isGameOver() || expand /* || currentNode.depth >= rolloutDepth */);
 	}
 
-	protected double rollOut(TPTreeNode selectedNode, StateObservationMulti stateObs)
+	protected double rollOut(TreeNode selectedNode, StateObservation stateObs)
 	{
 		int thisDepth = selectedNode.depth;
 
 		while (!isRolloutFinished(stateObs, thisDepth))
 		{
-			stateObs.advance(tpTreeSearchMoveController.chooseMovesInRollout(selectedNode, stateObs));
+			treeSearchMoveController.moveInRollout(stateObs);
+			LogHandler.writeLog("State game tick: " + stateObs.getGameTick(), "TreeSearchMoveController.rollOut", 0);
 			thisDepth++;
 		}
 
-		double delta = stateEvaluator.evaluate(stateObs);
+		double delta = stateEvaluator.evaluateState(stateObs);
 
 		return delta;
 	}
 
-	protected boolean isRolloutFinished(StateObservationMulti rollerState, int depth)
+	protected boolean isRolloutFinished(StateObservation rollerState, int depth)
 	{
 		/*
 		 * if (depth >= rolloutDepth) //rollout end condition.
@@ -139,7 +162,7 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 		return false;
 	}
 
-	protected void backUp(TPTreeNode node, double delta)
+	protected void backUp(TreeNode node, double delta)
 	{
         while(node != null)
         {
@@ -148,9 +171,9 @@ public class TPTreeSearchMovePlanner extends MovePlanner
         }
 	}
 	
-	protected void updateNode(TPTreeNode node, double delta)
+	protected void updateNode(TreeNode node, double delta)
 	{
-		
+		// To be overriden in subclasses
 	}
 
 	protected Types.ACTIONS getMostVisitedAction()
@@ -162,7 +185,6 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 
 		for (int i = 0; i < rootNode.children.length; i++)
 		{
-
 			if (rootNode.children[i] != null)
 			{
 				if (first == -1)
@@ -187,8 +209,7 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 			selected = 0;
 		}
 
-		return (allEqual) ? getBestAction()
-				: rootStateObs.getAvailableActions(gameKnowledge.getPlayerID()).get(selected);
+		return (allEqual) ? getBestAction() : gameKnowledge.getPlayerActions().get(selected);
 	}
 	
 	protected Types.ACTIONS getBestAction()
@@ -218,6 +239,6 @@ public class TPTreeSearchMovePlanner extends MovePlanner
 			selected = 0;
 		}
 
-		return rootStateObs.getAvailableActions(gameKnowledge.getPlayerID()).get(selected);
+		return gameKnowledge.getPlayerActions().get(selected);
 	}
 }

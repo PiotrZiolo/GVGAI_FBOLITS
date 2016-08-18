@@ -15,19 +15,19 @@ public class GameKnowledgeExplorer
 		
 	}
 	
-	public GameKnowledgeExplorer(StateObservation stateObs, GameKnowledge gameKnowledge,
-			AgentMoveController agentMoveController, int playerID)
+	public GameKnowledgeExplorer(GameKnowledge gameKnowledge,
+			AgentMoveController agentMoveController)
 	{
-		this.stateObs = stateObs;
 		this.gameKnowledge = gameKnowledge;
 		this.agentMoveController = agentMoveController;
-		this.gameKnowledge.setPlayerID(playerID);
-		this.gameKnowledge.setOppID(1 - playerID);
-		this.gameKnowledge.setNumOfPlayers(stateObs.getNoPlayers());
 	}
 
-	public void learn(ElapsedCpuTimer elapsedTimer, int timeForLearningDuringInitialization)
+	public void learn(StateObservation stateObs, int playerID, ElapsedCpuTimer elapsedTimer, int timeForLearningDuringInitialization)
 	{
-		// To be overridden in subclasses
+		this.stateObs = stateObs;
+		this.gameKnowledge.setPlayerID(playerID);
+		this.gameKnowledge.setNumOfPlayers(stateObs.getNoPlayers());
+		this.gameKnowledge.setNumOfPlayerActions(stateObs.getAvailableActions().size());
+		this.gameKnowledge.setPlayerActions(stateObs.getAvailableActions());
 	}
 }

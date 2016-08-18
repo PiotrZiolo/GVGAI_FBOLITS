@@ -13,7 +13,7 @@ import tools.Vector2d;
 
 public class PathFinder
 {
-	private GameKnowledge gameKnowledge;
+	protected GameKnowledge gameKnowledge;
 	
 	public PathFinder()
 	{

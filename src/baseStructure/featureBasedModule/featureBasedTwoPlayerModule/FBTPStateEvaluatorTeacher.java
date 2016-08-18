@@ -1,18 +1,17 @@
 package baseStructure.featureBasedModule.featureBasedTwoPlayerModule;
 
-import baseStructure.GameKnowledge;
-import baseStructure.StateEvaluator;
 import baseStructure.StateEvaluatorTeacher;
 
 public class FBTPStateEvaluatorTeacher extends StateEvaluatorTeacher
 {
-	private FBTPStateEvaluator stateEvaluator;
-	private FBTPGameKnowledge gameKnowledge;
+	// Real types of fields
+	// private FBTPStateEvaluator stateEvaluator;
+	// private FBTPGameKnowledge gameKnowledge;
 	
-	public FBTPStateEvaluatorTeacher(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge)
+	public FBTPStateEvaluatorTeacher(FBTPStateEvaluator stateEvaluator, FBTPGameKnowledge gameKnowledge)
 	{
-		this.stateEvaluator = (FBTPStateEvaluator)stateEvaluator;
-		this.gameKnowledge = (FBTPGameKnowledge)gameKnowledge;
+		this.stateEvaluator = stateEvaluator;
+		this.gameKnowledge = gameKnowledge;
 	}
 	
 	public void initializeEvaluator()

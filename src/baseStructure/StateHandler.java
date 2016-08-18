@@ -1,12 +1,12 @@
 package baseStructure;
 
 import core.game.StateObservation;
-import core.game.StateObservationMulti;
 
 public class StateHandler
 {
-	public void prepareState(State state, StateObservation stateObs)
+	public State prepareState(StateObservation stateObs)
 	{
+		return new State();
 		// To be overridden in subclasses
 	}
 }

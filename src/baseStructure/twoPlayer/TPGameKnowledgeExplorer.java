@@ -1,24 +1,23 @@
-package baseStructure.featureBasedModule.featureBasedTwoPlayerModule;
+package baseStructure.twoPlayer;
 
+import baseStructure.GameKnowledgeExplorer;
 import baseStructure.moveController.AgentMoveController;
-import baseStructure.twoPlayer.TPGameKnowledge;
-import baseStructure.twoPlayer.TPGameKnowledgeExplorer;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import tools.ElapsedCpuTimer;
 
-public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
-{
+public class TPGameKnowledgeExplorer extends GameKnowledgeExplorer
+{	
 	// Real field types
-	// protected FBTPGameKnowledge gameKnowledge;
+	// protected TPGameKnowledge gameKnowledge;
 	// protected AgentMoveController agentMoveController;
 	
-	public FBTPGameKnowledgeExplorer()
+	public TPGameKnowledgeExplorer()
 	{
 		
 	}
 	
-	public FBTPGameKnowledgeExplorer(FBTPGameKnowledge gameKnowledge, AgentMoveController agentMoveController)
+	public TPGameKnowledgeExplorer(TPGameKnowledge gameKnowledge, AgentMoveController agentMoveController)
 	{
 		this.gameKnowledge = gameKnowledge;
 		this.agentMoveController = agentMoveController;

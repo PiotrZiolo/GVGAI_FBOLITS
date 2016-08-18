@@ -1,4 +1,4 @@
-package NextLevel;
+package baseStructure;
 
 import core.game.StateObservation;
 
