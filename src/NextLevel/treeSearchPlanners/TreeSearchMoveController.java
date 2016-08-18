@@ -1,30 +1,37 @@
-package NextLevel.treeSearchPlanners.twoPlayer;
+package NextLevel.treeSearchPlanners;
 
 import java.util.Random;
 
 import NextLevel.GameKnowledge;
 import NextLevel.StateEvaluator;
-import NextLevel.twoPlayer.TPGameKnowledge;
-import core.game.StateObservationMulti;
-import ontology.Types;
+import core.game.StateObservation;
 
 /**
  * This class is responsible for all choices of child nodes during the tree search. 
  * By assumption StateEvaluator should only be used in this class, not in the planner. 
  *
  */
-public class TPTreeSearchMoveController
+public class TreeSearchMoveController
 {
 	protected StateEvaluator stateEvaluator;
-	protected TPGameKnowledge gameKnowledge;
+	protected GameKnowledge gameKnowledge;
 	protected Random randomGenerator;
-	
+
 	protected double epsilon = 1e-6;
 
-	public TPTreeSearchMoveController(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge, Random randomGenerator)
+	public TreeSearchMoveController()
+	{
+
+	}
+	
+	public TreeSearchMoveController(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge)
 	{
 		this.stateEvaluator = stateEvaluator;
-		this.gameKnowledge = (TPGameKnowledge)gameKnowledge;
+		this.gameKnowledge = gameKnowledge;
+	}
+	
+	public void setRandomGenerator(Random randomGenerator)
+	{
 		this.randomGenerator = randomGenerator;
 	}
 
@@ -37,7 +44,7 @@ public class TPTreeSearchMoveController
 	 *            State observation connected with this node.
 	 * @return Chosen child node.
 	 */
-	public TPTreeNode expandNode(TPTreeNode node, StateObservationMulti stateObs)
+	public TreeNode expandNode(TreeNode node, StateObservation stateObs)
 	{
 		// To be overriden in subclasses
 		return null;
@@ -52,7 +59,7 @@ public class TPTreeSearchMoveController
 	 *            State observation connected with this node.
 	 * @return Chosen child node.
 	 */
-	public TPTreeNode exploitNode(TPTreeNode node, StateObservationMulti stateObs)
+	public TreeNode exploitNode(TreeNode node, StateObservation stateObs)
 	{
 		// To be overridden in subclasses
 		return null;
@@ -63,10 +70,8 @@ public class TPTreeSearchMoveController
 	 *            State observation connected with this node.
 	 * @return Actions for both players.
 	 */
-	public Types.ACTIONS[] chooseMovesInRollout(StateObservationMulti stateObs)
+	public void moveInRollout(StateObservation stateObs)
 	{
-		Types.ACTIONS[] acts = new Types.ACTIONS[gameKnowledge.getNumOfPlayers()];
-
-		return acts;
+		// To be overridden in subclasses
 	}
 }

@@ -1,8 +1,8 @@
 package NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
 
-import NextLevel.treeSearchPlanners.twoPlayer.TPTreeNode;
+import NextLevel.treeSearchPlanners.TreeNode;
 
-public class TPOLMCTSTreeNode extends TPTreeNode
+public class TPOLMCTSTreeNode extends TreeNode
 {
 	public int actionLeadingToThisNode;
 
@@ -12,20 +12,20 @@ public class TPOLMCTSTreeNode extends TPTreeNode
 		this.totalValue = 0.0;
 		this.numVisits = 0;
 		this.actionLeadingToThisNode = -1;
-		depth = 0;
-		children = new TPOLMCTSTreeNode[numOfActions];
+		this.depth = 0;
+		this.children = new TPOLMCTSTreeNode[numOfActions];
 	}
 	
-	public TPOLMCTSTreeNode(TPOLMCTSTreeNode parent, int actionLeadingToThisNode, int numOfActions)
+	public TPOLMCTSTreeNode(TPOLMCTSTreeNode parent, int numOfActions, int actionLeadingToThisNode)
 	{
 		this.parent = parent;
 		this.totalValue = 0.0;
 		this.numVisits = 0;
 		this.actionLeadingToThisNode = actionLeadingToThisNode;
 		if (parent != null)
-			depth = parent.depth + 1;
+			this.depth = parent.depth + 1;
 		else
-			depth = 0;
-		children = new TPOLMCTSTreeNode[numOfActions];
+			this.depth = 0;
+		this.children = new TPOLMCTSTreeNode[numOfActions];
 	}
 }

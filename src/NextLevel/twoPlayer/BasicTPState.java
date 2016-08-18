@@ -1,11 +1,12 @@
 package NextLevel.twoPlayer;
 
-import NextLevel.State;
+import NextLevel.BasicState;
 import core.game.StateObservationMulti;
 
-public class BasicTPState extends State
+public class BasicTPState extends BasicState
 {
-	protected StateObservationMulti stateObs;
+	// Real types of fields
+	// protected StateObservationMulti stateObs;
 
 	public BasicTPState()
 	{
@@ -16,9 +17,9 @@ public class BasicTPState extends State
 	{
 		this.stateObs = stateObs;
 	}
-
+	
 	public StateObservationMulti getStateObservation()
 	{
-		return stateObs;
+		return (StateObservationMulti)stateObs;
 	}
 }

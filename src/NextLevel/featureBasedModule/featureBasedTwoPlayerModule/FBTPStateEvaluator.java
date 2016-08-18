@@ -3,20 +3,26 @@ package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
 import NextLevel.GameKnowledge;
 import NextLevel.State;
 import NextLevel.StateEvaluator;
+import core.game.StateObservation;
 import core.game.StateObservationMulti;
 
 public class FBTPStateEvaluator extends StateEvaluator
 {
-	private FBTPGameKnowledge gameKnowledge;
+	// Real types of fields
+	// protected FBTPGameKnowledge gameKnowledge;
+	// protected FBTPStateHandler stateHandler;
 	
-	public FBTPStateEvaluator(GameKnowledge gameKnowledge)
+	public FBTPStateEvaluator(FBTPGameKnowledge gameKnowledge, FBTPStateHandler stateHandler)
 	{
-		this.gameKnowledge = (FBTPGameKnowledge)gameKnowledge;
+		this.gameKnowledge = gameKnowledge;
+		this.stateHandler = stateHandler;
 	}
 	
-	public double evaluate(StateObservationMulti stateObs)
+	public double evaluateState(StateObservation stateObs)
 	{
-		FBTPState fbtpstate = new FBTPState(stateObs);
+		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
+		FBTPStateHandler fbtpStateHandler = (FBTPStateHandler) this.stateHandler;
+		FBTPState fbtpstate = fbtpStateHandler.prepareState(stateObsMulti);
 		
 		return 0;
 	}

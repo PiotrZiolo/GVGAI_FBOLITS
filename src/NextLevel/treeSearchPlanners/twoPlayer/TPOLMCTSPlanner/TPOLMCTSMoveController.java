@@ -3,10 +3,12 @@ package NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
 import java.util.ArrayList;
 import java.util.Random;
 
-import NextLevel.GameKnowledge;
 import NextLevel.StateEvaluator;
-import NextLevel.treeSearchPlanners.twoPlayer.TPTreeSearchMoveController;
+import NextLevel.treeSearchPlanners.TreeNode;
+import NextLevel.treeSearchPlanners.TreeSearchMoveController;
+import NextLevel.twoPlayer.TPGameKnowledge;
 import NextLevel.utils.LogHandler;
+import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import ontology.Types;
 import tools.Utils;
@@ -16,16 +18,19 @@ import tools.Utils;
  * By assumption StateEvaluator should only be used in this class, not in the planner.
  *
  */
-public class TPOLMCTSMoveController extends TPTreeSearchMoveController
+public class TPOLMCTSMoveController extends TreeSearchMoveController
 {
-	private StateEvaluator stateEvaluator;
+	// Real types of fields
+	// protected StateEvaluator stateEvaluator;
+	// protected TPGameKnowledge gameKnowledge;
 	
 	private double uctConstant;
 	private static double[] bounds = new double[]{Double.MAX_VALUE, -Double.MAX_VALUE};
 
-	public TPOLMCTSMoveController(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge, Random randomGenerator)
+	public TPOLMCTSMoveController(StateEvaluator stateEvaluator, TPGameKnowledge gameKnowledge)
 	{
-		super(stateEvaluator, gameKnowledge, randomGenerator);
+		this.stateEvaluator = stateEvaluator;
+		this.gameKnowledge = gameKnowledge;
 	}
 	
 	public void setParameters(double uctConstant)
@@ -42,15 +47,19 @@ public class TPOLMCTSMoveController extends TPTreeSearchMoveController
 	 *            State observation connected with this node.
 	 * @return Chosen child node.
 	 */
-	public TPOLMCTSTreeNode expandNode(TPOLMCTSTreeNode node, StateObservationMulti stateObs)
+	public TPOLMCTSTreeNode expandNode(TreeNode node, StateObservation stateObs)
 	{
+		TPOLMCTSTreeNode tpolmctsNode = (TPOLMCTSTreeNode) node;
+		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
+		TPGameKnowledge tpGameKnowledge = (TPGameKnowledge) this.gameKnowledge;
+		
 		int bestAction = 0;
 		double bestValue = -1;
 
-		for (int i = 0; i < node.children.length; i++)
+		for (int i = 0; i < tpolmctsNode.children.length; i++)
 		{
 			double x = randomGenerator.nextDouble();
-			if (x > bestValue && node.children[i] == null)
+			if (x > bestValue && tpolmctsNode.children[i] == null)
 			{
 				bestAction = i;
 				bestValue = x;
@@ -60,18 +69,18 @@ public class TPOLMCTSMoveController extends TPTreeSearchMoveController
 		// Advance the state
 
 		// need to provide actions for all players to advance the forward model
-		Types.ACTIONS[] acts = new Types.ACTIONS[gameKnowledge.getNumOfPlayers()];
+		Types.ACTIONS[] acts = new Types.ACTIONS[tpGameKnowledge.getNumOfPlayers()];
 
 		// set this agent's action
-		acts[gameKnowledge.getPlayerID()] = stateObs.getAvailableActions(gameKnowledge.getPlayerID()).get(bestAction);
+		acts[tpGameKnowledge.getPlayerID()] = stateObsMulti.getAvailableActions(tpGameKnowledge.getPlayerID()).get(bestAction);
 
 		// get actions available to the opponent and assume they will do a random action
-		acts[gameKnowledge.getOppID()] = getRandomAction(stateObs, gameKnowledge.getOppID(), Types.ACTIONS.ACTION_NIL, false);
+		acts[tpGameKnowledge.getOppID()] = getRandomAction(stateObsMulti, tpGameKnowledge.getOppID(), Types.ACTIONS.ACTION_NIL, false);
 
-		stateObs.advance(acts);
+		stateObsMulti.advance(acts);
 
-		TPOLMCTSTreeNode chosenChildNode = new TPOLMCTSTreeNode(node, bestAction, gameKnowledge.getNumOfPlayerActions());
-		node.children[bestAction] = chosenChildNode;
+		TPOLMCTSTreeNode chosenChildNode = new TPOLMCTSTreeNode(tpolmctsNode, tpGameKnowledge.getNumOfPlayerActions(), bestAction);
+		tpolmctsNode.children[bestAction] = chosenChildNode;
 		return chosenChildNode;
 	}
 
@@ -85,19 +94,23 @@ public class TPOLMCTSMoveController extends TPTreeSearchMoveController
 	 *            State observation connected with this node.
 	 * @return Chosen child node.
 	 */
-	public TPOLMCTSTreeNode exploitNode(TPOLMCTSTreeNode node, StateObservationMulti stateObs)
+	public TPOLMCTSTreeNode exploitNode(TreeNode node, StateObservation stateObs)
 	{
+		TPOLMCTSTreeNode tpolmctsNode = (TPOLMCTSTreeNode) node;
+		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
+		TPGameKnowledge tpGameKnowledge = (TPGameKnowledge) this.gameKnowledge;
+		
 		TPOLMCTSTreeNode selected = null;
         double bestValue = -Double.MAX_VALUE;
         
-        for (TPOLMCTSTreeNode child : (TPOLMCTSTreeNode[])node.children)
+        for (TPOLMCTSTreeNode child : (TPOLMCTSTreeNode[])tpolmctsNode.children)
         {
             double childValue = child.totalValue / (child.numVisits + this.epsilon);
 
             childValue = Utils.normalise(childValue, bounds[0], bounds[1]);
 
             double uctValue = childValue +
-            		uctConstant * Math.sqrt(Math.log(node.numVisits + 1) / (child.numVisits + this.epsilon));
+            		uctConstant * Math.sqrt(Math.log(tpolmctsNode.numVisits + 1) / (child.numVisits + this.epsilon));
 
             uctValue = Utils.noise(uctValue, this.epsilon, this.randomGenerator.nextDouble());     //break ties randomly
 
@@ -109,24 +122,24 @@ public class TPOLMCTSMoveController extends TPTreeSearchMoveController
         }
         if (selected == null)
         {
-            throw new RuntimeException("Warning! returning null: " + bestValue + " : " + node.children.length + " " +
+            throw new RuntimeException("Warning! returning null: " + bestValue + " : " + tpolmctsNode.children.length + " " +
             + bounds[0] + " " + bounds[1]);
         }
 
         //Roll the state:
 
         //need to provide actions for all players to advance the forward model
-        Types.ACTIONS[] acts = new Types.ACTIONS[gameKnowledge.getNumOfPlayers()];
+        Types.ACTIONS[] acts = new Types.ACTIONS[tpGameKnowledge.getNumOfPlayers()];
         
         //set this agent's action
-        acts[gameKnowledge.getPlayerID()] = stateObs.getAvailableActions(gameKnowledge.getPlayerID()).get(selected.actionLeadingToThisNode);
+        acts[tpGameKnowledge.getPlayerID()] = stateObsMulti.getAvailableActions(tpGameKnowledge.getPlayerID()).get(selected.actionLeadingToThisNode);
 
         //get actions available to the opponent and assume they will do a random action
         //ArrayList<Types.ACTIONS> oppActions = state.getAvailableActions(Agent.oppID);
         //acts[Agent.oppID] = oppActions.get(m_rnd.nextInt(oppActions.size()));
-        acts[gameKnowledge.getOppID()] = getRandomAction(stateObs, gameKnowledge.getOppID(), Types.ACTIONS.ACTION_NIL, false);
+        acts[tpGameKnowledge.getOppID()] = getRandomAction(stateObsMulti, tpGameKnowledge.getOppID(), Types.ACTIONS.ACTION_NIL, false);
 
-        stateObs.advance(acts);
+        stateObsMulti.advance(acts);
 
         return selected;
 	}
@@ -136,12 +149,15 @@ public class TPOLMCTSMoveController extends TPTreeSearchMoveController
 	 *            State observation connected with this node.
 	 * @return Actions for both players.
 	 */
-	public Types.ACTIONS[] chooseMovesInRollout(StateObservationMulti stateObs)
+	public Types.ACTIONS[] chooseMovesInRollout(StateObservation stateObs)
 	{
-		Types.ACTIONS[] acts = new Types.ACTIONS[gameKnowledge.getNumOfPlayers()];
-		for (int i = 0; i < gameKnowledge.getNumOfPlayers(); i++)
+		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
+		TPGameKnowledge tpGameKnowledge = (TPGameKnowledge) this.gameKnowledge;
+		
+		Types.ACTIONS[] acts = new Types.ACTIONS[tpGameKnowledge.getNumOfPlayers()];
+		for (int i = 0; i < tpGameKnowledge.getNumOfPlayers(); i++)
 		{
-			acts[i] = getRandomAction(stateObs, i, Types.ACTIONS.ACTION_NIL, false);
+			acts[i] = getRandomAction(stateObsMulti, i, Types.ACTIONS.ACTION_NIL, false);
 		}
 		
 		LogHandler.writeLog(acts[0] + " " + acts[1], "TPOLMCTSMoveController.chooseMovesInRollout", 0);

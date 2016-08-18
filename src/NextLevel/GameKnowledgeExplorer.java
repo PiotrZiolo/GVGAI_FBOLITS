@@ -27,5 +27,7 @@ public class GameKnowledgeExplorer
 		this.stateObs = stateObs;
 		this.gameKnowledge.setPlayerID(playerID);
 		this.gameKnowledge.setNumOfPlayers(stateObs.getNoPlayers());
+		this.gameKnowledge.setNumOfPlayerActions(stateObs.getAvailableActions().size());
+		this.gameKnowledge.setPlayerActions(stateObs.getAvailableActions());
 	}
 }

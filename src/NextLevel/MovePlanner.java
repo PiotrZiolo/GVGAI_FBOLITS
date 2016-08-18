@@ -1,7 +1,6 @@
 package NextLevel;
 
 import NextLevel.moveController.AgentMoveController;
-import NextLevel.utils.LogHandler;
 import ontology.Types;
 import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;

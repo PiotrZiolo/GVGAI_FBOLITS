@@ -6,8 +6,8 @@ import ontology.Types;
 
 public class AgentMoveController
 {
-	private GameKnowledge gameKnowledge;
-	private PathFinder pathFinder;
+	protected GameKnowledge gameKnowledge;
+	protected PathFinder pathFinder;
 	
 	public AgentMoveController()
 	{

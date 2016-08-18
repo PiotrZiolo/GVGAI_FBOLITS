@@ -1,6 +1,7 @@
 package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
 
 import NextLevel.moveController.AgentMoveController;
+import NextLevel.twoPlayer.TPGameKnowledge;
 import NextLevel.twoPlayer.TPGameKnowledgeExplorer;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
@@ -8,9 +9,9 @@ import tools.ElapsedCpuTimer;
 
 public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 {
-	protected StateObservation stateObs; 
-	protected FBTPGameKnowledge gameKnowledge;
-	protected AgentMoveController agentMoveController;
+	// Real field types
+	// protected FBTPGameKnowledge gameKnowledge;
+	// protected AgentMoveController agentMoveController;
 	
 	public FBTPGameKnowledgeExplorer()
 	{
@@ -23,15 +24,17 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		this.agentMoveController = agentMoveController;
 	}
 
-	public void learn(StateObservationMulti stateObs, int playerID, ElapsedCpuTimer elapsedTimer, int timeForLearningDuringInitialization)
+	public void learn(StateObservation stateObs, int playerID, ElapsedCpuTimer elapsedTimer, int timeForLearningDuringInitialization)
 	{
-		this.stateObs = stateObs;
-		this.gameKnowledge.setPlayerID(playerID);
-		this.gameKnowledge.setOppID(1 - playerID);
-		this.gameKnowledge.setNumOfPlayers(stateObs.getNoPlayers());
-		this.gameKnowledge.setNumOfPlayerActions(stateObs.getAvailableActions(playerID).size());
-		this.gameKnowledge.setNumOfOpponentActions(stateObs.getAvailableActions(gameKnowledge.getOppID()).size());
-		this.gameKnowledge.setPlayerActions(stateObs.getAvailableActions(playerID));
-		this.gameKnowledge.setOpponentActions(stateObs.getAvailableActions(gameKnowledge.getOppID()));
+		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs; 
+		this.stateObs = stateObsMulti;
+		TPGameKnowledge tpGameKnowledge = (TPGameKnowledge)this.gameKnowledge;
+		tpGameKnowledge.setPlayerID(playerID);
+		tpGameKnowledge.setOppID(1 - playerID);
+		tpGameKnowledge.setNumOfPlayers(stateObsMulti.getNoPlayers());
+		tpGameKnowledge.setNumOfPlayerActions(stateObsMulti.getAvailableActions(playerID).size());
+		tpGameKnowledge.setNumOfOpponentActions(stateObsMulti.getAvailableActions(tpGameKnowledge.getOppID()).size());
+		tpGameKnowledge.setPlayerActions(stateObsMulti.getAvailableActions(playerID));
+		tpGameKnowledge.setOpponentActions(stateObsMulti.getAvailableActions(tpGameKnowledge.getOppID()));
 	}
 }
