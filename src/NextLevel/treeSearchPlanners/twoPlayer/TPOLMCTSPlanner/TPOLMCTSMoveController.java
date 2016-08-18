@@ -81,6 +81,9 @@ public class TPOLMCTSMoveController extends TreeSearchMoveController
 
 		TPOLMCTSTreeNode chosenChildNode = new TPOLMCTSTreeNode(tpolmctsNode, tpGameKnowledge.getNumOfPlayerActions(), bestAction);
 		tpolmctsNode.children[bestAction] = chosenChildNode;
+		
+		LogHandler.writeLog(acts[0] + " " + acts[1], "TPOLMCTSMoveController.expandNode", 0);
+		
 		return chosenChildNode;
 	}
 
@@ -140,6 +143,8 @@ public class TPOLMCTSMoveController extends TreeSearchMoveController
         acts[tpGameKnowledge.getOppID()] = getRandomAction(stateObsMulti, tpGameKnowledge.getOppID(), Types.ACTIONS.ACTION_NIL, false);
 
         stateObsMulti.advance(acts);
+        
+        LogHandler.writeLog(acts[0] + " " + acts[1], "TPOLMCTSMoveController.exploitNode", 0);
 
         return selected;
 	}
@@ -149,7 +154,7 @@ public class TPOLMCTSMoveController extends TreeSearchMoveController
 	 *            State observation connected with this node.
 	 * @return Actions for both players.
 	 */
-	public Types.ACTIONS[] chooseMovesInRollout(StateObservation stateObs)
+	public void moveInRollout(StateObservation stateObs)
 	{
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		TPGameKnowledge tpGameKnowledge = (TPGameKnowledge) this.gameKnowledge;
@@ -159,10 +164,11 @@ public class TPOLMCTSMoveController extends TreeSearchMoveController
 		{
 			acts[i] = getRandomAction(stateObsMulti, i, Types.ACTIONS.ACTION_NIL, false);
 		}
-		
-		LogHandler.writeLog(acts[0] + " " + acts[1], "TPOLMCTSMoveController.chooseMovesInRollout", 0);
 
-		return acts;
+		stateObsMulti.advance(acts);
+		
+		LogHandler.writeLog("State multi game tick: " + stateObsMulti.getGameTick(), "TPOLMCTSMoveController.moveInRollout", 0);
+		LogHandler.writeLog(acts[0] + " " + acts[1], "TPOLMCTSMoveController.moveInRollout", 0);
 	}
 
 	/**

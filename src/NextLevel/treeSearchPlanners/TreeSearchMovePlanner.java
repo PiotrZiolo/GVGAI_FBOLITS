@@ -140,6 +140,7 @@ public class TreeSearchMovePlanner extends MovePlanner
 		while (!isRolloutFinished(stateObs, thisDepth))
 		{
 			treeSearchMoveController.moveInRollout(stateObs);
+			LogHandler.writeLog("State game tick: " + stateObs.getGameTick(), "TreeSearchMoveController.rollOut", 0);
 			thisDepth++;
 		}
 

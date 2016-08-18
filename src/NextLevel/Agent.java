@@ -7,6 +7,7 @@ import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPState;
 import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateHandler;
 import NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner.TPOLMCTSMoveController;
 import NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner.TPOLMCTSMovePlanner;
+import NextLevel.twoPlayer.SimpleTPStateEvaluator;
 import NextLevel.twoPlayer.TPWinScoreStateEvaluator;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
@@ -33,7 +34,7 @@ public class Agent extends AbstractMultiPlayer
     private FBTPAgentMoveController agentMoveController;
 	private FBTPStateHandler stateHandler;
 	private StateEvaluatorTeacher stateEvaluatorTeacher;
-    private TPWinScoreStateEvaluator stateEvaluator;
+    private SimpleTPStateEvaluator stateEvaluator;
     private TPOLMCTSMoveController moveController;
     
     // Algorithm parameters
@@ -63,7 +64,7 @@ public class Agent extends AbstractMultiPlayer
 		gameKnowledgeExplorer = new FBTPGameKnowledgeExplorer(gameKnowledge, agentMoveController);
 		
 		stateHandler = new FBTPStateHandler();
-		stateEvaluator = new TPWinScoreStateEvaluator(gameKnowledge, stateHandler);
+		stateEvaluator = new SimpleTPStateEvaluator(gameKnowledge, stateHandler);
 		stateEvaluatorTeacher = new StateEvaluatorTeacher(stateEvaluator, gameKnowledge);
 		
 		moveController = new TPOLMCTSMoveController(stateEvaluator, gameKnowledge);
