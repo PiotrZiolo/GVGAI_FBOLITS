@@ -27,7 +27,7 @@ public class TestMultiPlayer
 
         //Set here the controllers used in the games (need 2 separated by space).
         String controllers = nextLevel + " " + sampleOLMCTSController;
-
+        
         //Available games:
         String gamesPath = "examples/2player/";
         String games[] = new String[]{};

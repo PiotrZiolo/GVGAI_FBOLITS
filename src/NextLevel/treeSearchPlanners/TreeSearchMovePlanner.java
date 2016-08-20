@@ -8,6 +8,7 @@ import NextLevel.GameKnowledgeExplorer;
 import NextLevel.MovePlanner;
 import NextLevel.State;
 import NextLevel.StateEvaluator;
+import NextLevel.StateHandler;
 import NextLevel.moveController.AgentMoveController;
 import NextLevel.utils.LogHandler;
 import core.game.StateObservation;
@@ -19,6 +20,7 @@ import tools.Utils;
 public class TreeSearchMovePlanner extends MovePlanner
 {
 	// Real types of fields
+	// protected StateHandler stateHandler;
 	// protected StateEvaluator stateEvaluator;
 	// protected GameKnowledge gameKnowledge;
 	// protected GameKnowledgeExplorer gameKnowledgeExplorer; 
@@ -44,10 +46,11 @@ public class TreeSearchMovePlanner extends MovePlanner
 
 	}
 	
-	public TreeSearchMovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
+	public TreeSearchMovePlanner(StateHandler stateHandler, StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
 			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController, 
 			TreeSearchMoveController treeSearchMoveController)
 	{
+		this.stateHandler = stateHandler;
 		this.stateEvaluator = stateEvaluator;
 		this.gameKnowledge = gameKnowledge;
 		this.gameKnowledgeExplorer = gameKnowledgeExplorer;

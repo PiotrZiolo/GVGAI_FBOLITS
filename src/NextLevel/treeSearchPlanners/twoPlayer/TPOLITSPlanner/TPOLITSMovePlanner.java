@@ -1,4 +1,4 @@
-package NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner;
+package NextLevel.treeSearchPlanners.twoPlayer.TPOLITSPlanner;
 
 import java.util.Random;
 
@@ -12,7 +12,7 @@ import NextLevel.twoPlayer.TPGameKnowledgeExplorer;
 import NextLevel.twoPlayer.TPStateHandler;
 import core.game.StateObservation;
 
-public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner
+public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 {
 	// Real types of fields
 	// protected TPStateHandler stateHandler;
@@ -28,11 +28,10 @@ public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner
 	// Algorithm parameters
 	
 	protected int remainingLimit;
-	protected int rolloutDepth;
 	
-	public TPOLMCTSMovePlanner(TPStateHandler stateHandler, StateEvaluator stateEvaluator, TPGameKnowledge gameKnowledge,
+	public TPOLITSMovePlanner(TPStateHandler stateHandler, StateEvaluator stateEvaluator, TPGameKnowledge gameKnowledge,
 			TPGameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController, 
-			TPOLMCTSMoveController treeSearchMoveController)
+			TPOLITSMoveController treeSearchMoveController)
 	{
 		this.stateHandler = stateHandler;
 		this.stateEvaluator = stateEvaluator;
@@ -45,27 +44,23 @@ public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner
 		this.treeSearchMoveController.setRandomGenerator(randomGenerator);
 	}
 	
-	public void setParameters(int remainingLimit, int rolloutDepth)
+	public void setParameters(int remainingLimit)
 	{
 		this.remainingLimit = remainingLimit;
-		this.rolloutDepth = rolloutDepth;
 	}
 	
 	protected void initialize()
 	{
-		this.rootNode = new TPOLMCTSTreeNode(gameKnowledge.getNumOfPlayerActions());
+		this.rootNode = new TPOLITSTreeNode(gameKnowledge.getNumOfPlayerActions());
 	}
 	
 	protected boolean isTreePolicyFinished(TreeNode currentNode, StateObservation stateObs, boolean expand)
 	{
-		return (stateObs.isGameOver() || expand || currentNode.depth >= rolloutDepth);
+		return (stateObs.isGameOver() || expand);
 	}
 		
 	protected boolean isRolloutFinished(StateObservation rollerState, int depth)
 	{
-		if (depth >= rolloutDepth) //rollout end condition.
-			return true;
-		
 		if (rollerState.isGameOver()) // end of game
 			return true;
 

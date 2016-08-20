@@ -3,6 +3,7 @@ package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
 import NextLevel.GameKnowledge;
 import NextLevel.State;
 import NextLevel.StateEvaluator;
+import NextLevel.featureBasedModule.InfluenceMap;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 
@@ -11,6 +12,8 @@ public class FBTPStateEvaluator extends StateEvaluator
 	// Real types of fields
 	// protected FBTPGameKnowledge gameKnowledge;
 	// protected FBTPStateHandler stateHandler;
+	
+	protected InfluenceMap influenceMap;
 	
 	public FBTPStateEvaluator(FBTPGameKnowledge gameKnowledge, FBTPStateHandler stateHandler)
 	{
