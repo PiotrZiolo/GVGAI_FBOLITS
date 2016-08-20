@@ -1,5 +1,6 @@
-package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
+package NextLevel.featureBasedModule.featureBasedTwoPlayerModule.MoveController;
 
+import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPGameKnowledge;
 import NextLevel.moveController.PathFinder;
 
 public class FBTPPathFinder extends PathFinder

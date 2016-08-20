@@ -1,10 +1,10 @@
 package NextLevel;
 
-import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPAgentMoveController;
 import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPGameKnowledge;
 import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPGameKnowledgeExplorer;
 import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPState;
 import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPStateHandler;
+import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.MoveController.FBTPAgentMoveController;
 import NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner.TPOLMCTSMoveController;
 import NextLevel.treeSearchPlanners.twoPlayer.TPOLMCTSPlanner.TPOLMCTSMovePlanner;
 import NextLevel.twoPlayer.SimpleTPStateEvaluator;

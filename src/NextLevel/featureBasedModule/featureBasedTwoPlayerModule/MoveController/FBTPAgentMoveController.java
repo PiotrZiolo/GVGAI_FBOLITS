@@ -1,5 +1,6 @@
-package NextLevel.featureBasedModule.featureBasedTwoPlayerModule;
+package NextLevel.featureBasedModule.featureBasedTwoPlayerModule.MoveController;
 
+import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPGameKnowledge;
 import NextLevel.moveController.AgentMoveController;
 import NextLevel.moveController.PathFinder;
 import core.game.StateObservation;
