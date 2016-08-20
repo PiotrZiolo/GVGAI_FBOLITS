@@ -15,7 +15,6 @@ import core.game.StateObservation;
 public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner
 {
 	// Real types of fields
-	// protected TPStateHandler stateHandler;
 	// protected StateEvaluator stateEvaluator;
 	// protected TPGameKnowledge gameKnowledge;
 	// protected TPGameKnowledgeExplorer gameKnowledgeExplorer; 
@@ -30,11 +29,10 @@ public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner
 	protected int remainingLimit;
 	protected int rolloutDepth;
 	
-	public TPOLMCTSMovePlanner(TPStateHandler stateHandler, StateEvaluator stateEvaluator, TPGameKnowledge gameKnowledge,
+	public TPOLMCTSMovePlanner(StateEvaluator stateEvaluator, TPGameKnowledge gameKnowledge,
 			TPGameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController, 
 			TPOLMCTSMoveController treeSearchMoveController)
 	{
-		this.stateHandler = stateHandler;
 		this.stateEvaluator = stateEvaluator;
 		this.gameKnowledge = gameKnowledge;
 		this.gameKnowledgeExplorer = gameKnowledgeExplorer;

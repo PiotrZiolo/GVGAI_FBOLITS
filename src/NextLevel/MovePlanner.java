@@ -7,7 +7,6 @@ import tools.ElapsedCpuTimer;
 
 public class MovePlanner
 {
-	protected StateHandler stateHandler;
 	protected StateEvaluator stateEvaluator;
 	protected GameKnowledge gameKnowledge;
 	protected GameKnowledgeExplorer gameKnowledgeExplorer; 
@@ -18,10 +17,9 @@ public class MovePlanner
 		
 	}
 	
-	public MovePlanner(StateHandler stateHandler, StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
+	public MovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
 			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController)
 	{
-		this.stateHandler = stateHandler;
 		this.stateEvaluator = stateEvaluator;
 		this.gameKnowledge = gameKnowledge;
 		this.gameKnowledgeExplorer = gameKnowledgeExplorer;

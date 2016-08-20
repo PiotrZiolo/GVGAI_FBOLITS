@@ -69,7 +69,7 @@ public class Agent extends AbstractMultiPlayer
 		
 		moveController = new TPOLMCTSMoveController(stateEvaluator, gameKnowledge);
 		moveController.setParameters(uctConstant);
-		movePlanner = new TPOLMCTSMovePlanner(stateHandler, stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController, moveController);
+		movePlanner = new TPOLMCTSMovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController, moveController);
 		
 		// Learning
 		
