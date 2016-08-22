@@ -9,7 +9,7 @@ import NextLevel.MovePlanner;
 import NextLevel.State;
 import NextLevel.StateEvaluator;
 import NextLevel.StateHandler;
-import NextLevel.moveController.AgentMoveController;
+import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.utils.LogHandler;
 import core.game.StateObservation;
 import ontology.Types;

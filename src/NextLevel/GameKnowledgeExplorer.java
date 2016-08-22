@@ -1,6 +1,7 @@
 package NextLevel;
 
-import NextLevel.moveController.AgentMoveController;
+import NextLevel.mechanicsController.AgentMoveController;
+import NextLevel.mechanicsController.GameMechanicsController;
 import core.game.StateObservation;
 import tools.ElapsedCpuTimer;
 
@@ -8,6 +9,7 @@ public class GameKnowledgeExplorer
 {
 	protected StateObservation stateObs; 
 	protected GameKnowledge gameKnowledge;
+	protected GameMechanicsController gameMechanicsController;
 	protected AgentMoveController agentMoveController;
 	
 	public GameKnowledgeExplorer()
@@ -16,9 +18,10 @@ public class GameKnowledgeExplorer
 	}
 	
 	public GameKnowledgeExplorer(GameKnowledge gameKnowledge,
-			AgentMoveController agentMoveController)
+			AgentMoveController agentMoveController, GameMechanicsController gameMechanicsController)
 	{
 		this.gameKnowledge = gameKnowledge;
+		this.gameMechanicsController = gameMechanicsController;
 		this.agentMoveController = agentMoveController;
 	}
 

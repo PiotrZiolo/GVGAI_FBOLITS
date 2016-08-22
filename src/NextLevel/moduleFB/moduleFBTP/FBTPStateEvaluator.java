@@ -1,0 +1,32 @@
+package NextLevel.moduleFB.moduleFBTP;
+
+import NextLevel.GameKnowledge;
+import NextLevel.State;
+import NextLevel.StateEvaluator;
+import NextLevel.moduleFB.InfluenceMap;
+import core.game.StateObservation;
+import core.game.StateObservationMulti;
+
+public class FBTPStateEvaluator extends StateEvaluator
+{
+	// Real types of fields
+	// protected FBTPGameKnowledge gameKnowledge;
+	// protected FBTPStateHandler stateHandler;
+	
+	protected InfluenceMap influenceMap;
+	
+	public FBTPStateEvaluator(FBTPGameKnowledge gameKnowledge, FBTPStateHandler stateHandler)
+	{
+		this.gameKnowledge = gameKnowledge;
+		this.stateHandler = stateHandler;
+	}
+	
+	public double evaluateState(StateObservation stateObs)
+	{
+		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
+		FBTPStateHandler fbtpStateHandler = (FBTPStateHandler) this.stateHandler;
+		FBTPState fbtpstate = fbtpStateHandler.prepareState(stateObsMulti);
+		
+		return 0;
+	}
+}

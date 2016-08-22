@@ -10,7 +10,8 @@ public class GameKnowledge
 	protected int numOfPlayers;
 	protected int numOfPlayerActions;
 	protected ArrayList<Types.ACTIONS> playerActions;
-    
+	protected ArrayList<Types.ACTIONS> playerMoveActions;
+
 	protected GameObjectives gameObjectives;
 
 	public int getPlayerID()
@@ -51,5 +52,18 @@ public class GameKnowledge
 	public void setPlayerActions(ArrayList<Types.ACTIONS> playerActions)
 	{
 		this.playerActions = playerActions;
+
+		this.playerMoveActions = new ArrayList<Types.ACTIONS>();
+		Types.ACTIONS[] moveActions = { Types.ACTIONS.ACTION_RIGHT, Types.ACTIONS.ACTION_LEFT, Types.ACTIONS.ACTION_UP,
+				Types.ACTIONS.ACTION_DOWN };
+		for (Types.ACTIONS i : playerActions)
+			for (Types.ACTIONS j : moveActions)
+				if (j == i)
+					playerMoveActions.add(j);
+	}
+
+	public ArrayList<Types.ACTIONS> getPlayerMoveActions()
+	{
+		return playerMoveActions;
 	}
 }

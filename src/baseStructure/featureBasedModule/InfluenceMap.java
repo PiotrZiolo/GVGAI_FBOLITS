@@ -1,6 +1,6 @@
 package baseStructure.featureBasedModule;
 
-import NextLevel.featureBasedModule.featureBasedTwoPlayerModule.FBTPGameKnowledge;
+import NextLevel.moduleFB.moduleFBTP.FBTPGameKnowledge;
 import tools.Vector2d;
 
 public class InfluenceMap
