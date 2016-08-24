@@ -1,14 +1,11 @@
 package NextLevel.moduleFB.moduleFBTP;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-import NextLevel.GameObjectives;
-import NextLevel.moduleFB.InfluenceMap;
 import NextLevel.moduleFB.SpriteTypeFeatures;
 import NextLevel.moduleTP.TPGameKnowledge;
-import ontology.Types;
 
 public class FBTPGameKnowledge extends TPGameKnowledge
 {
@@ -18,7 +15,7 @@ public class FBTPGameKnowledge extends TPGameKnowledge
 	{
 		spriteTypeFeaturesMap = new HashMap<Integer, SpriteTypeFeatures>();
 	}
-	
+
 	public InfluenceMap getInfluenceMap()
 	{
 		return influenceMap;
@@ -28,7 +25,7 @@ public class FBTPGameKnowledge extends TPGameKnowledge
 	{
 		this.influenceMap = influenceMap;
 	}
-	
+
 	private HashMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap;
 
 	public FBTPGameKnowledge copy()
@@ -80,5 +77,10 @@ public class FBTPGameKnowledge extends TPGameKnowledge
 	public void setSpriteTypeFeaturesMap(HashMap<Integer, SpriteTypeFeatures> spriteTypeFeaturesMap)
 	{
 		this.spriteTypeFeaturesMap = spriteTypeFeaturesMap;
+	}
+
+	public Set<Integer> getSpriteTypes()
+	{
+		return spriteTypeFeaturesMap.keySet();
 	}
 }

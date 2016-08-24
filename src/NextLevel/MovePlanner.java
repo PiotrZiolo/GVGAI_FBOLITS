@@ -11,6 +11,7 @@ public class MovePlanner
 	protected GameKnowledge gameKnowledge;
 	protected GameKnowledgeExplorer gameKnowledgeExplorer; 
 	protected AgentMoveController agentMoveController;
+	protected GameStateTracker gameStateTracker;
 	
 	public MovePlanner()
 	{
@@ -24,6 +25,11 @@ public class MovePlanner
 		this.gameKnowledge = gameKnowledge;
 		this.gameKnowledgeExplorer = gameKnowledgeExplorer;
 		this.agentMoveController = agentMoveController;
+	}
+	
+	public void setGameStateTracker(GameStateTracker gameStateTracker)
+	{
+		this.gameStateTracker = gameStateTracker;
 	}
 
 	public ACTIONS chooseAction(State state, ElapsedCpuTimer elapsedTimer, int timeForChoosingMove)

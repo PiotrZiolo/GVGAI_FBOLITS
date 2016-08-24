@@ -1,4 +1,4 @@
-package NextLevel.moduleFB;
+package NextLevel.utils;
 
 import tools.Vector2d;
 

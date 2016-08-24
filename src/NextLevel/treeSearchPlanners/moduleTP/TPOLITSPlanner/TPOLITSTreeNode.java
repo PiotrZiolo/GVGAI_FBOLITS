@@ -1,9 +1,17 @@
 package NextLevel.treeSearchPlanners.moduleTP.TPOLITSPlanner;
 
+import java.util.ArrayList;
+
 import NextLevel.treeSearchPlanners.TreeNode;
+import core.game.StateObservationMulti;
+import ontology.Types;
 
 public class TPOLITSTreeNode extends TreeNode
 {
+	public StateObservationMulti stateObs;
+	
+	public ArrayList<Types.ACTIONS> path;
+	
 	public TPOLITSTreeNode(int numOfActions)
 	{
 		this.parent = null;

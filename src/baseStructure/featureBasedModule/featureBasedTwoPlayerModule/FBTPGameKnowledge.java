@@ -2,7 +2,7 @@ package baseStructure.featureBasedModule.featureBasedTwoPlayerModule;
 
 import java.util.ArrayList;
 
-import NextLevel.moduleFB.InfluenceMap;
+import baseStructure.featureBasedModule.InfluenceMap;
 import baseStructure.GameObjectives;
 import baseStructure.twoPlayer.TPGameKnowledge;
 import ontology.Types;

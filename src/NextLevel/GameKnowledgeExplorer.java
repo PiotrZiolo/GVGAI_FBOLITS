@@ -12,6 +12,8 @@ public class GameKnowledgeExplorer
 	protected GameMechanicsController gameMechanicsController;
 	protected AgentMoveController agentMoveController;
 	
+	protected ElapsedCpuTimer elapsedTimer;
+	
 	public GameKnowledgeExplorer()
 	{
 		
@@ -23,6 +25,8 @@ public class GameKnowledgeExplorer
 		this.gameKnowledge = gameKnowledge;
 		this.gameMechanicsController = gameMechanicsController;
 		this.agentMoveController = agentMoveController;
+		
+		this.elapsedTimer = new ElapsedCpuTimer();
 	}
 
 	public void learn(StateObservation stateObs, int playerID, ElapsedCpuTimer elapsedTimer, int timeForLearningDuringInitialization)

@@ -5,6 +5,7 @@ import java.util.Random;
 import NextLevel.BasicState;
 import NextLevel.GameKnowledge;
 import NextLevel.GameKnowledgeExplorer;
+import NextLevel.GameStateTracker;
 import NextLevel.MovePlanner;
 import NextLevel.State;
 import NextLevel.StateEvaluator;
@@ -24,11 +25,11 @@ public class TreeSearchMovePlanner extends MovePlanner
 	// protected GameKnowledge gameKnowledge;
 	// protected GameKnowledgeExplorer gameKnowledgeExplorer; 
 	// protected AgentMoveController agentMoveController;
+	// protected GameStateTracker gameStateTracker;
 	
 	protected TreeNode rootNode;
 	protected BasicState rootState;
 	protected StateObservation rootStateObs;
-	protected TreeSearchMoveController treeSearchMoveController;
 	
 	protected ElapsedCpuTimer mainElapsedTimer;
 	protected Random randomGenerator;
@@ -46,14 +47,12 @@ public class TreeSearchMovePlanner extends MovePlanner
 	}
 	
 	public TreeSearchMovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
-			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController, 
-			TreeSearchMoveController treeSearchMoveController)
+			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController)
 	{
 		this.stateEvaluator = stateEvaluator;
 		this.gameKnowledge = gameKnowledge;
 		this.gameKnowledgeExplorer = gameKnowledgeExplorer;
 		this.agentMoveController = agentMoveController;
-		this.treeSearchMoveController = treeSearchMoveController;
 		
 		this.randomGenerator = new Random();
 	}
@@ -116,12 +115,12 @@ public class TreeSearchMovePlanner extends MovePlanner
 		{
 			if (currentNode.isNotFullyExpanded())
 			{
-				currentNode = treeSearchMoveController.expandNode(currentNode, stateObs);
+				currentNode = expandNode(currentNode, stateObs);
 				expand = true;
 			}
 			else
 			{
-				currentNode = treeSearchMoveController.exploitNode(currentNode, stateObs);
+				currentNode = exploitNode(currentNode, stateObs);
 				expand = false;
 			}
 		}
@@ -140,7 +139,7 @@ public class TreeSearchMovePlanner extends MovePlanner
 
 		while (!isRolloutFinished(stateObs, thisDepth))
 		{
-			treeSearchMoveController.moveInRollout(stateObs);
+			moveInRollout(stateObs);
 			LogHandler.writeLog("State game tick: " + stateObs.getGameTick(), "TreeSearchMoveController.rollOut", 0);
 			thisDepth++;
 		}
@@ -175,6 +174,46 @@ public class TreeSearchMovePlanner extends MovePlanner
 	protected void updateNode(TreeNode node, double delta)
 	{
 		// To be overriden in subclasses
+	}
+	
+	/**
+	 * Chooses the next node from the children of node, when there are still unexplored children. Advances stateObs accordingly.
+	 * 
+	 * @param node
+	 *            Node to be expanded.
+	 * @param stateObs
+	 *            State observation connected with this node.
+	 * @return Chosen child node.
+	 */
+	public TreeNode expandNode(TreeNode node, StateObservation stateObs)
+	{
+		// To be overriden in subclasses
+		return null;
+	}
+
+	/**
+	 * Chooses the next node from the children of node, when all children have already been explored at least once. Advances stateObs accordingly.
+	 * 
+	 * @param node
+	 *            Node to be expanded.
+	 * @param stateObs
+	 *            State observation connected with this node.
+	 * @return Chosen child node.
+	 */
+	public TreeNode exploitNode(TreeNode node, StateObservation stateObs)
+	{
+		// To be overridden in subclasses
+		return null;
+	}
+
+	/**
+	 * @param stateObs
+	 *            State observation connected with this node.
+	 * @return Actions for both players.
+	 */
+	public void moveInRollout(StateObservation stateObs)
+	{
+		// To be overridden in subclasses
 	}
 
 	protected Types.ACTIONS getMostVisitedAction()
