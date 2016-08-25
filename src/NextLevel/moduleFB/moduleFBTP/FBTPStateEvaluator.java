@@ -322,4 +322,10 @@ public class FBTPStateEvaluator extends StateEvaluator
 		
 		return score;
 	}
+
+	public double evaluateSprite(Observation observation)
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

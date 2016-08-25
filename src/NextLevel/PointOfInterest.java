@@ -5,13 +5,19 @@ import tools.Vector2d;
 
 public class PointOfInterest
 {
-	protected Vector2d position;
-	protected Observation observation;
-	protected double importance;
-	
+	public Vector2d position;
+	public Observation observation;
+	public double importance;
+
 	// protected int id;
-	protected int poiType; // 0 - sprite, 1 - position on the map
-	
+	public POITYPE poiType;
+
+	public boolean positionChangedFromPreviousTurn;
+
 	public boolean track;
 
+	public static enum POITYPE
+	{
+		SPRITE, POSITION, SHOT
+	}
 }

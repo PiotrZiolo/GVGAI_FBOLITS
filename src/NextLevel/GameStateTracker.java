@@ -26,11 +26,29 @@ public class GameStateTracker
 	
 	public void runTracker(StateObservation stateObs)
 	{
-		updatePOIsPosition(stateObs);
-		searchForNewPOIs(stateObs);
+		updatePOIs(stateObs);
 	}
 	
-	protected void updatePOIsPosition(StateObservation stateObs)
+	public ArrayList<PointOfInterest> getPOIs()
+	{
+		return pois;
+	}
+	
+	public ArrayList<PointOfInterest> getNewPOIs()
+	{
+		return newPOIs;
+	}
+	
+	public ArrayList<PointOfInterest> getRemovedPOIs()
+	{
+		return removedPOIs;
+	}
+	
+	/**
+	 * Checks changes in positions of POIs, check new POIs, check removed POIs
+	 * @param stateObs
+	 */
+	protected void updatePOIs(StateObservation stateObs)
 	{
 		for (PointOfInterest poi : this.pois)
 		{
@@ -39,10 +57,5 @@ public class GameStateTracker
 				
 			}
 		}
-	}
-	
-	protected void searchForNewPOIs(StateObservation stateObs)
-	{
-		
 	}
 }

@@ -8,10 +8,12 @@ import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.moduleFB.moduleFBTP.FBTPGameKnowledge;
 import NextLevel.utils.LogHandler;
+import NextLevel.utils.Pair;
 import core.game.Observation;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import ontology.Types;
+import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
 import tools.Vector2d;
 
@@ -355,6 +357,81 @@ public class FBTPAgentMoveController extends AgentMoveController
 				}
 			}
 		}
+		return null;
+	}
+
+	/**
+	 * Checks if positions position1 and position2 are within numMoves moves of the avatar of the player with playerID id.
+	 * 
+	 * @param avatarPosition
+	 * @param poiPosition
+	 * @param numMoves
+	 * @param playerID
+	 * @return
+	 */
+	public boolean arePositionsWithinGivenMoveRange(Vector2d position1, Vector2d position2,
+			int numMoves, int playerID)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	/**
+	 * Returns an action which guarantees not dying for the player with playerID id for safeTurns. 
+	 * One non-dying simulation for safeTurns turns/moves is enough to return the first action of the successful sequence.  
+	 * @param playerID
+	 * @return Non-dying action or null if such action doesn't exist.
+	 */
+	public ACTIONS getNonDyingAction(int playerID, int safeTurns)
+	{
+		// TODO Auto-generated method stub
+		// assume greedy action for the opponent
+		return null;
+	}
+
+	/**
+	 * Returns an action which gives the best raw score (including reward for win and penalty for loss) for the player with playerID id.
+	 * @param playerID
+	 * @return Action maximizing raw score.
+	 */
+	public ACTIONS getGreedyAction(int playerID)
+	{
+		// TODO Auto-generated method stub
+		// use TPWinScoreStateEvaluator to evaluate states
+		return null;
+	}
+
+	/**
+	 * Approaches player avatar (of playerID id) to the observation to not more than minDistance (expressed in moves of the avatar).
+	 * 
+	 * @param stateObs
+	 * @param playerID
+	 * @param observation
+	 * @param minDistance
+	 * @param timeLimit
+	 * @return Pair of the final state and a path to the goal. Null if approach was not possible within given time limit.
+	 */
+	public Pair<StateObservationMulti, ArrayList<ACTIONS>> approachSprite(StateObservationMulti stateObs, int playerID,
+			Observation observation, int minDistance, int timeLimit)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
+	 * Approaches player avatar (of playerID id) to the observation to not more than minDistance (expressed in moves of the avatar).
+	 * 
+	 * @param stateObs
+	 * @param playerID
+	 * @param observation
+	 * @param minDistance
+	 * @param timeLimit
+	 * @return Pair of the final state and a path to the goal. Null if approach was not possible within given time limit.
+	 */
+	public Pair<StateObservationMulti, ArrayList<ACTIONS>> approachPosition(StateObservationMulti stateObs,
+			int playerID, Observation observation, int minDistance, int timeLimit)
+	{
+		// TODO Auto-generated method stub
 		return null;
 	}
 }
