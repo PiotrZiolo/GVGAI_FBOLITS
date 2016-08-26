@@ -23,7 +23,7 @@ public class GameMechanicsController
 		this.gameKnowledge = gameKnowledge;
 	}
 
-	public static boolean isOrientationConsistentWithMove(Types.ACTIONS act, Direction orientation)
+	public boolean isOrientationConsistentWithMove(Types.ACTIONS act, Direction orientation)
 	{
 		if (orientation.equals(Types.DNONE))
 			return true;
@@ -35,6 +35,13 @@ public class GameMechanicsController
 			return orientation.equals(Types.DRIGHT);
 		if (act.equals(Types.ACTIONS.ACTION_DOWN))
 			return orientation.equals(Types.DDOWN);
+		return false;
+	}
+	
+	public boolean isMovingAction(Types.ACTIONS act)
+	{
+		if (act.equals(Types.ACTIONS.ACTION_LEFT) || act.equals(Types.ACTIONS.ACTION_UP) || act.equals(Types.ACTIONS.ACTION_RIGHT) || act.equals(Types.ACTIONS.ACTION_DOWN))
+			return true;
 		return false;
 	}
 

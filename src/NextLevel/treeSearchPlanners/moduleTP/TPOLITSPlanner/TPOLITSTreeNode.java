@@ -13,6 +13,7 @@ public class TPOLITSTreeNode extends TreeNode
 	public PointOfInterest poi;
 	public boolean poiApproached;
 	public boolean rebuildTree;
+	public boolean stateObsNearPOI;
 	
 	public ArrayList<Types.ACTIONS> path;
 	
@@ -25,6 +26,7 @@ public class TPOLITSTreeNode extends TreeNode
 		this.children = new TPOLITSTreeNode[numOfActions];
 		this.poiApproached = false;
 		this.rebuildTree = true;
+		this.stateObsNearPOI = false;
 		this.path = null;
 	}
 	
@@ -38,6 +40,7 @@ public class TPOLITSTreeNode extends TreeNode
 		else
 			this.depth = 0;
 		this.children = new TPOLITSTreeNode[numOfActions];
+		this.stateObsNearPOI = false;
 		this.path = null;
 	}
 	
@@ -51,6 +54,7 @@ public class TPOLITSTreeNode extends TreeNode
 		this.poi = poi;
 		this.poiApproached = false;
 		this.rebuildTree = true;
+		this.stateObsNearPOI = false;
 		this.path = null;
 	}
 	

@@ -1,6 +1,7 @@
 package NextLevel;
 
 import NextLevel.mechanicsController.AgentMoveController;
+import NextLevel.mechanicsController.GameMechanicsController;
 import ontology.Types;
 import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
@@ -11,6 +12,7 @@ public class MovePlanner
 	protected GameKnowledge gameKnowledge;
 	protected GameKnowledgeExplorer gameKnowledgeExplorer; 
 	protected AgentMoveController agentMoveController;
+	protected GameMechanicsController gameMechanicsController;
 	protected GameStateTracker gameStateTracker;
 	
 	public MovePlanner()
@@ -30,6 +32,11 @@ public class MovePlanner
 	public void setGameStateTracker(GameStateTracker gameStateTracker)
 	{
 		this.gameStateTracker = gameStateTracker;
+	}
+	
+	public void setGameMechanicsController()
+	{
+		this.gameMechanicsController = gameMechanicsController;
 	}
 
 	public ACTIONS chooseAction(State state, ElapsedCpuTimer elapsedTimer, int timeForChoosingMove)

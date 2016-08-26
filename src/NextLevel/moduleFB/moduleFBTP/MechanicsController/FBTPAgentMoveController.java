@@ -402,34 +402,34 @@ public class FBTPAgentMoveController extends AgentMoveController
 	}
 
 	/**
-	 * Approaches player avatar (of playerID id) to the observation to not more than minDistance (expressed in moves of the avatar).
+	 * Approaches player avatar (of playerID id) to the observation to not more than maxDistance (expressed in moves of the avatar).
 	 * 
 	 * @param stateObs
 	 * @param playerID
 	 * @param observation
-	 * @param minDistance
+	 * @param maxDistance
 	 * @param timeLimit
 	 * @return Pair of the final state and a path to the goal. Null if approach was not possible within given time limit.
 	 */
 	public Pair<StateObservationMulti, ArrayList<ACTIONS>> approachSprite(StateObservationMulti stateObs, int playerID,
-			Observation observation, int minDistance, int timeLimit)
+			Observation observation, int maxDistance, int timeLimit)
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	/**
-	 * Approaches player avatar (of playerID id) to the observation to not more than minDistance (expressed in moves of the avatar).
+	 * Approaches player avatar (of playerID id) to the observation to not more than maxDistance (expressed in moves of the avatar).
 	 * 
 	 * @param stateObs
 	 * @param playerID
 	 * @param observation
-	 * @param minDistance
+	 * @param maxDistance
 	 * @param timeLimit
 	 * @return Pair of the final state and a path to the goal. Null if approach was not possible within given time limit.
 	 */
 	public Pair<StateObservationMulti, ArrayList<ACTIONS>> approachPosition(StateObservationMulti stateObs,
-			int playerID, Observation observation, int minDistance, int timeLimit)
+			int playerID, Observation observation, int maxDistance, int timeLimit)
 	{
 		// TODO Auto-generated method stub
 		return null;

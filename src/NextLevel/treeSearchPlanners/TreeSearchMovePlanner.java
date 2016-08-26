@@ -25,6 +25,7 @@ public class TreeSearchMovePlanner extends MovePlanner
 	// protected GameKnowledge gameKnowledge;
 	// protected GameKnowledgeExplorer gameKnowledgeExplorer; 
 	// protected AgentMoveController agentMoveController;
+	// protected GameMechanicsController gameMechanicsController;
 	// protected GameStateTracker gameStateTracker;
 	
 	protected TreeNode rootNode;

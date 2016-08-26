@@ -3,8 +3,6 @@ package NextLevel.treeSearchPlanners.moduleTP.TPOLITSPlanner;
 import java.util.ArrayList;
 import java.util.Random;
 
-import NextLevel.BasicState;
-import NextLevel.GameStateTracker;
 import NextLevel.PointOfInterest;
 import NextLevel.PointOfInterest.POITYPE;
 import NextLevel.State;
@@ -13,20 +11,15 @@ import NextLevel.moduleFB.moduleFBTP.FBTPState;
 import NextLevel.moduleFB.moduleFBTP.FBTPStateEvaluator;
 import NextLevel.moduleFB.moduleFBTP.MechanicsController.FBTPAgentMoveController;
 import NextLevel.StateEvaluator;
-import NextLevel.StateHandler;
 import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.GameMechanicsController;
 import NextLevel.moduleTP.TPGameKnowledge;
 import NextLevel.moduleTP.TPGameKnowledgeExplorer;
 import NextLevel.moduleTP.TPGameStateTracker;
-import NextLevel.moduleTP.TPStateHandler;
 import NextLevel.treeSearchPlanners.TreeNode;
 import NextLevel.treeSearchPlanners.TreeSearchMovePlanner;
-import NextLevel.treeSearchPlanners.moduleTP.TPOLMCTSPlanner.TPOLMCTSTreeNode;
 import NextLevel.utils.LogHandler;
 import NextLevel.utils.Pair;
-import controllers.singlePlayer.olets.Agent;
-import controllers.singlePlayer.olets.SingleMCTSPlayer;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import ontology.Types;
@@ -46,6 +39,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	// protected BasicTPState rootState;
 	// protected StateObservationMulti rootStateObs;
 	// protected TPGameStateTracker gameStateTracker;
+	// protected GameMechanicsController gameMechanicsController;
 
 	// protected ArrayList<PointOfInterest> pois;
 	protected ArrayList<TPOLITSTreeNode> nodesNearPOIs;
@@ -58,7 +52,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	// - shoot and search for other action in the next move
 	protected TREESEARCHMODE mode;
 	protected int timeLimitForPOIExploration;
-	protected int timeLimitForMoveChoice;
+	protected int timeLimitForTreeSearch;
+	protected int numTurnsGoalPOINotChanged = 0;
 
 	// Algorithm parameters
 
@@ -72,19 +67,20 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	protected int timeLimitForNonDeterministicPathSearch = 2; // in ms
 	protected double goalPOIHandicap = 1.5;
 	protected double uctConstant = Math.sqrt(2);
-	protected static double[] bounds = new double[] { -Double.MAX_VALUE, Double.MAX_VALUE };
+	protected double[] bounds = new double[] { -Double.MAX_VALUE, Double.MAX_VALUE };
 	protected int numOfRolloutsInExplore = 3;
 	protected int shotTestingWaitingTurns = 20;
 	protected int maxExploreRolloutDepth = 6;
 
 	public TPOLITSMovePlanner(StateEvaluator stateEvaluator, TPGameKnowledge gameKnowledge,
 			TPGameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController,
-			TPGameStateTracker gameStateTracker)
+			GameMechanicsController gameMechanicsController, TPGameStateTracker gameStateTracker)
 	{
 		this.stateEvaluator = stateEvaluator;
 		this.gameKnowledge = gameKnowledge;
 		this.gameKnowledgeExplorer = gameKnowledgeExplorer;
 		this.agentMoveController = agentMoveController;
+		this.gameMechanicsController = gameMechanicsController;
 		this.gameStateTracker = gameStateTracker;
 
 		this.randomGenerator = new Random();
@@ -98,6 +94,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	{
 		FBTPStateEvaluator fbtpStateEvaluator = (FBTPStateEvaluator) this.stateEvaluator;
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
+
 		// initialize list of POIs from gameStateTracker + optionally add regular grid on the map
 		nodesNearPOIs = new ArrayList<TPOLITSTreeNode>();
 
@@ -128,6 +125,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	public void setParameters(int remainingLimit)
 	{
+		// TODO Add setters for all parameters
 		this.moveChoiceRemainingLimit = remainingLimit;
 	}
 
@@ -156,6 +154,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 		searchTree();
 
+		numTurnsGoalPOINotChanged++;
+
 		return getOLITSAction();
 	}
 
@@ -166,8 +166,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	private void updatePOIList()
 	{
-		// update POI list from gameStateTracker
-		// set goalPOI to null if it ceased to exist
+		// TODO update POI list from gameStateTracker
+		// TODO set goalPOI to null if it ceased to exist
 
 	}
 
@@ -184,6 +184,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				{
 					bestValue = challengerValue;
 					this.goalNode = poiNode;
+					numTurnsGoalPOINotChanged = 0;
 				}
 			}
 		}
@@ -191,8 +192,6 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	private void chooseMode()
 	{
-		// check if close to POI and choose time limits for explore and rollout (small time for approach, large for action, according for exploring)
-		// choose mode (approach or action) according to whether avatar is close to POI
 		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
@@ -210,44 +209,45 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			this.mode = TREESEARCHMODE.APPROACH;
 
 		// set time limits
-		// correction needed to take into account the time used by initialization!!!
+		// TODO correction needed to take into account the time used by initialization!!!
 		if (this.mode == TREESEARCHMODE.APPROACH)
 		{
 			if (fbtpGameKnowledge.isGameDeterministic())
-				this.timeLimitForMoveChoice = 1;
+				this.timeLimitForTreeSearch = 1;
 			else
-				this.timeLimitForMoveChoice = timeLimitForNonDeterministicPathSearch;
+				this.timeLimitForTreeSearch = timeLimitForNonDeterministicPathSearch;
 		}
 		else
 		{
 			if (previousMode == TREESEARCHMODE.ACTION)
-				this.timeLimitForMoveChoice = (int) (this.totalTimeForChoosingMove
+				this.timeLimitForTreeSearch = (int) (this.totalTimeForChoosingMove
 						* this.timePercentageForMoveChoiceInActionModeAfterAction);
 			else
-				this.timeLimitForMoveChoice = (int) (this.totalTimeForChoosingMove
+				this.timeLimitForTreeSearch = (int) (this.totalTimeForChoosingMove
 						* this.timePercentageForMoveChoiceInActionMode);
 		}
 
-		this.timeLimitForPOIExploration = this.totalTimeForChoosingMove - this.timeLimitForMoveChoice;
+		this.timeLimitForPOIExploration = this.totalTimeForChoosingMove - this.timeLimitForTreeSearch;
 	}
 
 	private void initializeTreeForExploration()
 	{
-		// advance the states in nodesNearPOIs by one step toward POIs if POI moved,
-		// set underlying tree to null children for such trees, but retain their root statistics
-
 		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
 		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 
-		// check avatar proximity to all POIs
 		for (TPOLITSTreeNode node : nodesNearPOIs)
 		{
+			if (this.gameMechanicsController
+					.isMovingAction(rootStateObsMulti.getAvatarLastAction(gameKnowledge.getPlayerID())) && node != this.goalNode)
+			{
+				node.path = null;
+			}
+
 			Vector2d avatarPosition = rootStateObsMulti.getAvatarPosition(gameKnowledge.getPlayerID());
 			Vector2d poiPosition = node.poi.observation.position;
 			if (node.poi.poiType == POITYPE.SHOT)
 			{
 				node.poiApproached = false;
-				node.path = null;
 				node.stateObs = rootStateObsMulti;
 			}
 			else if (fbtpAgentMoveController.arePositionsWithinGivenMoveRange(avatarPosition, poiPosition,
@@ -257,6 +257,28 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				node.path = null;
 				node.stateObs = rootStateObsMulti;
 			}
+			else if (node.poi.positionChangedFromPreviousTurn)
+			{
+				Pair<StateObservationMulti, ArrayList<Types.ACTIONS>> approachInfo = null;
+
+				if (node.poi.poiType == POITYPE.SPRITE)
+				{
+					int maxDistance = 2;
+					int timeLimit = 1;
+					approachInfo = fbtpAgentMoveController.approachSprite(node.stateObs,
+							this.gameKnowledge.getPlayerID(), node.poi.observation, maxDistance, timeLimit);
+				}
+				else if (node.poi.poiType == POITYPE.POSITION)
+				{
+					int maxDistance = 2;
+					int timeLimit = 1;
+					approachInfo = fbtpAgentMoveController.approachPosition(node.stateObs,
+							this.gameKnowledge.getPlayerID(), node.poi.observation, maxDistance, timeLimit);
+				}
+
+				node.stateObs = approachInfo.first();
+				node.path = null; // One could consider merging paths to reduce the number of invocations of path finding, however this may lead to very non-optimal paths
+			}
 			else
 				node.poiApproached = false;
 		}
@@ -264,11 +286,6 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	private void explorePOIs()
 	{
-		// explore POIs:
-		// - approach to new POIs
-		// - shooting scenario (use and wait trying not to die)
-		// - rollouts from nodesNearPOIs
-
 		double avgTimeTaken = 0;
 		double acumTimeTaken = 0;
 		long initialRemaining = mainElapsedTimer.remainingTimeMillis();
@@ -281,7 +298,6 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 			TPOLITSTreeNode selected = choosePOIToExplore(numIters);
 
-			// approach, test shooting or rollout according to whether there is a path and it's close, it's a shooting POI, else rollout
 			explorePOI(selected);
 
 			numIters++;
@@ -291,119 +307,6 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 					"TPOLITSMovePlanner.explorePOIs", 0);
 			avgTimeTaken = acumTimeTaken / numIters;
 			remaining = this.timeLimitForPOIExploration - (initialRemaining - mainElapsedTimer.remainingTimeMillis());
-		}
-	}
-
-	private void explorePOI(TPOLITSTreeNode selected)
-	{		
-		if (selected.poi.poiType == POITYPE.SHOT)
-		{
-			exploreShot(selected);
-		}
-		else if (selected.path == null && !selected.poiApproached)
-		{
-			exploreApproach(selected);		
-		}
-		else
-		{
-			exploreRollOut(selected);
-		}
-	}
-
-	private void exploreShot(TPOLITSTreeNode selected)
-	{
-		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
-		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
-		
-		StateObservationMulti shotStateObs = selected.stateObs.copy();
-		Types.ACTIONS playerAction = Types.ACTIONS.ACTION_USE;
-		Types.ACTIONS oppAction = fbtpAgentMoveController.getGreedyAction(fbtpGameKnowledge.getOppID());
-		
-		Types.ACTIONS[] actions = new Types.ACTIONS[2];
-		actions[fbtpGameKnowledge.getPlayerID()] = playerAction;
-		actions[fbtpGameKnowledge.getOppID()] = oppAction;
-		
-		shotStateObs.advance(actions);
-		
-		int turn = 0;
-		while (!shotStateObs.isGameOver() && turn < this.shotTestingWaitingTurns)
-		{
-			int safeTurns = Math.min(3, this.shotTestingWaitingTurns - turn);
-			
-			playerAction = fbtpAgentMoveController.getNonDyingAction(fbtpGameKnowledge.getPlayerID(), safeTurns);
-			oppAction = fbtpAgentMoveController.getGreedyAction(fbtpGameKnowledge.getOppID());
-			actions = new Types.ACTIONS[2];
-			actions[fbtpGameKnowledge.getPlayerID()] = playerAction;
-			actions[fbtpGameKnowledge.getOppID()] = oppAction;
-			
-			shotStateObs.advance(actions);
-			
-			turn++;
-		}
-		
-		selected.totalValue += stateEvaluator.evaluateState(shotStateObs); 
-		selected.numVisits++;
-	}
-	
-	private void exploreApproach(TPOLITSTreeNode selected)
-	{
-		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
-		Pair<StateObservationMulti, ArrayList<Types.ACTIONS>> approachInfo = null;
-		
-		if (selected.poi.poiType == POITYPE.SPRITE)
-		{
-			int minDistance = 2;
-			int timeLimit = 1;
-			approachInfo = fbtpAgentMoveController.approachSprite(selected.stateObs, this.gameKnowledge.getPlayerID(), selected.poi.observation, minDistance, timeLimit);
-		}
-		else if (selected.poi.poiType == POITYPE.POSITION)
-		{
-			// optionally todo
-			int minDistance = 2;
-			int timeLimit = 1;
-			approachInfo = fbtpAgentMoveController.approachPosition(selected.stateObs, this.gameKnowledge.getPlayerID(), selected.poi.observation, minDistance, timeLimit);
-		}
-		
-		if (approachInfo != null)
-		{
-			selected.stateObs = approachInfo.first();
-			selected.path = approachInfo.second();
-		}
-	}
-	
-	private void exploreRollOut(TPOLITSTreeNode selected)
-	{
-		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
-
-		for (int rolloutNr = 0; rolloutNr < this.numOfRolloutsInExplore; rolloutNr++)
-		{
-			StateObservationMulti rolloutState = selected.stateObs.copy();
-	        int depth = 0;
-
-	        while (!rolloutState.isGameOver() && depth < this.maxExploreRolloutDepth)
-	        {
-	        	Types.ACTIONS randomAction = null;
-		        double randomValue = -1;
-	        
-		        for (Types.ACTIONS action : rolloutState.getAvailableActions()) {
-		            double x = this.randomGenerator.nextDouble();
-		            if (x > randomValue) {
-		            	randomAction = action;
-		                randomValue = x;
-		            }
-		        }
-		        
-		        Types.ACTIONS[] actions = new Types.ACTIONS[2];
-				actions[fbtpGameKnowledge.getPlayerID()] = randomAction;
-				actions[fbtpGameKnowledge.getOppID()] = Types.ACTIONS.ACTION_NIL;
-				
-		        rolloutState.advance(actions);
-		        
-		        depth++;
-	        }
-	        
-	        selected.totalValue += stateEvaluator.evaluateState(rolloutState);
-	        selected.numVisits++;
 		}
 	}
 
@@ -433,6 +336,125 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		return selected;
 	}
 
+	private void explorePOI(TPOLITSTreeNode selected)
+	{
+		if (selected.poi.poiType == POITYPE.SHOT)
+		{
+			exploreShot(selected);
+		}
+		else if (selected.path == null && !selected.poiApproached)
+		{
+			exploreApproach(selected);
+		}
+		else
+		{
+			exploreRollOut(selected);
+		}
+	}
+
+	private void exploreShot(TPOLITSTreeNode selected)
+	{
+		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
+		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
+
+		StateObservationMulti shotStateObs = selected.stateObs.copy();
+		Types.ACTIONS playerAction = Types.ACTIONS.ACTION_USE;
+		Types.ACTIONS oppAction = fbtpAgentMoveController.getGreedyAction(fbtpGameKnowledge.getOppID());
+
+		Types.ACTIONS[] actions = new Types.ACTIONS[2];
+		actions[fbtpGameKnowledge.getPlayerID()] = playerAction;
+		actions[fbtpGameKnowledge.getOppID()] = oppAction;
+
+		shotStateObs.advance(actions);
+
+		int turn = 0;
+		while (!shotStateObs.isGameOver() && turn < this.shotTestingWaitingTurns)
+		{
+			int safeTurns = Math.min(3, this.shotTestingWaitingTurns - turn);
+
+			playerAction = fbtpAgentMoveController.getNonDyingAction(fbtpGameKnowledge.getPlayerID(), safeTurns);
+			oppAction = fbtpAgentMoveController.getGreedyAction(fbtpGameKnowledge.getOppID());
+			actions = new Types.ACTIONS[2];
+			actions[fbtpGameKnowledge.getPlayerID()] = playerAction;
+			actions[fbtpGameKnowledge.getOppID()] = oppAction;
+
+			shotStateObs.advance(actions);
+
+			turn++;
+		}
+
+		selected.totalValue += stateEvaluator.evaluateState(shotStateObs);
+		selected.numVisits++;
+	}
+
+	private void exploreApproach(TPOLITSTreeNode selected)
+	{
+		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
+		Pair<StateObservationMulti, ArrayList<Types.ACTIONS>> approachInfo = null;
+
+		if (selected.poi.poiType == POITYPE.SPRITE)
+		{
+			int maxDistance = 2;
+			int timeLimit = 1;
+			approachInfo = fbtpAgentMoveController.approachSprite(selected.stateObs, this.gameKnowledge.getPlayerID(),
+					selected.poi.observation, maxDistance, timeLimit);
+		}
+		else if (selected.poi.poiType == POITYPE.POSITION)
+		{
+			int maxDistance = 2;
+			int timeLimit = 1;
+			approachInfo = fbtpAgentMoveController.approachPosition(selected.stateObs, this.gameKnowledge.getPlayerID(),
+					selected.poi.observation, maxDistance, timeLimit);
+		}
+
+		if (approachInfo != null)
+		{
+			selected.stateObs = approachInfo.first();
+			selected.path = approachInfo.second();
+		}
+	}
+
+	private void exploreRollOut(TPOLITSTreeNode selected)
+	{
+		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
+
+		for (int rolloutNr = 0; rolloutNr < this.numOfRolloutsInExplore; rolloutNr++)
+		{
+			StateObservationMulti rolloutState = selected.stateObs.copy();
+			int depth = 0;
+
+			while (!rolloutState.isGameOver() && depth < this.maxExploreRolloutDepth)
+			{
+				Types.ACTIONS randomAction = rolloutState.getAvailableActions()
+						.get(this.randomGenerator.nextInt(rolloutState.getAvailableActions().size()));
+
+				/*
+				 * Types.ACTIONS randomAction = null;
+				 * double randomValue = -1;
+				 * 
+				 * for (Types.ACTIONS action : rolloutState.getAvailableActions()) {
+				 * double x = this.randomGenerator.nextDouble();
+				 * if (x > randomValue) {
+				 * randomAction = action;
+				 * randomValue = x;
+				 * }
+				 * }
+				 */
+
+				Types.ACTIONS[] actions = new Types.ACTIONS[2];
+				actions[fbtpGameKnowledge.getPlayerID()] = randomAction;
+				actions[fbtpGameKnowledge.getOppID()] = Types.ACTIONS.ACTION_NIL;
+
+				rolloutState.advance(actions);
+
+				depth++;
+			}
+
+			selected.totalValue += stateEvaluator.evaluateState(rolloutState);
+			selected.numVisits++;
+		}
+	}
+
 	private void updateGoalPOI()
 	{
 		// if there was a large change in score of the best POI, change goal POI
@@ -445,6 +467,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			{
 				bestValue = challengerValue;
 				this.goalNode = poiNode;
+				numTurnsGoalPOINotChanged = 0;
 			}
 		}
 	}
@@ -459,7 +482,22 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	protected void searchTree()
 	{
-		// in the approach mode use AgentMoveController to choose an action
+		if (this.mode == TREESEARCHMODE.ACTION)
+		{
+			searchTreeAction();
+		}
+		else if (this.mode == TREESEARCHMODE.APPROACH)
+		{
+			searchTreeApproach();
+		}
+		else if (this.mode == TREESEARCHMODE.SHOT)
+		{
+			searchTreeShot();
+		}
+	}
+
+	protected void searchTreeAction()
+	{
 		// in the action mode do OLETS (OLETS to make it possible to look for long sequences of moves)
 
 		double avgTimeTaken = 0;
@@ -484,6 +522,79 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			avgTimeTaken = acumTimeTaken / numIters;
 			remaining = mainElapsedTimer.remainingTimeMillis();
 		}
+	}
+
+	protected void searchTreeApproach()
+	{
+		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
+		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
+		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
+
+		if (this.numTurnsGoalPOINotChanged > 0 && this.goalNode.path != null)
+		{
+			Types.ACTIONS[] actions = new Types.ACTIONS[2];
+			actions[fbtpGameKnowledge.getPlayerID()] = this.goalNode.path.get(0);
+			actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getGreedyAction(fbtpGameKnowledge.getOppID());
+
+			StateObservationMulti simulationStateObs = goalNode.stateObs.copy();
+			simulationStateObs.advance(actions);
+
+			if (simulationStateObs.isGameOver())
+			{
+				Pair<StateObservationMulti, ArrayList<Types.ACTIONS>> approachInfo = null;
+
+				if (goalNode.poi.poiType == POITYPE.SPRITE)
+				{
+					int maxDistance = 2;
+					int timeLimit = this.timeLimitForTreeSearch - 1;
+					approachInfo = fbtpAgentMoveController.approachSprite(rootStateObsMulti,
+							this.gameKnowledge.getPlayerID(), goalNode.poi.observation, maxDistance, timeLimit);
+				}
+				else if (goalNode.poi.poiType == POITYPE.POSITION)
+				{
+					int maxDistance = 2;
+					int timeLimit = this.timeLimitForTreeSearch - 1;
+					approachInfo = fbtpAgentMoveController.approachPosition(rootStateObsMulti,
+							this.gameKnowledge.getPlayerID(), goalNode.poi.observation, maxDistance, timeLimit);
+				}
+
+				if (approachInfo != null)
+				{
+					goalNode.stateObs = approachInfo.first();
+					goalNode.path = approachInfo.second();
+				}
+			}
+		}
+		else
+		{
+			Pair<StateObservationMulti, ArrayList<Types.ACTIONS>> approachInfo = null;
+
+			if (goalNode.poi.poiType == POITYPE.SPRITE)
+			{
+				int maxDistance = 2;
+				int timeLimit = this.timeLimitForTreeSearch - 1;
+				approachInfo = fbtpAgentMoveController.approachSprite(rootStateObsMulti,
+						this.gameKnowledge.getPlayerID(), goalNode.poi.observation, maxDistance, timeLimit);
+			}
+			else if (goalNode.poi.poiType == POITYPE.POSITION)
+			{
+				int maxDistance = 2;
+				int timeLimit = this.timeLimitForTreeSearch - 1;
+				approachInfo = fbtpAgentMoveController.approachPosition(rootStateObsMulti,
+						this.gameKnowledge.getPlayerID(), goalNode.poi.observation, maxDistance, timeLimit);
+			}
+
+			if (approachInfo != null)
+			{
+				goalNode.stateObs = approachInfo.first();
+				goalNode.path = approachInfo.second();
+			}
+		}
+	}
+
+	protected void searchTreeShot()
+	{
+
 	}
 
 	protected TreeNode applyTreePolicy(StateObservation stateObs)
@@ -601,10 +712,30 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	private ACTIONS getOLITSAction()
 	{
-		// return the right action to be done according to mode
-		// in approach the next move from the path to goal POI
-		// in
-		return null;
+		Types.ACTIONS action = null;
+		
+		if (this.mode == TREESEARCHMODE.ACTION)
+		{
+			
+		}
+		else if (this.mode == TREESEARCHMODE.APPROACH)
+		{
+			if (this.goalNode.path != null && this.goalNode.path.size() > 0)
+			{
+				action = this.goalNode.path.get(0);
+				this.goalNode.path.remove(0);
+			}
+			else
+			{
+				action = Types.ACTIONS.ACTION_NIL;
+			}
+		}
+		else if (this.mode == TREESEARCHMODE.SHOT)
+		{
+			action = Types.ACTIONS.ACTION_USE;
+		}
+		
+		return action;
 	}
 
 	public static enum TREESEARCHMODE
