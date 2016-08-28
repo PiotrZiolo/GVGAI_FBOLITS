@@ -323,9 +323,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 		return score;
 	}
 
-	public double evaluateSprite(Observation observation)
+	public HashMap<Integer, Double> evaluateSprites(ArrayList<Observation> observations)
 	{
 		// TODO Auto-generated method stub
-		return 0;
+		return new HashMap<Integer, Double>();
 	}
 }
