@@ -429,7 +429,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 	 * @return Pair of the final state and a path to the goal. Null if approach was not possible within given time limit.
 	 */
 	public Pair<StateObservationMulti, ArrayList<ACTIONS>> approachPosition(StateObservationMulti stateObs,
-			int playerID, Observation observation, int maxDistance, int timeLimit)
+			int playerID, Vector2d position, int maxDistance, int timeLimit)
 	{
 		// TODO Auto-generated method stub
 		return null;

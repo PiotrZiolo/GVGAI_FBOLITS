@@ -260,10 +260,8 @@ public class TreeSearchMovePlanner extends MovePlanner
 
 		for (int i = 0; i < rootNode.children.length; i++)
 		{
-
 			if (rootNode.children[i] != null)
 			{
-
 				double childValue = rootNode.children[i].totalValue / (rootNode.children[i].numVisits + this.epsilon);
 
 				childValue = Utils.noise(childValue, this.epsilon, this.randomGenerator.nextDouble()); // break ties randomly
@@ -276,9 +274,7 @@ public class TreeSearchMovePlanner extends MovePlanner
 		}
 
 		if (selected == -1)
-		{
 			selected = 0;
-		}
 
 		return gameKnowledge.getPlayerActions().get(selected);
 	}

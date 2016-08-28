@@ -18,8 +18,12 @@ import NextLevel.moduleTP.TPGameKnowledgeExplorer;
 import NextLevel.moduleTP.TPGameStateTracker;
 import NextLevel.treeSearchPlanners.TreeNode;
 import NextLevel.treeSearchPlanners.TreeSearchMovePlanner;
+import NextLevel.utils.AuxUtils;
 import NextLevel.utils.LogHandler;
 import NextLevel.utils.Pair;
+import controllers.singlePlayer.olets.Agent;
+import controllers.singlePlayer.olets.SingleMCTSPlayer;
+import controllers.singlePlayer.olets.SingleTreeNode;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import ontology.Types;
@@ -44,6 +48,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	// protected ArrayList<PointOfInterest> pois;
 	protected ArrayList<TPOLITSTreeNode> nodesNearPOIs;
 	protected TPOLITSTreeNode goalNode;
+	protected int goalNodeIndex;
 
 	protected int totalTimeForChoosingMove;
 	// mode: "approach", "action", "shooting"
@@ -51,9 +56,20 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	// - choose the best action when close to goal POI
 	// - shoot and search for other action in the next move
 	protected TREESEARCHMODE mode;
+	protected TREESEARCHMODE previousMode;
 	protected int timeLimitForPOIExploration;
 	protected int timeLimitForTreeSearch;
 	protected int numTurnsGoalPOINotChanged = 0;
+
+	// OLETS variables
+	// Array of past avatar positions. This is used to give a bias towards exploration of new board locations.
+	protected Vector2d[] pastAvatarPositions;
+	// Array of past avatar orientations. This is used to give a bias towards exploration of new board locations.
+	protected Vector2d[] pastAvatarOrientations;
+	// Index used to know where to write the next location/orientation.
+	protected int memoryIndex;
+
+	// protected OLETSMODE oletsMode = OLETSMODE.PURE;
 
 	// Algorithm parameters
 
@@ -71,6 +87,12 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	protected int numOfRolloutsInExplore = 3;
 	protected int shotTestingWaitingTurns = 20;
 	protected int maxExploreRolloutDepth = 6;
+	protected int oletsDepth = 100;
+	// protected double pureVsHeuristicDrivenOLETSproportion = 0.5;
+	protected double tabooBias = 0.5;
+
+	// Number of past positions and orientations that are kept in memory for the exploration bias (see above).
+	protected int memoryLength = 15;
 
 	public TPOLITSMovePlanner(StateEvaluator stateEvaluator, TPGameKnowledge gameKnowledge,
 			TPGameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController,
@@ -84,6 +106,10 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		this.gameStateTracker = gameStateTracker;
 
 		this.randomGenerator = new Random();
+
+		this.pastAvatarPositions = new Vector2d[memoryLength];
+		this.pastAvatarOrientations = new Vector2d[memoryLength];
+		this.memoryIndex = 0;
 
 		this.mode = TREESEARCHMODE.APPROACH;
 		this.goalNode = null;
@@ -161,7 +187,21 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	protected void initialize()
 	{
-		// for clarity this method is divided into several more specialistic ones
+		this.previousMode = this.mode;
+
+		if (this.goalNode == null)
+		{
+			pastAvatarPositions[memoryIndex] = this.rootStateObs.getAvatarPosition();
+			pastAvatarOrientations[memoryIndex] = this.rootStateObs.getAvatarOrientation();
+			if (memoryIndex < memoryLength - 1)
+			{
+				memoryIndex += 1;
+			}
+			else
+			{
+				memoryIndex = 0;
+			}
+		}
 	}
 
 	private void updatePOIList()
@@ -177,13 +217,15 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		{
 			double bestValue = -Double.MAX_VALUE;
 
-			for (TPOLITSTreeNode poiNode : this.nodesNearPOIs)
+			for (int index = 0; index < this.nodesNearPOIs.size(); index++)
 			{
+				TPOLITSTreeNode poiNode = this.nodesNearPOIs.get(index);
 				double challengerValue = poiNode.getValue();
 				if (challengerValue + (randomGenerator.nextDouble() - 0.5) * this.epsilon > bestValue)
 				{
 					bestValue = challengerValue;
 					this.goalNode = poiNode;
+					this.goalNodeIndex = index;
 					numTurnsGoalPOINotChanged = 0;
 				}
 			}
@@ -237,8 +279,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 		for (TPOLITSTreeNode node : nodesNearPOIs)
 		{
-			if (this.gameMechanicsController
-					.isMovingAction(rootStateObsMulti.getAvatarLastAction(gameKnowledge.getPlayerID())) && node != this.goalNode)
+			if (this.gameMechanicsController.isMovingAction(
+					rootStateObsMulti.getAvatarLastAction(gameKnowledge.getPlayerID())) && node != this.goalNode)
 			{
 				node.path = null;
 			}
@@ -273,7 +315,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 					int maxDistance = 2;
 					int timeLimit = 1;
 					approachInfo = fbtpAgentMoveController.approachPosition(node.stateObs,
-							this.gameKnowledge.getPlayerID(), node.poi.observation, maxDistance, timeLimit);
+							this.gameKnowledge.getPlayerID(), node.poi.position, maxDistance, timeLimit);
 				}
 
 				node.stateObs = approachInfo.first();
@@ -404,7 +446,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			int maxDistance = 2;
 			int timeLimit = 1;
 			approachInfo = fbtpAgentMoveController.approachPosition(selected.stateObs, this.gameKnowledge.getPlayerID(),
-					selected.poi.observation, maxDistance, timeLimit);
+					selected.poi.position, maxDistance, timeLimit);
 		}
 
 		if (approachInfo != null)
@@ -460,13 +502,15 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		// if there was a large change in score of the best POI, change goal POI
 		double bestValue = goalNode.getValue();
 
-		for (TPOLITSTreeNode poiNode : this.nodesNearPOIs)
+		for (int index = 0; index < this.nodesNearPOIs.size(); index++)
 		{
+			TPOLITSTreeNode poiNode = this.nodesNearPOIs.get(index);
 			double challengerValue = poiNode.getValue();
 			if (challengerValue > bestValue * goalPOIHandicap)
 			{
 				bestValue = challengerValue;
 				this.goalNode = poiNode;
+				this.goalNodeIndex = index;
 				numTurnsGoalPOINotChanged = 0;
 			}
 		}
@@ -474,9 +518,26 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	private void initializeTreeForTreeSearch()
 	{
+		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
+		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
+
 		if (this.mode == TREESEARCHMODE.ACTION)
 		{
+			if (this.previousMode == TREESEARCHMODE.ACTION && this.numTurnsGoalPOINotChanged > 0)
+			{
+				// shift the tree near goalPOI by the made move
+				Types.ACTIONS lastAction = rootStateObsMulti.getAvatarLastAction(fbtpGameKnowledge.getPlayerID());
+				TPOLITSTreeNode childChosenInLastMove = (TPOLITSTreeNode) this.goalNode.children[AuxUtils
+						.actionToIndex(rootStateObsMulti, fbtpGameKnowledge.getPlayerID(), lastAction)];
 
+				childChosenInLastMove.poi = goalNode.poi;
+				childChosenInLastMove.stateObs = rootStateObsMulti;
+				goalNode = childChosenInLastMove;
+				this.nodesNearPOIs.set(this.goalNodeIndex, childChosenInLastMove);
+				this.goalNode.parent = null;
+				this.goalNode.refreshTree(0);
+				this.rootNode = goalNode;
+			}
 		}
 	}
 
@@ -518,7 +579,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			acumTimeTaken += (elapsedTimerIteration.elapsedMillis());
 			LogHandler.writeLog(
 					elapsedTimerIteration.elapsedMillis() + " --> " + acumTimeTaken + " (" + remaining + ")",
-					"TreeSearchMovePlanner.searchTree", 0);
+					"TreeSearchMovePlanner.searchTreeAction", 0);
 			avgTimeTaken = acumTimeTaken / numIters;
 			remaining = mainElapsedTimer.remainingTimeMillis();
 		}
@@ -534,7 +595,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		{
 			Types.ACTIONS[] actions = new Types.ACTIONS[2];
 			actions[fbtpGameKnowledge.getPlayerID()] = this.goalNode.path.get(0);
-			actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getGreedyAction(fbtpGameKnowledge.getOppID());
+			actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController
+					.getGreedyAction(fbtpGameKnowledge.getOppID());
 
 			StateObservationMulti simulationStateObs = goalNode.stateObs.copy();
 			simulationStateObs.advance(actions);
@@ -555,7 +617,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 					int maxDistance = 2;
 					int timeLimit = this.timeLimitForTreeSearch - 1;
 					approachInfo = fbtpAgentMoveController.approachPosition(rootStateObsMulti,
-							this.gameKnowledge.getPlayerID(), goalNode.poi.observation, maxDistance, timeLimit);
+							this.gameKnowledge.getPlayerID(), goalNode.poi.position, maxDistance, timeLimit);
 				}
 
 				if (approachInfo != null)
@@ -581,7 +643,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				int maxDistance = 2;
 				int timeLimit = this.timeLimitForTreeSearch - 1;
 				approachInfo = fbtpAgentMoveController.approachPosition(rootStateObsMulti,
-						this.gameKnowledge.getPlayerID(), goalNode.poi.observation, maxDistance, timeLimit);
+						this.gameKnowledge.getPlayerID(), goalNode.poi.position, maxDistance, timeLimit);
 			}
 
 			if (approachInfo != null)
@@ -594,7 +656,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	protected void searchTreeShot()
 	{
-
+		// nothing needs to be done
 	}
 
 	protected TreeNode applyTreePolicy(StateObservation stateObs)
@@ -621,50 +683,68 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	protected boolean isTreePolicyFinished(TreeNode currentNode, StateObservation stateObs, boolean expand)
 	{
-		return (stateObs.isGameOver() || expand /* || currentNode.depth >= rolloutDepth */);
+		return (stateObs.isGameOver() || currentNode.depth > this.oletsDepth);
 	}
 
 	protected double rollOut(TreeNode selectedNode, StateObservation stateObs)
 	{
-		int thisDepth = selectedNode.depth;
+		// no rollout needed in OLETS
 
-		while (!isRolloutFinished(stateObs, thisDepth))
-		{
-			moveInRollout(stateObs);
-			LogHandler.writeLog("State game tick: " + stateObs.getGameTick(), "TreeSearchMoveController.rollOut", 0);
-			thisDepth++;
-		}
-
-		double delta = stateEvaluator.evaluateState(stateObs);
-
-		return delta;
+		return stateEvaluator.evaluateState(stateObs);
 	}
 
 	protected boolean isRolloutFinished(StateObservation rollerState, int depth)
 	{
-		/*
-		 * if (depth >= rolloutDepth) //rollout end condition.
-		 * return true;
-		 */
-
-		if (rollerState.isGameOver()) // end of game
-			return true;
-
-		return false;
+		return true;
 	}
 
 	protected void backUp(TreeNode node, double delta)
 	{
-		while (node != null)
+		TPOLITSTreeNode n = (TPOLITSTreeNode) node;
+		int backUpDepth = 0;
+		while (n != null)
 		{
-			updateNode(node, delta);
-			node = node.parent;
-		}
-	}
+			n.numVisits++;
+			n.nbGenerated++;
+			n.totalValue += delta;
+			if (backUpDepth > 0)
+			{
+				double bestExpectimax = -Double.MAX_VALUE;
+				double bestAdjustedExpectimax = -Double.MAX_VALUE;
+				for (int i = 0; i < n.children.length; i++)
+				{
+					TPOLITSTreeNode child = (TPOLITSTreeNode) (TPOLITSTreeNode) n.children[i];
+					if (n.children[i] != null)
+					{
+						if (child.expectimax > bestExpectimax)
+						{
+							bestExpectimax = child.expectimax;
+						}
+						if (child.adjEmax > bestAdjustedExpectimax)
+						{
+							bestAdjustedExpectimax = child.adjEmax;
+						}
+					}
+				}
 
-	protected void updateNode(TreeNode node, double delta)
-	{
-		// To be overriden in subclasses
+				n.expectimax = bestExpectimax;
+				n.childrenMaxAdjEmax = bestAdjustedExpectimax;
+				n.adjEmax = (((float) n.nbExitsHere) / n.numVisits) * (n.totalValueOnExit / n.nbExitsHere)
+						+ (1.0 - (((float) n.nbExitsHere) / n.numVisits)) * n.childrenMaxAdjEmax;
+			}
+			else
+			{
+				n.nbExitsHere += 1;
+				n.totalValueOnExit += delta;
+
+				n.adjEmax = (((float) n.nbExitsHere) / n.numVisits) * (n.totalValueOnExit / n.nbExitsHere)
+						+ (1.0 - (((float) n.nbExitsHere) / n.numVisits)) * n.childrenMaxAdjEmax;
+				n.expectimax = n.totalValue / n.numVisits;
+			}
+
+			n = (TPOLITSTreeNode) n.parent;
+			backUpDepth += 1;
+		}
 	}
 
 	/**
@@ -678,9 +758,52 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	 */
 	public TPOLITSTreeNode expandNode(TreeNode node, StateObservation stateObs)
 	{
+		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
+		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
+		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		TPOLITSTreeNode tpolmctsNode = (TPOLITSTreeNode) node;
+		
+		int bestAction = 0;
+		double bestValue = -1;
 
-		return tpolmctsNode;
+		for (int i = 0; i < tpolmctsNode.children.length; i++)
+		{
+			if (tpolmctsNode.children[i] == null)
+			{
+				double x = this.randomGenerator.nextDouble();
+				if (x > bestValue)
+				{
+					bestAction = i;
+					bestValue = x;
+				}
+			}
+		}
+		
+		Types.ACTIONS[] actions = new Types.ACTIONS[2];
+		actions[fbtpGameKnowledge.getPlayerID()] = stateObsMulti.getAvailableActions(fbtpGameKnowledge.getPlayerID()).get(bestAction);
+		actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController
+				.getGreedyAction(fbtpGameKnowledge.getOppID());
+
+		stateObsMulti.advance(actions);
+		
+		double tabooBias = 0.0;
+		int i = 0;
+		boolean stateFound = false;
+		while ((!stateFound) && (i < this.memoryLength) && (this.pastAvatarPositions[i] != null))
+		{
+			if (this.pastAvatarPositions[i].equals(stateObsMulti.getAvatarPosition()))
+			{
+				tabooBias += this.tabooBias;
+				stateFound = true;
+			}
+			i++;
+		}
+
+		TPOLITSTreeNode child = new TPOLITSTreeNode(tpolmctsNode, gameKnowledge.getNumOfPlayerActions(),
+				tpolmctsNode.depth + 1, bestAction, tabooBias);
+		tpolmctsNode.children[bestAction] = child;
+
+		return child;
 	}
 
 	/**
@@ -695,9 +818,52 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	 */
 	public TPOLITSTreeNode exploitNode(TreeNode node, StateObservation stateObs)
 	{
+		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
+		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
+		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		TPOLITSTreeNode tpolmctsNode = (TPOLITSTreeNode) node;
 
-		return tpolmctsNode;
+		TPOLITSTreeNode selected = null;
+		double bestValue = -Double.MAX_VALUE;
+
+		// pick the best Q.
+		for (TPOLITSTreeNode child : (TPOLITSTreeNode[]) tpolmctsNode.children)
+		{
+			double score = Utils.noise(getNodeAdjustedEmaxScore(child), this.epsilon,
+					this.randomGenerator.nextDouble());
+			if (score > bestValue)
+			{
+				selected = child;
+				bestValue = score;
+			}
+		}
+		
+		Types.ACTIONS[] actions = new Types.ACTIONS[2];
+		actions[fbtpGameKnowledge.getPlayerID()] = stateObsMulti.getAvailableActions(gameKnowledge.getPlayerID()).get(selected.actionIndex);
+		actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController
+				.getGreedyAction(fbtpGameKnowledge.getOppID());
+
+		stateObsMulti.advance(actions);
+
+		double tabooBias = 0.0;
+		if (selected.nbGenerated == 0)
+		{
+			tabooBias = 0.0;
+			int i = 0;
+			boolean stateFound = false;
+			while ((!stateFound) && (i < memoryLength) && (this.pastAvatarPositions[i] != null))
+			{
+				if (this.pastAvatarPositions[i].equals(stateObsMulti.getAvatarPosition()))
+				{
+					tabooBias += this.tabooBias;
+					stateFound = true;
+				}
+				i++;
+			}
+			selected.tabooBias = tabooBias;
+		}
+
+		return selected;
 	}
 
 	/**
@@ -707,16 +873,16 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	 */
 	public void moveInRollout(StateObservation stateObs)
 	{
-
+		// not needed in OLETS
 	}
 
 	private ACTIONS getOLITSAction()
 	{
 		Types.ACTIONS action = null;
-		
+
 		if (this.mode == TREESEARCHMODE.ACTION)
 		{
-			
+			action = getMostVisitedAction();
 		}
 		else if (this.mode == TREESEARCHMODE.APPROACH)
 		{
@@ -734,12 +900,30 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		{
 			action = Types.ACTIONS.ACTION_USE;
 		}
-		
+
 		return action;
+	}
+
+	/**
+	 * Computes the weighted expectimax of a node, minus a location bias to increase the value of nodes in locations that
+	 * have not been visited often in the past
+	 * 
+	 * @return the weighted expectimax with location bias
+	 */
+	public double getNodeAdjustedEmaxScore(TPOLITSTreeNode node)
+	{
+		return (node.adjEmax
+				+ this.uctConstant * Math.sqrt(Math.log(node.parent.numVisits + 1) / (node.numVisits + this.epsilon))
+				- node.tabooBias);
 	}
 
 	public static enum TREESEARCHMODE
 	{
 		APPROACH, ACTION, SHOT
+	}
+
+	public static enum OLETSMODE
+	{
+		PURE, HEURISTIC, RANDOM
 	}
 }
