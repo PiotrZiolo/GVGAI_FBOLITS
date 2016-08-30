@@ -1,6 +1,11 @@
 package NextLevel.mechanicsController;
 
+import java.util.TreeSet;
+
+import NextLevel.moduleFB.SpriteTypeFeatures;
 import NextLevel.moduleTP.TPGameKnowledge;
+import NextLevel.moduleTP.TPSituationOfInterest;
+import core.game.Event;
 import core.game.StateObservationMulti;
 import ontology.Types;
 import tools.Vector2d;
@@ -9,19 +14,33 @@ public class TPGameMechanicsController extends GameMechanicsController
 {
 	// Real types of fields
 	// protected TPGameKnowledge gameKnowledge;
-	
+
 	public TPGameMechanicsController(TPGameKnowledge gameKnowledge)
 	{
 		this.gameKnowledge = gameKnowledge;
 	}
-	
+
+	public TreeSet<Event> getEventsDuringSOI(TPSituationOfInterest soi)
+	{
+		TreeSet<Event> events = (TreeSet<Event>) soi.afterState.getEventsHistory().clone();
+		events.removeAll(soi.baseState.getEventsHistory());
+		return events;
+	}
+
+	public int getNumberOfResourcesGainedDuringSOI(TPSituationOfInterest soi, int playerID)
+	{
+
+		return ((StateObservationMulti) soi.afterState).getAvatarResources(playerID).size()
+				- ((StateObservationMulti) soi.baseState).getAvatarResources(playerID).size();
+	}
+
 	public boolean isSpriteOneMoveFromAvatarWithOpponentRotation(Vector2d observationPosition, Vector2d avatarPosition,
 			StateObservationMulti currentState, Vector2d avatarOrientation, int spriteType)
 	{
 		TPGameKnowledge gameKnowledge = (TPGameKnowledge) this.gameKnowledge;
 		int playerID = gameKnowledge.getPlayerID();
 		int oppID = gameKnowledge.getOppID();
-		
+
 		double speedInPixels = currentState.getBlockSize() * currentState.getAvatarSpeed(playerID);
 		Vector2d distance = observationPosition.copy().subtract(avatarPosition);
 
@@ -90,5 +109,17 @@ public class TPGameMechanicsController extends GameMechanicsController
 			return true;
 		}
 		return false;
+	}
+
+	public boolean isSpriteWall(SpriteTypeFeatures sprite)
+	{
+		return (sprite.type == 4 && !sprite.passable && !sprite.destroyable);
+	}
+
+	public boolean isSpriteDoingNothing(SpriteTypeFeatures sprite)
+	{
+		return (!sprite.collectable && !sprite.allowingVictory && !sprite.dangerousOtherwise && !sprite.givingVictory
+				&& !sprite.givingDefeat && sprite.changingPoints == 0 && sprite.changingValuesOfOtherObjects == 0
+				&& sprite.dangerousToAvatar == 0);
 	}
 }

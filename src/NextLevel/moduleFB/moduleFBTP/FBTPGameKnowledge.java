@@ -10,7 +10,7 @@ import NextLevel.moduleTP.TPGameKnowledge;
 public class FBTPGameKnowledge extends TPGameKnowledge
 {
 	protected InfluenceMap influenceMap;
-	
+
 	protected boolean deterministicGame;
 	protected boolean shootingAllowed;
 	// protected boolean useAllowed;
@@ -87,7 +87,7 @@ public class FBTPGameKnowledge extends TPGameKnowledge
 	{
 		return spriteTypeFeaturesMap.keySet();
 	}
-	
+
 	public boolean isGameDeterministic()
 	{
 		return deterministicGame;
@@ -96,5 +96,13 @@ public class FBTPGameKnowledge extends TPGameKnowledge
 	public boolean isShootingAllowed()
 	{
 		return shootingAllowed;
+	}
+
+	public int getSpriteCategory(int typeId)
+	{
+		if (spriteTypeFeaturesMap.containsKey(typeId))
+			return spriteTypeFeaturesMap.get(typeId).category;
+		else
+			return 0;
 	}
 }

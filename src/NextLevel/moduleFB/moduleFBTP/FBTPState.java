@@ -10,9 +10,9 @@ public class FBTPState extends BasicTPState
 
 	public FBTPState()
 	{
-		
+
 	}
-	
+
 	public FBTPState(StateObservationMulti stateObs)
 	{
 		this.stateObs = stateObs;

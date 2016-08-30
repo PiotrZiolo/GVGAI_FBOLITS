@@ -12,7 +12,7 @@ public class SpriteTypeFeatures
 	 * Type of the sprite
 	 */
 	public int type;
-	
+
 	/**
 	 * Amount of health it can take from avatar
 	 */
@@ -83,7 +83,7 @@ public class SpriteTypeFeatures
 		this.changingValuesOfOtherObjects = 0;
 		this.allowingVictory = false;
 	}
-	
+
 	/**
 	 * Public constructor with default values
 	 */
@@ -108,9 +108,10 @@ public class SpriteTypeFeatures
 	/**
 	 * Public constructor with given values
 	 */
-	public SpriteTypeFeatures(int category, int type, double dangerousToAvatar, boolean dangerousOtherwise, boolean destroyable,
-			boolean collectable, boolean givingVictory, boolean givingDefeat, double changingPoints, boolean passable,
-			boolean moving, double speed, double increasingValuesOfOtherObjects, boolean allowingVictory)
+	public SpriteTypeFeatures(int category, int type, double dangerousToAvatar, boolean dangerousOtherwise,
+			boolean destroyable, boolean collectable, boolean givingVictory, boolean givingDefeat,
+			double changingPoints, boolean passable, boolean moving, double speed,
+			double increasingValuesOfOtherObjects, boolean allowingVictory)
 	{
 		this.category = category;
 		this.type = type;
@@ -127,25 +128,13 @@ public class SpriteTypeFeatures
 		this.changingValuesOfOtherObjects = 0;
 		this.allowingVictory = allowingVictory;
 	}
-	
+
 	public void print()
 	{
-		LogHandler.writeLog("[" 
-				+ this.category + ", "
-				+ this.type + ", "
-				+ this.dangerousToAvatar + ", "
-				+ this.dangerousOtherwise + ", "
-				+ this.destroyable + ", "
-				+ this.collectable + ", "
-				+ this.givingVictory + ", "
-				+ this.givingDefeat + ", "
-				+ this.changingPoints + ", "
-				+ this.passable + ", "
-				+ this.moving + ", "
-				+ this.speed + ", "
-				+ this.changingValuesOfOtherObjects + ", "
-				+ this.allowingVictory
-				+ "]", 
-				"SpriteTypeFeatures.print", 0);
+		LogHandler.writeLog("[" + this.category + ", " + this.type + ", " + this.dangerousToAvatar + ", "
+				+ this.dangerousOtherwise + ", " + this.destroyable + ", " + this.collectable + ", "
+				+ this.givingVictory + ", " + this.givingDefeat + ", " + this.changingPoints + ", " + this.passable
+				+ ", " + this.moving + ", " + this.speed + ", " + this.changingValuesOfOtherObjects + ", "
+				+ this.allowingVictory + "]", "SpriteTypeFeatures.print", 0);
 	}
 }

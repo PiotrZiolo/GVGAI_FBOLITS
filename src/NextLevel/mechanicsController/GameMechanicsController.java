@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import NextLevel.GameKnowledge;
 import core.game.Observation;
 import core.game.StateObservation;
+import core.game.StateObservationMulti;
 import ontology.Types;
+import ontology.Types.ACTIONS;
 import tools.Direction;
 import tools.Vector2d;
 
@@ -37,49 +39,90 @@ public class GameMechanicsController
 			return orientation.equals(Types.DDOWN);
 		return false;
 	}
-	
+
+	public boolean isOrientationConsistentWithMove(ACTIONS act, Vector2d orientationVector)
+	{
+		return isOrientationConsistentWithMove(act, new Direction(orientationVector.x, orientationVector.y));
+	}
+
 	public boolean isMovingAction(Types.ACTIONS act)
 	{
-		if (act.equals(Types.ACTIONS.ACTION_LEFT) || act.equals(Types.ACTIONS.ACTION_UP) || act.equals(Types.ACTIONS.ACTION_RIGHT) || act.equals(Types.ACTIONS.ACTION_DOWN))
+		if (act.equals(Types.ACTIONS.ACTION_LEFT) || act.equals(Types.ACTIONS.ACTION_UP)
+				|| act.equals(Types.ACTIONS.ACTION_RIGHT) || act.equals(Types.ACTIONS.ACTION_DOWN))
 			return true;
 		return false;
 	}
-
-	public Vector2d findObject(int[] blockWhereObservationWasLastSeen, StateObservation stateObs, int searchedID)
+	
+	/**
+	 * Localizes a sprite given by observation on the map in state stateObs.
+	 * Returns null if the sprite is not on the map.
+	 * 
+	 * @param stateObs
+	 *            State in which the sprite is to be found.
+	 * @param observation
+	 *            Earlier observation of the sprite.
+	 * @param searchBreadth
+	 *            How far from the observation position to search.
+	 * @param maxDistance
+	 *            How far from the previous position should the sprite be searched for.
+	 */
+	public Observation localizeSprite(StateObservation stateObs, int obsID, Vector2d position, int maxDistance)
 	{
-		int worldWidth = (int) stateObs.getWorldDimension().getWidth() / stateObs.getBlockSize();
-		int worldHeight = (int) stateObs.getWorldDimension().getHeight() / stateObs.getBlockSize();
-		ArrayList<Observation> suspects = stateObs
-				.getObservationGrid()[blockWhereObservationWasLastSeen[0]][blockWhereObservationWasLastSeen[1]];
-		boolean objectLocalized = false;
-		for (Observation suspect : suspects)
+		ArrayList<Observation> suspects;
+
+		int[] start = { (int) (position.x / stateObs.getBlockSize()), (int) (position.y / stateObs.getBlockSize()) };
+
+		int worldXDimension = stateObs.getObservationGrid().length;
+		int worldYDimension = stateObs.getObservationGrid()[0].length;
+
+		int distance = 0;
+
+		while (distance <= maxDistance)
 		{
-			if (suspect.obsID == searchedID)
-				return suspect.position;
-		}
-		if (!objectLocalized)
-		{
-			for (int i = -1; i <= 1; i++)
+			for (int i = distance; i <= distance; i = i + 1)
 			{
-				for (int j = -1; j <= 1; j++)
+				if (i == -distance || i == distance)
 				{
-					suspects = stateObs.getObservationGrid()[(worldWidth + blockWhereObservationWasLastSeen[0] + i)
-							% worldWidth][(worldHeight + blockWhereObservationWasLastSeen[1] + j) % worldHeight];
-					for (Observation suspect : suspects)
+					for (int j = -distance; j <= distance; j = j + 1)
 					{
-						if (suspect.obsID == searchedID)
-						{
-							blockWhereObservationWasLastSeen[0] = (worldWidth + blockWhereObservationWasLastSeen[0] + i)
-									% worldWidth;
-							blockWhereObservationWasLastSeen[1] = (worldHeight + blockWhereObservationWasLastSeen[1]
-									+ j) % worldHeight;
-							return suspect.position;
-						}
+						suspects = stateObs.getObservationGrid()[(worldXDimension + start[0] + i)
+								% worldXDimension][(worldYDimension + start[1] + j) % worldYDimension];
+						for (Observation suspect : suspects)
+							if (suspect.obsID == obsID)
+								return suspect;
+					}
+				}
+				else
+				{
+					for (int j = -distance; j <= distance; j = j + 2 * distance)
+					{
+						suspects = stateObs.getObservationGrid()[(worldXDimension + start[0] + i)
+								% worldXDimension][(worldYDimension + start[1] + j) % worldYDimension];
+						for (Observation suspect : suspects)
+							if (suspect.obsID == obsID)
+								return suspect;
 					}
 				}
 			}
+			distance++;
 		}
 		return null;
+	}
+	
+	public Observation localizeSprite(StateObservationMulti stateObs, Observation observation)
+	{
+		int worldXDimension = stateObs.getObservationGrid().length;
+		int worldYDimension = stateObs.getObservationGrid()[0].length;
+		
+		return localizeSprite(stateObs, observation.obsID, observation.position, Math.max(worldXDimension / 2, worldYDimension / 2));
+	}
+
+	public Observation localizeSprite(StateObservation stateObs, int obsID, Vector2d position)
+	{
+		int worldXDimension = stateObs.getObservationGrid().length;
+		int worldYDimension = stateObs.getObservationGrid()[0].length;
+		
+		return localizeSprite(stateObs, obsID, position, Math.max(worldXDimension / 2, worldYDimension / 2));
 	}
 
 	public Types.ACTIONS chooseDirection(Vector2d observationPosition, Vector2d playerNewPosition,

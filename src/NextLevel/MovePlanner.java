@@ -10,16 +10,16 @@ public class MovePlanner
 {
 	protected StateEvaluator stateEvaluator;
 	protected GameKnowledge gameKnowledge;
-	protected GameKnowledgeExplorer gameKnowledgeExplorer; 
+	protected GameKnowledgeExplorer gameKnowledgeExplorer;
 	protected AgentMoveController agentMoveController;
 	protected GameMechanicsController gameMechanicsController;
 	protected GameStateTracker gameStateTracker;
-	
+
 	public MovePlanner()
 	{
-		
+
 	}
-	
+
 	public MovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
 			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController)
 	{
@@ -28,13 +28,13 @@ public class MovePlanner
 		this.gameKnowledgeExplorer = gameKnowledgeExplorer;
 		this.agentMoveController = agentMoveController;
 	}
-	
+
 	public void setGameStateTracker(GameStateTracker gameStateTracker)
 	{
 		this.gameStateTracker = gameStateTracker;
 	}
-	
-	public void setGameMechanicsController()
+
+	public void setGameMechanicsController(GameMechanicsController gameMechanicsController)
 	{
 		this.gameMechanicsController = gameMechanicsController;
 	}
@@ -42,12 +42,12 @@ public class MovePlanner
 	public ACTIONS chooseAction(State state, ElapsedCpuTimer elapsedTimer, int timeForChoosingMove)
 	{
 		// To be overridden in subclasses
-		
+
 		return Types.ACTIONS.ACTION_NIL;
 	}
-	
+
 	public void setParameters()
 	{
-		
+
 	}
 }

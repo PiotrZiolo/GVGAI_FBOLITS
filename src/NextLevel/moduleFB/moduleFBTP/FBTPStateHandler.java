@@ -1,6 +1,5 @@
 package NextLevel.moduleFB.moduleFBTP;
 
-import NextLevel.StateHandler;
 import NextLevel.moduleTP.TPStateHandler;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;

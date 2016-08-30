@@ -1,12 +1,14 @@
 package NextLevel.moduleFB.moduleFBTP.MechanicsController;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Random;
 
 import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.moduleFB.moduleFBTP.FBTPGameKnowledge;
+import NextLevel.moduleTP.TPWinScoreStateEvaluator;
 import NextLevel.utils.LogHandler;
 import NextLevel.utils.Pair;
 import core.game.Observation;
@@ -43,22 +45,14 @@ public class FBTPAgentMoveController extends AgentMoveController
 		this.approachingSpriteMovesLimit = approachingSpriteMovesLimit;
 	}
 
-	public Types.ACTIONS moveTowardPosition(StateObservation stateObs)
-	{
-		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
-		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
-
-		return Types.ACTIONS.ACTION_NIL;
-	}
-
 	public ArrayList<Types.ACTIONS> findPath(Vector2d goalPosition, StateObservation stateObs,
-			ElapsedCpuTimer elapsedTimer, int timeLimit)
+			ElapsedCpuTimer elapsedTimer, long timeLimit)
 	{
-		return pathFinder.findPath(goalPosition, stateObs, elapsedTimer, timeLimit);
+		return pathFinder.findPath(goalPosition, stateObs, elapsedTimer, timeLimit).second();
 	}
 
 	// not tested in the new class structure
-	private StateObservationMulti approachSprite(StateObservationMulti stateObs, Observation observation)
+	public StateObservationMulti approachSprite(StateObservationMulti stateObs, Observation observation) // I think it's useless right now
 	{
 		FBTPGameKnowledge gameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		TPGameMechanicsController gameMechanicsController = (TPGameMechanicsController) this.gameMechanicsController;
@@ -102,7 +96,8 @@ public class FBTPAgentMoveController extends AgentMoveController
 			if (observation.itype == -1 - oppID)
 				observationPosition = currentState.getAvatarPosition(oppID);
 			else
-				observationPosition = gameMechanicsController.findObject(blockWhereObservationWasLastSeen, currentState, observation.obsID);
+				observationPosition = this.gameMechanicsController.localizeSprite(currentState, observation.obsID, 
+						new Vector2d(blockWhereObservationWasLastSeen[0], blockWhereObservationWasLastSeen[1])).position;
 			if (observationPosition == null)
 			{
 				LogHandler.writeLog("Object was lost", "Brain.approachSprite", 0);
@@ -113,8 +108,8 @@ public class FBTPAgentMoveController extends AgentMoveController
 					+ " " + observation.itype, "Brain.approachSprite", 0);
 			// check whether avatar reached the object and return opponent if he
 			// is the object.
-			if (gameMechanicsController.isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition, playerPreviousPosition, currentState,
-					playerPreviousOrientation, observation.itype))
+			if (gameMechanicsController.isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition,
+					playerPreviousPosition, currentState, playerPreviousOrientation, observation.itype))
 			{
 				LogHandler.writeLog("Standard approach successful", "Brain.approachSprite", 0);
 
@@ -141,8 +136,8 @@ public class FBTPAgentMoveController extends AgentMoveController
 				actions[oppID] = opponentGoodActions.get(new Random().nextInt(opponentGoodActions.size()));
 
 			LogHandler.writeLog("playerGoodActions = " + playerGoodActions.toString(), "Brain.approachSprite", 0);
-			actions[playerID] = gameMechanicsController.chooseDirection(observationPosition.copy(), playerPreviousPosition, playerGoodActions,
-					playerLastAction);
+			actions[playerID] = gameMechanicsController.chooseDirection(observationPosition.copy(),
+					playerPreviousPosition, playerGoodActions, playerLastAction);
 			temporaryState = currentState.copy();
 
 			// if player don't want to move go to BFS
@@ -224,8 +219,8 @@ public class FBTPAgentMoveController extends AgentMoveController
 					"Brain.approachSprite", 0);
 			LogHandler.writeLog("playerID = " + playerID, "Brain.approachSprite", 0);
 
-			ArrayList<Types.ACTIONS> playerMoveSequenceToGoal = pathFinder.findPath(observationPosition,
-					currentState, elapsedTimer, 1);
+			ArrayList<Types.ACTIONS> playerMoveSequenceToGoal = pathFinder
+					.findPath(observationPosition, currentState, elapsedTimer, 1).second();
 			LogHandler.writeLog("playerID = " + playerID, "Brain.approachSprite", 0);
 
 			Iterator<Types.ACTIONS> iterator = playerMoveSequenceToGoal.iterator();
@@ -240,7 +235,8 @@ public class FBTPAgentMoveController extends AgentMoveController
 				if (observation.itype == -1 - oppID)
 					observationPosition = currentState.getAvatarPosition(oppID);
 				else
-					observationPosition = gameMechanicsController.findObject(blockWhereObservationWasLastSeen, currentState, observation.obsID);
+					observationPosition = this.gameMechanicsController.localizeSprite(currentState, observation.obsID, 
+							new Vector2d(blockWhereObservationWasLastSeen[0], blockWhereObservationWasLastSeen[1])).position;
 				if (observationPosition == null)
 				{
 					LogHandler.writeLog("Object was lost", "Brain.approachSprite", 0);
@@ -249,8 +245,8 @@ public class FBTPAgentMoveController extends AgentMoveController
 
 				// check whether avatar reached the object and return opponent
 				// if he is the object.
-				if (gameMechanicsController.isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition, playerPreviousPosition,
-						currentState, playerPreviousOrientation, observation.itype))
+				if (gameMechanicsController.isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition,
+						playerPreviousPosition, currentState, playerPreviousOrientation, observation.itype))
 				{
 					LogHandler.writeLog("Advanced approach successful", "Brain.approachSprite", 0);
 					if (currentState.isGameOver())
@@ -369,36 +365,75 @@ public class FBTPAgentMoveController extends AgentMoveController
 	 * @param playerID
 	 * @return
 	 */
-	public boolean arePositionsWithinGivenMoveRange(Vector2d position1, Vector2d position2,
-			int numMoves, int playerID)
+	public boolean arePositionsWithinGivenMoveRange(StateObservationMulti stateObs, Vector2d position1,
+			Vector2d position2, int numMoves, int playerID)
 	{
-		// TODO Auto-generated method stub
+		if (pathFinder.findPath(position1, stateObs, elapsedTimer, 0).second().size() < numMoves)
+			if (pathFinder.findPath(position2, stateObs, elapsedTimer, 0).second().size() < numMoves)
+				return true;
+
 		return false;
 	}
 
 	/**
-	 * Returns an action which guarantees not dying for the player with playerID id for safeTurns. 
-	 * One non-dying simulation for safeTurns turns/moves is enough to return the first action of the successful sequence.  
+	 * Returns an action which guarantees not dying for the player with playerID id for safeTurns.
+	 * One non-dying simulation for safeTurns turns/moves is enough to return the first action of the successful sequence.
+	 * 
 	 * @param playerID
 	 * @return Non-dying action or null if such action doesn't exist.
 	 */
-	public ACTIONS getNonDyingAction(int playerID, int safeTurns)
+	public ACTIONS getNonDyingAction(StateObservationMulti stateObs, int playerID, int safeTurns)
 	{
-		// TODO Auto-generated method stub
-		// assume greedy action for the opponent
+		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
+		availableActions.remove(Types.ACTIONS.ACTION_NIL);
+		Collections.shuffle(availableActions);
+		availableActions.add(1, Types.ACTIONS.ACTION_NIL); // so that ACTION_NIL goes always first
+		Types.ACTIONS oppAction = getGreedyAction(stateObs, 1 - playerID);
+		ACTIONS[] chosenActions = new Types.ACTIONS[2];
+		StateObservationMulti nextState;
+		for (Types.ACTIONS action : availableActions)
+		{
+			nextState = stateObs.copy();
+			chosenActions[playerID] = action;
+			chosenActions[1 - playerID] = oppAction;
+			nextState.advance(chosenActions);
+			if (nextState.isAvatarAlive(playerID)
+					&& (safeTurns == 1 || getNonDyingAction(nextState, playerID, safeTurns - 1) != null))
+				return action;
+		}
 		return null;
 	}
 
 	/**
 	 * Returns an action which gives the best raw score (including reward for win and penalty for loss) for the player with playerID id.
+	 * 
 	 * @param playerID
 	 * @return Action maximizing raw score.
 	 */
-	public ACTIONS getGreedyAction(int playerID)
+	public ACTIONS getGreedyAction(StateObservationMulti stateObs, int playerID)
 	{
-		// TODO Auto-generated method stub
+		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
+		Types.ACTIONS oppAction = getNonDyingAction(stateObs, 1 - playerID, 1);
+		ACTIONS[] chosenActions = new Types.ACTIONS[2];
+		StateObservationMulti nextState;
+		double bestScore = -10000000.0;
+		Types.ACTIONS bestAction = Types.ACTIONS.ACTION_NIL;
+		TPWinScoreStateEvaluator scoreEvaluator = new TPWinScoreStateEvaluator(); // WTF is that?
+		for (Types.ACTIONS action : availableActions)
+		{
+			nextState = stateObs.copy();
+			chosenActions[playerID] = action;
+			chosenActions[1 - playerID] = oppAction;
+			nextState.advance(chosenActions);
+			double score = scoreEvaluator.evaluateState(nextState);
+			if (score > bestScore)
+			{
+				bestScore = score;
+				bestAction = action;
+			}
+		}
+		return bestAction;
 		// use TPWinScoreStateEvaluator to evaluate states
-		return null;
 	}
 
 	/**
@@ -414,7 +449,25 @@ public class FBTPAgentMoveController extends AgentMoveController
 	public Pair<StateObservationMulti, ArrayList<ACTIONS>> approachSprite(StateObservationMulti stateObs, int playerID,
 			Observation observation, int maxDistance, long timeLimit)
 	{
-		// TODO Auto-generated method stub
+		ArrayList<Types.ACTIONS> allActions = new ArrayList<Types.ACTIONS>();
+		StateObservationMulti currentState = stateObs.copy();
+		long startTime = elapsedTimer.remainingTimeMillis();
+		Observation obs = observation;
+		while (startTime - elapsedTimer.remainingTimeMillis() < timeLimit)
+		{
+			Pair<StateObservation, ArrayList<Types.ACTIONS>> pathFinderOutput = pathFinder.findPath(obs.position,
+					currentState, elapsedTimer, timeLimit);
+
+			if (pathFinderOutput == null)
+				return null;
+
+			currentState = (StateObservationMulti) pathFinderOutput.first();
+			allActions.addAll(pathFinderOutput.second());
+
+			obs = this.gameMechanicsController.localizeSprite(currentState, obs);
+			if (currentState.getAvatarPosition(playerID).dist(obs.position) <= 1.2 * currentState.getBlockSize())
+				return new Pair<StateObservationMulti, ArrayList<ACTIONS>>(currentState, allActions);
+		}
 		return null;
 	}
 
@@ -423,7 +476,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 	 * 
 	 * @param stateObs
 	 * @param playerID
-	 * @param observation
+	 * @param position
 	 * @param maxDistance
 	 * @param timeLimit
 	 * @return Pair of the final state and a path to the goal. Null if approach was not possible within given time limit.
@@ -431,7 +484,67 @@ public class FBTPAgentMoveController extends AgentMoveController
 	public Pair<StateObservationMulti, ArrayList<ACTIONS>> approachPosition(StateObservationMulti stateObs,
 			int playerID, Vector2d position, int maxDistance, long timeLimit)
 	{
-		// TODO Auto-generated method stub
+		ArrayList<Types.ACTIONS> allActions = new ArrayList<Types.ACTIONS>();
+		StateObservationMulti currentState = stateObs.copy();
+		long startTime = elapsedTimer.remainingTimeMillis();
+		while (startTime - elapsedTimer.remainingTimeMillis() < timeLimit)
+		{
+			Pair<StateObservation, ArrayList<Types.ACTIONS>> pathFinderOutput = pathFinder.findPath(position,
+					currentState, elapsedTimer, timeLimit);
+
+			if (pathFinderOutput == null)
+				return null;
+
+			currentState = (StateObservationMulti) pathFinderOutput.first();
+			allActions.addAll(pathFinderOutput.second());
+
+			if (currentState.getAvatarPosition(playerID) == position)
+				return new Pair<StateObservationMulti, ArrayList<ACTIONS>>(currentState, allActions);
+		}
+		return null;
+	}
+
+	// we should end one step from sprite looking at its direction
+	public Pair<StateObservationMulti, ACTIONS> approachSpriteForTesting(StateObservationMulti stateObs, int playerID,
+			Observation observation, int i, long timeLimit)
+	{
+		StateObservationMulti currentState = stateObs.copy();
+		long startTime = elapsedTimer.remainingTimeMillis();
+		Observation obs = observation;
+		while (startTime - elapsedTimer.remainingTimeMillis() < timeLimit)
+		{
+			Pair<StateObservation, Types.ACTIONS> pathFinderOutput = ((FBTPPathFinder) pathFinder)
+					.findPathForTesting(obs.position, currentState, elapsedTimer, timeLimit);
+
+			if (pathFinderOutput == null)
+				return null;
+
+			currentState = (StateObservationMulti) pathFinderOutput.first();
+
+			obs = this.gameMechanicsController.localizeSprite(currentState, obs);
+			if (currentState.getAvatarPosition(playerID).dist(obs.position) <= 1.2 * currentState.getBlockSize()) // not sure if its enough
+				return new Pair<StateObservationMulti, ACTIONS>(currentState, pathFinderOutput.second());
+		}
+		return null;
+	}
+
+	public ACTIONS getNonDyingAction(StateObservationMulti stateObs, int playerID)
+	{
+		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
+		availableActions.remove(Types.ACTIONS.ACTION_NIL);
+		Collections.shuffle(availableActions);
+		availableActions.add(1, Types.ACTIONS.ACTION_NIL); // so that ACTION_NIL goes always first
+		ACTIONS[] chosenActions = new Types.ACTIONS[2];
+		StateObservationMulti nextState;
+		for (Types.ACTIONS action : availableActions)
+		{
+			nextState = stateObs.copy();
+			chosenActions[playerID] = action;
+			chosenActions[1 - playerID] = Types.ACTIONS.ACTION_NIL;
+			nextState.advance(chosenActions);
+			if (nextState.isAvatarAlive(playerID))
+				return action;
+		}
 		return null;
 	}
 }

@@ -23,18 +23,18 @@ public class TreeSearchMovePlanner extends MovePlanner
 	// Real types of fields
 	// protected StateEvaluator stateEvaluator;
 	// protected GameKnowledge gameKnowledge;
-	// protected GameKnowledgeExplorer gameKnowledgeExplorer; 
+	// protected GameKnowledgeExplorer gameKnowledgeExplorer;
 	// protected AgentMoveController agentMoveController;
 	// protected GameMechanicsController gameMechanicsController;
 	// protected GameStateTracker gameStateTracker;
-	
+
 	protected TreeNode rootNode;
 	protected BasicState rootState;
 	protected StateObservation rootStateObs;
-	
+
 	protected ElapsedCpuTimer mainElapsedTimer;
 	protected Random randomGenerator;
-	
+
 	protected double epsilon = 1e-6;
 
 	// Algorithm parameters
@@ -46,7 +46,7 @@ public class TreeSearchMovePlanner extends MovePlanner
 	{
 
 	}
-	
+
 	public TreeSearchMovePlanner(StateEvaluator stateEvaluator, GameKnowledge gameKnowledge,
 			GameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController)
 	{
@@ -54,10 +54,10 @@ public class TreeSearchMovePlanner extends MovePlanner
 		this.gameKnowledge = gameKnowledge;
 		this.gameKnowledgeExplorer = gameKnowledgeExplorer;
 		this.agentMoveController = agentMoveController;
-		
+
 		this.randomGenerator = new Random();
 	}
-	
+
 	public void setParameters(int remainingLimit)
 	{
 		this.remainingLimit = remainingLimit;
@@ -165,18 +165,18 @@ public class TreeSearchMovePlanner extends MovePlanner
 
 	protected void backUp(TreeNode node, double delta)
 	{
-        while(node != null)
-        {
-            updateNode(node, delta);
-            node = node.parent;
-        }
+		while (node != null)
+		{
+			updateNode(node, delta);
+			node = node.parent;
+		}
 	}
-	
+
 	protected void updateNode(TreeNode node, double delta)
 	{
 		// To be overriden in subclasses
 	}
-	
+
 	/**
 	 * Chooses the next node from the children of node, when there are still unexplored children. Advances stateObs accordingly.
 	 * 
@@ -252,7 +252,7 @@ public class TreeSearchMovePlanner extends MovePlanner
 
 		return (allEqual) ? getBestAction() : gameKnowledge.getPlayerActions().get(selected);
 	}
-	
+
 	protected Types.ACTIONS getBestAction()
 	{
 		int selected = -1;

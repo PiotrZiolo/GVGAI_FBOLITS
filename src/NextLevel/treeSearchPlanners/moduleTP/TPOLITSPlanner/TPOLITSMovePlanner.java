@@ -8,6 +8,7 @@ import NextLevel.PointOfInterest;
 import NextLevel.PointOfInterest.POITYPE;
 import NextLevel.State;
 import NextLevel.moduleFB.moduleFBTP.FBTPGameKnowledge;
+import NextLevel.moduleFB.moduleFBTP.FBTPGameStateTracker;
 import NextLevel.moduleFB.moduleFBTP.FBTPState;
 import NextLevel.moduleFB.moduleFBTP.FBTPStateEvaluator;
 import NextLevel.moduleFB.moduleFBTP.MechanicsController.FBTPAgentMoveController;
@@ -16,7 +17,6 @@ import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.GameMechanicsController;
 import NextLevel.moduleTP.TPGameKnowledge;
 import NextLevel.moduleTP.TPGameKnowledgeExplorer;
-import NextLevel.moduleTP.TPGameStateTracker;
 import NextLevel.treeSearchPlanners.TreeNode;
 import NextLevel.treeSearchPlanners.TreeSearchMovePlanner;
 import NextLevel.utils.AuxUtils;
@@ -45,7 +45,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	// protected GameMechanicsController gameMechanicsController;
 
 	protected long initialRemainingTime;
-	
+
 	// protected ArrayList<PointOfInterest> pois;
 	protected ArrayList<TPOLITSTreeNode> nodesNearPOIs;
 	protected TPOLITSTreeNode goalNode;
@@ -96,7 +96,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	public TPOLITSMovePlanner(StateEvaluator stateEvaluator, TPGameKnowledge gameKnowledge,
 			TPGameKnowledgeExplorer gameKnowledgeExplorer, AgentMoveController agentMoveController,
-			GameMechanicsController gameMechanicsController, TPGameStateTracker gameStateTracker)
+			GameMechanicsController gameMechanicsController, FBTPGameStateTracker gameStateTracker)
 	{
 		this.stateEvaluator = stateEvaluator;
 		this.gameKnowledge = gameKnowledge;
@@ -282,8 +282,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 		Vector2d avatarPosition = rootStateObsMulti.getAvatarPosition(gameKnowledge.getPlayerID());
 		Vector2d poiPosition = this.goalNode.poi.observation.position;
-		boolean isAvatarCloseToGoalPOI = fbtpAgentMoveController.arePositionsWithinGivenMoveRange(avatarPosition,
-				poiPosition, this.poiCloseDistanceThreshold, fbtpGameKnowledge.getPlayerID());
+		boolean isAvatarCloseToGoalPOI = fbtpAgentMoveController.arePositionsWithinGivenMoveRange(rootStateObsMulti,
+				avatarPosition, poiPosition, this.poiCloseDistanceThreshold, fbtpGameKnowledge.getPlayerID());
 
 		TREESEARCHMODE previousMode = this.mode;
 
@@ -295,9 +295,10 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		// set time limits
 		long timeAlreadyUsed = this.initialRemainingTime - this.mainElapsedTimer.remainingTimeMillis();
 		long remainingTimeForChoosingMove = this.totalTimeForChoosingMove - timeAlreadyUsed;
-		
-		LogHandler.writeLog("Time already used for move planner initialization: " + timeAlreadyUsed, "TPOLITSMovePlanner.chooseMode", 1);
-		
+
+		LogHandler.writeLog("Time already used for move planner initialization: " + timeAlreadyUsed,
+				"TPOLITSMovePlanner.chooseMode", 1);
+
 		if (this.mode == TREESEARCHMODE.APPROACH)
 		{
 			if (fbtpGameKnowledge.isGameDeterministic())
@@ -338,8 +339,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				node.poiApproached = false;
 				node.stateObs = rootStateObsMulti;
 			}
-			else if (fbtpAgentMoveController.arePositionsWithinGivenMoveRange(avatarPosition, poiPosition,
-					this.poiCloseDistanceThreshold, this.gameKnowledge.getPlayerID()))
+			else if (fbtpAgentMoveController.arePositionsWithinGivenMoveRange(rootStateObsMulti, avatarPosition,
+					poiPosition, this.poiCloseDistanceThreshold, this.gameKnowledge.getPlayerID()))
 			{
 				node.poiApproached = true;
 				node.path = null;
@@ -447,7 +448,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 		StateObservationMulti shotStateObs = selected.stateObs.copy();
 		Types.ACTIONS playerAction = Types.ACTIONS.ACTION_USE;
-		Types.ACTIONS oppAction = fbtpAgentMoveController.getGreedyAction(fbtpGameKnowledge.getOppID());
+		Types.ACTIONS oppAction = fbtpAgentMoveController.getGreedyAction(shotStateObs, fbtpGameKnowledge.getOppID());
 
 		Types.ACTIONS[] actions = new Types.ACTIONS[2];
 		actions[fbtpGameKnowledge.getPlayerID()] = playerAction;
@@ -460,8 +461,9 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		{
 			int safeTurns = Math.min(3, this.shotTestingWaitingTurns - turn);
 
-			playerAction = fbtpAgentMoveController.getNonDyingAction(fbtpGameKnowledge.getPlayerID(), safeTurns);
-			oppAction = fbtpAgentMoveController.getGreedyAction(fbtpGameKnowledge.getOppID());
+			playerAction = fbtpAgentMoveController.getNonDyingAction(shotStateObs, fbtpGameKnowledge.getPlayerID(),
+					safeTurns);
+			oppAction = fbtpAgentMoveController.getGreedyAction(shotStateObs, fbtpGameKnowledge.getOppID());
 			actions = new Types.ACTIONS[2];
 			actions[fbtpGameKnowledge.getPlayerID()] = playerAction;
 			actions[fbtpGameKnowledge.getOppID()] = oppAction;
@@ -643,8 +645,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				actions[fbtpGameKnowledge.getPlayerID()] = this.goalNode.path.get(0);
-				actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController
-						.getGreedyAction(fbtpGameKnowledge.getOppID());
+				actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getGreedyAction(rootStateObsMulti,
+						fbtpGameKnowledge.getOppID());
 
 				StateObservationMulti simulationStateObs = goalNode.stateObs.copy();
 				simulationStateObs.advance(actions);
@@ -832,7 +834,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		Types.ACTIONS[] actions = new Types.ACTIONS[2];
 		actions[fbtpGameKnowledge.getPlayerID()] = stateObsMulti.getAvailableActions(fbtpGameKnowledge.getPlayerID())
 				.get(bestAction);
-		actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getGreedyAction(fbtpGameKnowledge.getOppID());
+		actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getGreedyAction(stateObsMulti,
+				fbtpGameKnowledge.getOppID());
 
 		stateObsMulti.advance(actions);
 
@@ -891,7 +894,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		Types.ACTIONS[] actions = new Types.ACTIONS[2];
 		actions[fbtpGameKnowledge.getPlayerID()] = stateObsMulti.getAvailableActions(gameKnowledge.getPlayerID())
 				.get(selected.actionIndex);
-		actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getGreedyAction(fbtpGameKnowledge.getOppID());
+		actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getGreedyAction(stateObsMulti,
+				fbtpGameKnowledge.getOppID());
 
 		stateObsMulti.advance(actions);
 
@@ -966,7 +970,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				+ this.uctConstant * Math.sqrt(Math.log(node.parent.numVisits + 1) / (node.numVisits + this.epsilon))
 				- node.tabooBias);
 	}
-	
+
 	public void setMoveChoiceRemainingLimit(int moveChoiceRemainingLimit)
 	{
 		this.moveChoiceRemainingLimit = moveChoiceRemainingLimit;
