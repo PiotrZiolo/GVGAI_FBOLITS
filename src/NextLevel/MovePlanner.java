@@ -2,6 +2,7 @@ package NextLevel;
 
 import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.GameMechanicsController;
+import core.game.StateObservation;
 import ontology.Types;
 import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
@@ -38,8 +39,13 @@ public class MovePlanner
 	{
 		this.gameMechanicsController = gameMechanicsController;
 	}
+	
+	public void initialize(StateObservation stateObs)
+	{
+		
+	}
 
-	public ACTIONS chooseAction(State state, ElapsedCpuTimer elapsedTimer, int timeForChoosingMove)
+	public ACTIONS chooseAction(State state, ElapsedCpuTimer elapsedTimer, long timeForChoosingMove)
 	{
 		// To be overridden in subclasses
 

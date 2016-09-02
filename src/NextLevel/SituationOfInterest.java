@@ -4,7 +4,7 @@ import core.game.StateObservation;
 
 public class SituationOfInterest
 {
-	public PointOfInterest pointOfInterest;
+	public PointOfInterest poi;
 	public StateObservation baseState;
 	public StateObservation afterState;
 	public double importance;
@@ -14,7 +14,7 @@ public class SituationOfInterest
 
 	public SituationOfInterest()
 	{
-		this.pointOfInterest = null;
+		this.poi = null;
 		this.baseState = null;
 		this.afterState = null;
 		this.activatingTypeId = 0;

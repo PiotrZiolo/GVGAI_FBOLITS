@@ -10,8 +10,8 @@ import java.util.Date;
 
 public final class LogHandler
 {
-	public static final boolean bLoggingOn = true; // Turn on or off all logs
-	private static final int iTarget = 3; // Select target for printing logs: 1 - screen, 2 - file, 3 - screen & file
+	public static final boolean bLoggingOn = false; // Turn on or off all logs
+	private static final int iTarget = 2; // Select target for printing logs: 1 - screen, 2 - file, 3 - screen & file
 	private static final boolean bStartANewLog = true;
 	private static final boolean bPrintDateTime = true;
 

@@ -2,19 +2,26 @@ package NextLevel;
 
 import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.TPGameMechanicsController;
+import NextLevel.moduleFB.moduleFBTP.BasicFBTPGameKnowledgeExplorer;
 import NextLevel.moduleFB.moduleFBTP.FBTPGameKnowledge;
 import NextLevel.moduleFB.moduleFBTP.FBTPGameKnowledgeExplorer;
 import NextLevel.moduleFB.moduleFBTP.FBTPGameStateTracker;
 import NextLevel.moduleFB.moduleFBTP.FBTPState;
+import NextLevel.moduleFB.moduleFBTP.FBTPStateEvaluator;
+import NextLevel.moduleFB.moduleFBTP.FBTPStateEvaluatorTeacher;
 import NextLevel.moduleFB.moduleFBTP.FBTPStateHandler;
+import NextLevel.moduleFB.moduleFBTP.InfluenceMap;
 import NextLevel.moduleFB.moduleFBTP.MechanicsController.FBTPAgentMoveController;
 import NextLevel.moduleTP.BasicTPState;
 import NextLevel.moduleTP.SimpleTPStateEvaluator;
 import NextLevel.moduleTP.TPGameKnowledge;
 import NextLevel.moduleTP.TPGameKnowledgeExplorer;
 import NextLevel.moduleTP.TPStateHandler;
+import NextLevel.treeSearchPlanners.moduleTP.TPOLITSPlanner.TPOLITSMovePlanner;
 import NextLevel.treeSearchPlanners.moduleTP.TPOLMCTSPlanner.TPOLMCTSMovePlanner;
 import NextLevel.utils.LogHandler;
+import NextLevel.utils.PerformanceMonitor;
+import NextLevel.utils.StatePrinter;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
 import ontology.Types;
@@ -28,21 +35,21 @@ public class Agent extends AbstractMultiPlayer
 	private int oppID;
 	private int numOfPlayers;
 
-	private int timeForLearningDuringInitialization;
-	private int timeForLearningDuringMove;
-	private int timeForChoosingMove;
+	private int timeForLearningDuringInitialization = 0;
+	private int timeForLearningDuringMove = 0;
+	private int timeForChoosingMove = 30;
 
 	// Objects structure
 
-	private TPOLMCTSMovePlanner movePlanner;
-	private TPGameKnowledgeExplorer gameKnowledgeExplorer;
+	private TPOLITSMovePlanner movePlanner;
+	private BasicFBTPGameKnowledgeExplorer gameKnowledgeExplorer;
 	private FBTPGameKnowledge gameKnowledge;
-	private AgentMoveController agentMoveController;
+	private FBTPAgentMoveController agentMoveController;
 	private TPGameMechanicsController gameMechanicsController;
 	private TPStateHandler stateHandler;
-	private StateEvaluatorTeacher stateEvaluatorTeacher;
-	private SimpleTPStateEvaluator stateEvaluator;
-	private GameStateTracker gameStateTracker;
+	private FBTPStateEvaluatorTeacher stateEvaluatorTeacher;
+	private FBTPStateEvaluator stateEvaluator;
+	private FBTPGameStateTracker gameStateTracker;
 
 	// Algorithm parameters
 
@@ -63,30 +70,37 @@ public class Agent extends AbstractMultiPlayer
 	 */
 	public Agent(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, int playerID)
 	{
+		LogHandler.clearLog();
+		PerformanceMonitor.clearLog();
+		
 		this.playerID = playerID;
 		this.oppID = 1 - playerID;
 		this.numOfPlayers = stateObs.getNoPlayers();
 
 		gameKnowledge = new FBTPGameKnowledge();
 		gameMechanicsController = new TPGameMechanicsController(gameKnowledge);
-		agentMoveController = new AgentMoveController(gameKnowledge, gameMechanicsController);
+		agentMoveController = new FBTPAgentMoveController(gameKnowledge, gameMechanicsController);
 		//agentMoveController.setParameters(false, approachingSpriteMovesLimit);
-		gameStateTracker = new GameStateTracker(gameMechanicsController, gameKnowledge);
-		gameKnowledgeExplorer = new TPGameKnowledgeExplorer(gameKnowledge, agentMoveController,
-				gameMechanicsController);
-
-		stateHandler = new FBTPStateHandler();
-		stateEvaluator = new SimpleTPStateEvaluator(gameKnowledge, stateHandler);
-		stateEvaluatorTeacher = new StateEvaluatorTeacher(stateEvaluator, gameKnowledge);
-
-		movePlanner = new TPOLMCTSMovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer,
-				agentMoveController);
+		gameStateTracker = new FBTPGameStateTracker(gameMechanicsController, gameKnowledge);
+		gameKnowledgeExplorer = new BasicFBTPGameKnowledgeExplorer(gameKnowledge, agentMoveController,
+				gameMechanicsController, gameStateTracker);
 
 		// Learning
 
+		// make one advance, because many objects appear after one turn
+		stateObs.advance(new Types.ACTIONS[]{Types.ACTIONS.ACTION_NIL, Types.ACTIONS.ACTION_NIL});
+		
 		gameStateTracker.runTracker(stateObs);
 		gameKnowledgeExplorer.initialLearn(stateObs, playerID, elapsedTimer, timeForLearningDuringInitialization);
-		stateEvaluatorTeacher.initializeEvaluator();
+		
+		stateHandler = new FBTPStateHandler();
+		stateEvaluator = new FBTPStateEvaluator(gameKnowledge);
+		stateEvaluatorTeacher = new FBTPStateEvaluatorTeacher(stateEvaluator, gameKnowledge);
+		stateEvaluatorTeacher.initializeEvaluator(stateObs);
+		
+		movePlanner = new TPOLITSMovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer,
+				agentMoveController , gameMechanicsController, gameStateTracker);
+		movePlanner.initialize(stateObs);
 	}
 
 	/**
@@ -100,16 +114,23 @@ public class Agent extends AbstractMultiPlayer
 	 * @return An action for the current state
 	 */
 	public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer)
-	{
+	{	
+		LogHandler.writeLog("Turn: " + stateObs.getGameTick(), "FBTPGameStateTracker.searchForNewPOIs", 1);
+		
 		gameStateTracker.runTracker(stateObs);
 		gameKnowledgeExplorer.successiveLearn(stateObs, playerID, elapsedTimer, timeForLearningDuringMove);
 		stateEvaluatorTeacher.updateEvaluator();
 
 		BasicTPState state = stateHandler.prepareState(stateObs);
 
-		movePlanner.setParameters(remainingLimit, rolloutDepth, uctConstant);
 		Types.ACTIONS action = movePlanner.chooseAction(state, elapsedTimer, timeForChoosingMove);
 
 		return action;
+	}
+	
+	private void setXXXParameters()
+	{
+		// make a method for every object that needs parameters initialization
+		// use separate setter for every parameter in every class
 	}
 }

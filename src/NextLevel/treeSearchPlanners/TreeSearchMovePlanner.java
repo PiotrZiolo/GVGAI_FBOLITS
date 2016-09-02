@@ -63,20 +63,21 @@ public class TreeSearchMovePlanner extends MovePlanner
 		this.remainingLimit = remainingLimit;
 	}
 
-	public ACTIONS chooseAction(State state, ElapsedCpuTimer elapsedTimer, int timeForChoosingMove)
+	public ACTIONS chooseAction(State state, ElapsedCpuTimer elapsedTimer, long timeForChoosingMove)
 	{
 		this.rootState = (BasicState) state;
 		this.rootStateObs = rootState.getStateObservation();
 		this.mainElapsedTimer = elapsedTimer;
 
-		initialize();
+		LogHandler.writeLog("Hello", "TPOLITSMovePlanner.chooseAction", 1);
+		initializeForTreeSearch();
 
 		searchTree();
 
 		return getMostVisitedAction();
 	}
 
-	protected void initialize()
+	protected void initializeForTreeSearch()
 	{
 		rootNode = new TreeNode();
 	}
@@ -186,7 +187,7 @@ public class TreeSearchMovePlanner extends MovePlanner
 	 *            State observation connected with this node.
 	 * @return Chosen child node.
 	 */
-	public TreeNode expandNode(TreeNode node, StateObservation stateObs)
+	protected TreeNode expandNode(TreeNode node, StateObservation stateObs)
 	{
 		// To be overriden in subclasses
 		return null;
@@ -201,7 +202,7 @@ public class TreeSearchMovePlanner extends MovePlanner
 	 *            State observation connected with this node.
 	 * @return Chosen child node.
 	 */
-	public TreeNode exploitNode(TreeNode node, StateObservation stateObs)
+	protected TreeNode exploitNode(TreeNode node, StateObservation stateObs)
 	{
 		// To be overridden in subclasses
 		return null;
@@ -212,7 +213,7 @@ public class TreeSearchMovePlanner extends MovePlanner
 	 *            State observation connected with this node.
 	 * @return Actions for both players.
 	 */
-	public void moveInRollout(StateObservation stateObs)
+	protected void moveInRollout(StateObservation stateObs)
 	{
 		// To be overridden in subclasses
 	}

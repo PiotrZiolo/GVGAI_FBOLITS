@@ -13,6 +13,12 @@ public class VectorInt2d {
 		this.y = y;
 	}
 	
+	public VectorInt2d (double x, double y)
+	{
+		this.x = (int) x;
+		this.y = (int) y;
+	}
+	
 	public VectorInt2d (Vector2d v)
 	{
 		this.x = (int) Math.round(v.x);

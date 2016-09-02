@@ -22,4 +22,13 @@ public class AuxUtils
 	{
 		return stateObs.getAvailableActions(playerID).get(index);
 	}
+	
+	public static int mod(int x, int size)
+	{
+		if (x >= size)
+			return x % size;
+		if (x >= 0)
+			return x;
+		return mod(x + size, size);
+	}
 }

@@ -7,6 +7,7 @@ import java.util.PriorityQueue;
 import java.util.TreeSet;
 
 import NextLevel.PointOfInterest;
+import NextLevel.PointOfInterest.POITYPE;
 import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.moduleFB.SpriteTypeFeatures;
@@ -70,6 +71,9 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		fbtpGameKnowledge.setNumOfOpponentActions(stateObsMulti.getAvailableActions(this.oppID).size());
 		fbtpGameKnowledge.setPlayerActions(stateObsMulti.getAvailableActions(playerID));
 		fbtpGameKnowledge.setOpponentActions(stateObsMulti.getAvailableActions(this.oppID));
+		fbtpGameKnowledge.setWorldXDimension(stateObs.getObservationGrid().length);
+		fbtpGameKnowledge.setWorldYDimension(stateObs.getObservationGrid()[0].length);
+		fbtpGameKnowledge.setBlockSize(stateObs.getBlockSize());
 
 		fbtpGameKnowledge.shootingAllowed = checkWhetherShootingIsAllowed(stateObsMulti);
 	}
@@ -84,10 +88,10 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		{
 			TPSituationOfInterest soi = situationsToCheck.poll();
 
-			if (!typesAnalysed.contains(soi.pointOfInterest.observation.itype) || soi.inception)
+			if (!typesAnalysed.contains(soi.poi.observation.itype) || soi.inception)
 			{
 				if (!soi.inception)
-					typesAnalysed.add(soi.pointOfInterest.observation.itype);
+					typesAnalysed.add(soi.poi.observation.itype);
 
 				if (soi.afterState == null)
 					approachAndInvestigate(soi, startTime - elapsedTimer.remainingTimeMillis());
@@ -162,9 +166,6 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 			// features.changingValuesOfOtherObjects;
 			fbtpGameKnowledge.setSpriteTypeFeaturesByType(event.passiveTypeId, features);
 
-			PointOfInterest poi = new PointOfInterest();
-			poi.position = event.position;
-
 			putAllSpritesInQueue(soi.afterState, event.passiveTypeId);
 		}
 	}
@@ -196,11 +197,8 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 						soi.activatingTypeId = typeId;
 						soi.baseState = state;
 						soi.afterState = null;
-						soi.pointOfInterest = new PointOfInterest();
-						soi.pointOfInterest.observation = obs;
-						soi.pointOfInterest.positionChangedFromPreviousTurn = false;
-						soi.pointOfInterest.position = obs.position;
-						soi.pointOfInterest.track = false;
+						soi.poi = new PointOfInterest(POITYPE.SPRITE, obs);
+						soi.poi.track = false;
 						addSOI(soi);
 					}
 				}
@@ -278,7 +276,7 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 		
 		Pair<StateObservationMulti, Types.ACTIONS> testingSite = fbtpAgentMoveController.approachSpriteForTesting((StateObservationMulti) (soi.baseState), gameKnowledge.getPlayerID(),
-						soi.pointOfInterest.observation, 0, timeLimit);
+						soi.poi.observation, 0, timeLimit);
 		StateObservationMulti baseState = testingSite.first();
 
 		Types.ACTIONS actions[] = { Types.ACTIONS.ACTION_NIL, Types.ACTIONS.ACTION_NIL };

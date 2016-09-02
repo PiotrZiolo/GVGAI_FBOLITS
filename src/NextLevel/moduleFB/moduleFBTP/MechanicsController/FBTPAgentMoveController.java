@@ -61,7 +61,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 		int pathFinderLimit = (fastThinking) ? 1 : 10;
 		if (LogHandler.bLoggingOn && !stateObs.isAvatarAlive(oppID))
 		{
-			LogHandler.writeLog("Opponent died", "Brain.approachSprite", 0);
+			LogHandler.writeLog("Opponent died", "FBTPAgentMoveController.approachSprite", 0);
 			return null;
 		}
 
@@ -78,19 +78,18 @@ public class FBTPAgentMoveController extends AgentMoveController
 		Vector2d observationPosition = observation.position;
 		if (observationPosition == playerPreviousPosition)
 		{
-			LogHandler.writeLog("Object is in the same place as player", "Brain.approachSprite", 0);
+			LogHandler.writeLog("Object is in the same place as player", "FBTPAgentMoveController.approachSprite", 0);
 			return null;
 		}
 		int[] blockWhereObservationWasLastSeen = { (int) (observationPosition.x / stateObs.getBlockSize()),
 				(int) (observationPosition.y / stateObs.getBlockSize()) };
 
 		// in this while avatar is trying to minimize distance to goal
-		LogHandler.writeLog("PlayerPreviousPosition = " + playerPreviousPosition, "Brain.approachSprite", 0);
-		LogHandler.writeLog("ObservationPosition = " + observationPosition, "Brain.approachSprite", 0);
-		LogHandler.writeLog("PlayerID = " + playerID, "Brain.approachSprite", 0);
+		LogHandler.writeLog("PlayerPreviousPosition = " + playerPreviousPosition, "FBTPAgentMoveController.approachSprite", 0);
+		LogHandler.writeLog("ObservationPosition = " + observationPosition, "FBTPAgentMoveController.approachSprite", 0);
+		LogHandler.writeLog("PlayerID = " + playerID, "FBTPAgentMoveController.approachSprite", 0);
 		while (true)
 		{
-
 			// finding object position - first in the same place as last time,
 			// than in the neighborhood
 			if (observation.itype == -1 - oppID)
@@ -100,22 +99,22 @@ public class FBTPAgentMoveController extends AgentMoveController
 						new Vector2d(blockWhereObservationWasLastSeen[0], blockWhereObservationWasLastSeen[1])).position;
 			if (observationPosition == null)
 			{
-				LogHandler.writeLog("Object was lost", "Brain.approachSprite", 0);
+				LogHandler.writeLog("Object was lost", "FBTPAgentMoveController.approachSprite", 0);
 				return null;
 			}
 
 			LogHandler.writeLog(observationPosition + " " + playerPreviousPosition + " " + playerPreviousOrientation
-					+ " " + observation.itype, "Brain.approachSprite", 0);
+					+ " " + observation.itype, "FBTPAgentMoveController.approachSprite", 0);
 			// check whether avatar reached the object and return opponent if he
 			// is the object.
 			if (gameMechanicsController.isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition,
 					playerPreviousPosition, currentState, playerPreviousOrientation, observation.itype))
 			{
-				LogHandler.writeLog("Standard approach successful", "Brain.approachSprite", 0);
+				LogHandler.writeLog("Standard approach successful", "FBTPAgentMoveController.approachSprite", 0);
 
 				if (currentState.isGameOver())
 				{
-					LogHandler.writeLog("Opponent died when rotating", "Brain.approachSprite", 0);
+					LogHandler.writeLog("Opponent died when rotating", "FBTPAgentMoveController.approachSprite", 0);
 					return null;
 				}
 				return currentState;
@@ -124,7 +123,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 			// if opponent always die finish return null
 			if (opponentGoodActions.isEmpty())
 			{
-				LogHandler.writeLog("Opponent is dead", "Brain.approachSprite", 0);
+				LogHandler.writeLog("Opponent is dead", "FBTPAgentMoveController.approachSprite", 0);
 				return null;
 			}
 
@@ -135,7 +134,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 			else
 				actions[oppID] = opponentGoodActions.get(new Random().nextInt(opponentGoodActions.size()));
 
-			LogHandler.writeLog("playerGoodActions = " + playerGoodActions.toString(), "Brain.approachSprite", 0);
+			LogHandler.writeLog("playerGoodActions = " + playerGoodActions.toString(), "FBTPAgentMoveController.approachSprite", 0);
 			actions[playerID] = gameMechanicsController.chooseDirection(observationPosition.copy(),
 					playerPreviousPosition, playerGoodActions, playerLastAction);
 			temporaryState = currentState.copy();
@@ -146,20 +145,20 @@ public class FBTPAgentMoveController extends AgentMoveController
 
 			// advance
 			//
-			LogHandler.writeLog("goalPosition = " + observationPosition, "Brain.approachSprite", 0);
-			LogHandler.writeLog("actions = " + actions[playerID].toString(), "Brain.approachSprite", 0);
+			LogHandler.writeLog("goalPosition = " + observationPosition, "FBTPAgentMoveController.approachSprite", 0);
+			LogHandler.writeLog("actions = " + actions[playerID].toString(), "FBTPAgentMoveController.approachSprite", 0);
 			LogHandler.writeLog("avatarPositionB = " + temporaryState.getAvatarPosition(playerID),
-					"Brain.approachSprite", 0);
+					"FBTPAgentMoveController.approachSprite", 0);
 
 			if (advanceLimit == 0)
 			{
-				LogHandler.writeLog("advanceLimit reached", "Brain.approachSprite", 0);
+				LogHandler.writeLog("advanceLimit reached", "FBTPAgentMoveController.approachSprite", 0);
 				return null;
 			}
 			temporaryState.advance(actions);
 			advanceLimit--;
 			LogHandler.writeLog("avatarPositionA = " + temporaryState.getAvatarPosition(playerID),
-					"Brain.approachSprite", 0);
+					"FBTPAgentMoveController.approachSprite", 0);
 
 			// check whether no one died
 			boolean goodMove = true;
@@ -213,21 +212,21 @@ public class FBTPAgentMoveController extends AgentMoveController
 		// in this while avatar is trying to go along the shortest path to goal using BFS
 		for (int paths = 0; paths < pathFinderLimit; paths++)
 		{
-			LogHandler.writeLog("playerPreviousPosition = " + playerPreviousPosition, "Brain.approachSprite", 0);
-			LogHandler.writeLog("observationPosition = " + observationPosition, "Brain.approachSprite", 0);
+			LogHandler.writeLog("playerPreviousPosition = " + playerPreviousPosition, "FBTPAgentMoveController.approachSprite", 0);
+			LogHandler.writeLog("observationPosition = " + observationPosition, "FBTPAgentMoveController.approachSprite", 0);
 			LogHandler.writeLog("playerPreviousPosition = " + currentState.getAvatarPosition(playerID),
-					"Brain.approachSprite", 0);
-			LogHandler.writeLog("playerID = " + playerID, "Brain.approachSprite", 0);
+					"FBTPAgentMoveController.approachSprite", 0);
+			LogHandler.writeLog("playerID = " + playerID, "FBTPAgentMoveController.approachSprite", 0);
 
 			ArrayList<Types.ACTIONS> playerMoveSequenceToGoal = pathFinder
 					.findPath(observationPosition, currentState, elapsedTimer, 1).second();
-			LogHandler.writeLog("playerID = " + playerID, "Brain.approachSprite", 0);
+			LogHandler.writeLog("playerID = " + playerID, "FBTPAgentMoveController.approachSprite", 0);
 
 			Iterator<Types.ACTIONS> iterator = playerMoveSequenceToGoal.iterator();
 			Types.ACTIONS forceMove = null;
 
 			iterator = playerMoveSequenceToGoal.iterator();
-			LogHandler.writeLog("BFS started", "Brain.approachSprite", 0);
+			LogHandler.writeLog("BFS started", "FBTPAgentMoveController.approachSprite", 0);
 			while (iterator.hasNext())
 			{
 				// finding object position - first in the same place as last
@@ -239,7 +238,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 							new Vector2d(blockWhereObservationWasLastSeen[0], blockWhereObservationWasLastSeen[1])).position;
 				if (observationPosition == null)
 				{
-					LogHandler.writeLog("Object was lost", "Brain.approachSprite", 0);
+					LogHandler.writeLog("Object was lost", "FBTPAgentMoveController.approachSprite", 0);
 					return null;
 				}
 
@@ -248,10 +247,10 @@ public class FBTPAgentMoveController extends AgentMoveController
 				if (gameMechanicsController.isSpriteOneMoveFromAvatarWithOpponentRotation(observationPosition,
 						playerPreviousPosition, currentState, playerPreviousOrientation, observation.itype))
 				{
-					LogHandler.writeLog("Advanced approach successful", "Brain.approachSprite", 0);
+					LogHandler.writeLog("Advanced approach successful", "FBTPAgentMoveController.approachSprite", 0);
 					if (currentState.isGameOver())
 					{
-						LogHandler.writeLog("Opponent died when turning", "Brain.approachSprite", 0);
+						LogHandler.writeLog("Opponent died when turning", "FBTPAgentMoveController.approachSprite", 0);
 						return null;
 					}
 					return currentState;
@@ -260,7 +259,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 				// if opponent always die finish return null
 				if (opponentGoodActions.isEmpty())
 				{
-					LogHandler.writeLog("Opponent died", "Brain.approachSprite", 0);
+					LogHandler.writeLog("Opponent died", "FBTPAgentMoveController.approachSprite", 0);
 					return null;
 				}
 
@@ -271,13 +270,13 @@ public class FBTPAgentMoveController extends AgentMoveController
 				else
 					actions[oppID] = opponentGoodActions.get(new Random().nextInt(opponentGoodActions.size()));
 
-				LogHandler.writeLog("playerGoodActions = " + playerGoodActions.toString(), "Brain.approachSprite", 0);
+				LogHandler.writeLog("playerGoodActions = " + playerGoodActions.toString(), "FBTPAgentMoveController.approachSprite", 0);
 				if (forceMove == null)
 				{
 					actions[playerID] = iterator.next();
 					if (actions[playerID] == Types.ACTIONS.ACTION_NIL)
 					{
-						LogHandler.writeLog("PathFinder failed to find the path", "Brain.approachSprite", 0);
+						LogHandler.writeLog("PathFinder failed to find the path", "FBTPAgentMoveController.approachSprite", 0);
 						return null;
 					}
 				}
@@ -287,28 +286,28 @@ public class FBTPAgentMoveController extends AgentMoveController
 
 				// advance
 				LogHandler.writeLog("avatarPosition = " + temporaryState.getAvatarPosition(playerID),
-						"Brain.approachSprite", 0);
-				LogHandler.writeLog("goalPosition = " + observationPosition, "Brain.approachSprite", 0);
-				LogHandler.writeLog("actions = " + actions[playerID].toString(), "Brain.approachSprite", 0);
+						"FBTPAgentMoveController.approachSprite", 0);
+				LogHandler.writeLog("goalPosition = " + observationPosition, "FBTPAgentMoveController.approachSprite", 0);
+				LogHandler.writeLog("actions = " + actions[playerID].toString(), "FBTPAgentMoveController.approachSprite", 0);
 				LogHandler.writeLog("avatarPositionB = " + temporaryState.getAvatarPosition(playerID),
-						"Brain.approachSprite", 0);
+						"FBTPAgentMoveController.approachSprite", 0);
 				if (advanceLimit == 0)
 				{
-					LogHandler.writeLog("AdvancedLimit reached", "Brain.approachSprite", 0);
+					LogHandler.writeLog("AdvancedLimit reached", "FBTPAgentMoveController.approachSprite", 0);
 					return null;
 				}
 				temporaryState.advance(actions);
 				advanceLimit--;
 				LogHandler.writeLog("avatarPositionA = " + temporaryState.getAvatarPosition(playerID),
-						"Brain.approachSprite", 0);
+						"FBTPAgentMoveController.approachSprite", 0);
 				LogHandler.writeLog("avatarPosition2 = " + temporaryState.getAvatarPosition(playerID),
-						"Brain.approachSprite", 0);
+						"FBTPAgentMoveController.approachSprite", 0);
 
 				// check whether no one died
 				boolean goodMove = true;
 				if (!temporaryState.isAvatarAlive(playerID))
 				{
-					LogHandler.writeLog("Player killed", "Brain.approachSprite", 0);
+					LogHandler.writeLog("Player killed", "FBTPAgentMoveController.approachSprite", 0);
 					return null;
 
 					// playerGoodActions.remove(actions[playerID]);
@@ -365,12 +364,22 @@ public class FBTPAgentMoveController extends AgentMoveController
 	 * @param playerID
 	 * @return
 	 */
-	public boolean arePositionsWithinGivenMoveRange(StateObservationMulti stateObs, Vector2d position1,
-			Vector2d position2, int numMoves, int playerID)
+	public boolean isPositionWithinGivenMoveRange(StateObservationMulti stateObs, Vector2d position,
+			int numMoves, int playerID)
 	{
-		if (pathFinder.findPath(position1, stateObs, elapsedTimer, 0).second().size() < numMoves)
-			if (pathFinder.findPath(position2, stateObs, elapsedTimer, 0).second().size() < numMoves)
+		if (gameMechanicsController.getManhattanDistanceInBlockSizes(stateObs.getAvatarPosition(playerID), 
+				position) > numMoves)
+		{
+			return false;
+		}
+		else
+		{
+			FBTPPathFinder fbtpPathFinder = (FBTPPathFinder) this.pathFinder;
+			Pair<StateObservation, ArrayList<Types.ACTIONS>> approachInfo = fbtpPathFinder.findPath(position, stateObs, elapsedTimer, 1);
+			
+			if (approachInfo != null && approachInfo.second().size() < numMoves)
 				return true;
+		}
 
 		return false;
 	}

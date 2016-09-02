@@ -6,8 +6,10 @@ import java.util.Map;
 
 import NextLevel.GameStateTracker;
 import NextLevel.PointOfInterest;
+import NextLevel.PointOfInterest.POITYPE;
 import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.moduleFB.SpriteTypeFeatures;
+import NextLevel.utils.LogHandler;
 import core.game.Observation;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
@@ -21,6 +23,8 @@ public class FBTPGameStateTracker extends GameStateTracker
 		this.gameMechanicsController = gameMechanicsController;
 		this.gameKnowledge = gameKnowledge;
 		this.pois = new ArrayList<PointOfInterest>();
+		this.newPOIs = new ArrayList<PointOfInterest>();
+		this.removedPOIs = new ArrayList<PointOfInterest>();
 	}
 
 	public void runTracker(StateObservation stateObs)
@@ -38,8 +42,12 @@ public class FBTPGameStateTracker extends GameStateTracker
 			PointOfInterest poi = this.pois.get(index);
 			if (poi.track)
 			{
+				LogHandler.writeLog("Tracking POI| id: " + poi.observation.obsID + ", type: " + poi.observation.itype 
+						+ ", category: " + poi.observation.category + ", position: [" + poi.observation.position.x + ", " 
+						+ poi.observation.position.y + "]", "FBTPGameStateTracker.searchForNewPOIs", 0);
+				
 				Observation obs = this.gameMechanicsController.localizeSprite(stateObsMulti, poi.observation);
-				if (obs.position == null)
+				if (obs == null)
 				{
 					this.removedPOIs.add(poi);
 					this.pois.remove(poi);
@@ -63,7 +71,7 @@ public class FBTPGameStateTracker extends GameStateTracker
 	protected void searchForNewPOIs(StateObservation stateObs)
 	{
 		Map<Integer, Integer> observationIdToPoiIndex = new HashMap<Integer, Integer>();
-		for (int index = 0; index < observationIdToPoiIndex.size(); index++)
+		for (int index = 0; index < this.pois.size(); index++)
 			observationIdToPoiIndex.put(this.pois.get(index).observation.obsID, index);
 
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
@@ -75,15 +83,19 @@ public class FBTPGameStateTracker extends GameStateTracker
 			{
 				for (Observation obs : observationList)
 				{
-					SpriteTypeFeatures features = this.gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
-					if (!observationIdToPoiIndex.containsKey(obs.itype) && features.moving == false) // other conditions?
+					if (!observationIdToPoiIndex.containsKey(obs.itype))
 					{
-						PointOfInterest poi = new PointOfInterest();
-						poi.importance = 0.;
-						poi.observation = obs;
-						poi.position = obs.position;
-						poi.positionChangedFromPreviousTurn = false;
-						poi.track = true;
+						LogHandler.writeLog("Adding new POI| id: " + obs.obsID + ", type: " + obs.itype 
+								+ ", category: " + obs.category + ", position: [" + obs.position.x + ", " 
+								+ obs.position.y + "]", "FBTPGameStateTracker.searchForNewPOIs", 3);
+						
+						PointOfInterest poi = new PointOfInterest(POITYPE.SPRITE, obs, 0);
+						
+						SpriteTypeFeatures features = this.gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
+						if (features != null)
+							poi.track = features.moving;
+						else
+							poi.track = true;
 						this.pois.add(poi);
 						this.newPOIs.add(poi);
 					}

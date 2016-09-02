@@ -30,9 +30,9 @@ public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner
 	
 	// Algorithm parameters
 	
-	protected int remainingLimit;
-	protected int rolloutDepth;
-	private double uctConstant;
+	protected int remainingLimit = 12;
+	protected int rolloutDepth = 10;
+	private double uctConstant = Math.sqrt(2);
 	private static double[] bounds = new double[]{Double.MAX_VALUE, -Double.MAX_VALUE};
 	
 	public TPOLMCTSMovePlanner(StateEvaluator stateEvaluator, TPGameKnowledge gameKnowledge,
@@ -53,7 +53,7 @@ public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner
 		this.uctConstant = uctConstant;
 	}
 	
-	protected void initialize()
+	protected void initializeForTreeSearch()
 	{
 		this.rootNode = new TPOLMCTSTreeNode(gameKnowledge.getNumOfPlayerActions());
 	}
@@ -89,7 +89,7 @@ public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner
 	 *            State observation connected with this node.
 	 * @return Chosen child node.
 	 */
-	public TPOLMCTSTreeNode expandNode(TreeNode node, StateObservation stateObs)
+	protected TPOLMCTSTreeNode expandNode(TreeNode node, StateObservation stateObs)
 	{
 		TPOLMCTSTreeNode tpolmctsNode = (TPOLMCTSTreeNode) node;
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
@@ -139,7 +139,7 @@ public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner
 	 *            State observation connected with this node.
 	 * @return Chosen child node.
 	 */
-	public TPOLMCTSTreeNode exploitNode(TreeNode node, StateObservation stateObs)
+	protected TPOLMCTSTreeNode exploitNode(TreeNode node, StateObservation stateObs)
 	{
 		TPOLMCTSTreeNode tpolmctsNode = (TPOLMCTSTreeNode) node;
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
@@ -196,7 +196,7 @@ public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner
 	 *            State observation connected with this node.
 	 * @return Actions for both players.
 	 */
-	public void moveInRollout(StateObservation stateObs)
+	protected void moveInRollout(StateObservation stateObs)
 	{
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		TPGameKnowledge tpGameKnowledge = (TPGameKnowledge) this.gameKnowledge;
@@ -220,7 +220,7 @@ public class TPOLMCTSMovePlanner extends TreeSearchMovePlanner
 	 *            current state
 	 * @param playerID
 	 */
-	private Types.ACTIONS getRandomAction(StateObservationMulti stateObs, int playerID, Types.ACTIONS oppmove,
+	protected Types.ACTIONS getRandomAction(StateObservationMulti stateObs, int playerID, Types.ACTIONS oppmove,
 			boolean notLosingAction)
 	{
 		if (notLosingAction)

@@ -1,6 +1,5 @@
 package NextLevel.moduleFB.moduleFBTP;
 
-import NextLevel.GameKnowledge;
 import NextLevel.moduleFB.SpriteTypeFeatures;
 import NextLevel.utils.VectorInt2d;
 import core.game.StateObservationMulti;
@@ -18,10 +17,10 @@ public class InfluenceMap
 	private StateObservationMulti state;
 	private FBTPGameKnowledge gameKnowledge;
 
-	public InfluenceMap(StateObservationMulti initialState, GameKnowledge initialKnowledge)
+	public InfluenceMap(StateObservationMulti initialState, FBTPGameKnowledge initialKnowledge)
 	{
 		state = initialState;
-		gameKnowledge = (FBTPGameKnowledge) initialKnowledge;
+		gameKnowledge = initialKnowledge;
 
 		ArrayList<Observation> grid[][] = state.getObservationGrid();
 
@@ -104,8 +103,8 @@ public class InfluenceMap
 			}
 		}
 
-		state = updatedState;
-		gameKnowledge = (FBTPGameKnowledge) updatedKnowledge;
+		this.state = updatedState;
+		this.gameKnowledge = updatedKnowledge;
 
 		if (updateWholeMap)
 		{
@@ -205,6 +204,6 @@ public class InfluenceMap
 
 	public double getInfluenceValue(Vector2d position)
 	{
-		return map.get(new VectorInt2d(position.mul(1. / state.getBlockSize())));
+		return map.get(new VectorInt2d(position.x / state.getBlockSize(), position.y / state.getBlockSize()));
 	}
 }

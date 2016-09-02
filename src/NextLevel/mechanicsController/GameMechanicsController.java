@@ -3,6 +3,8 @@ package NextLevel.mechanicsController;
 import java.util.ArrayList;
 
 import NextLevel.GameKnowledge;
+import NextLevel.utils.AuxUtils;
+import baseStructure.utils.LogHandler;
 import core.game.Observation;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
@@ -52,7 +54,7 @@ public class GameMechanicsController
 			return true;
 		return false;
 	}
-	
+
 	/**
 	 * Localizes a sprite given by observation on the map in state stateObs.
 	 * Returns null if the sprite is not on the map.
@@ -70,23 +72,31 @@ public class GameMechanicsController
 	{
 		ArrayList<Observation> suspects;
 
-		int[] start = { (int) (position.x / stateObs.getBlockSize()), (int) (position.y / stateObs.getBlockSize()) };
+		int[] start = { (int) (position.x / stateObs.getBlockSize()),
+				(int) (position.y / stateObs.getBlockSize()) };
+		LogHandler.writeLog("start x: " + start[0], "GameMechanicsController.localizeSprite", 0);
+		LogHandler.writeLog("start y: " + start[1], "GameMechanicsController.localizeSprite", 0);
 
 		int worldXDimension = stateObs.getObservationGrid().length;
 		int worldYDimension = stateObs.getObservationGrid()[0].length;
+		LogHandler.writeLog("worldXDimension: " + worldXDimension, "GameMechanicsController.localizeSprite", 0);
+		LogHandler.writeLog("worldYDimension: " + worldYDimension, "GameMechanicsController.localizeSprite", 0);
 
 		int distance = 0;
 
 		while (distance <= maxDistance)
 		{
-			for (int i = distance; i <= distance; i = i + 1)
+			for (int i = -distance; i <= distance; i = i + 1)
 			{
 				if (i == -distance || i == distance)
 				{
 					for (int j = -distance; j <= distance; j = j + 1)
 					{
-						suspects = stateObs.getObservationGrid()[(worldXDimension + start[0] + i)
-								% worldXDimension][(worldYDimension + start[1] + j) % worldYDimension];
+						int x = AuxUtils.mod(start[0] + i, worldXDimension);
+						int y = AuxUtils.mod(start[1] + j, worldYDimension);
+						LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
+								"GameMechanicsController.localizeSprite", 0);
+						suspects = stateObs.getObservationGrid()[x][y];
 						for (Observation suspect : suspects)
 							if (suspect.obsID == obsID)
 								return suspect;
@@ -96,8 +106,11 @@ public class GameMechanicsController
 				{
 					for (int j = -distance; j <= distance; j = j + 2 * distance)
 					{
-						suspects = stateObs.getObservationGrid()[(worldXDimension + start[0] + i)
-								% worldXDimension][(worldYDimension + start[1] + j) % worldYDimension];
+						int x = AuxUtils.mod(start[0] + i, worldXDimension);
+						int y = AuxUtils.mod(start[1] + j, worldYDimension);
+						LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
+								"GameMechanicsController.localizeSprite", 0);
+						suspects = stateObs.getObservationGrid()[x][y];
 						for (Observation suspect : suspects)
 							if (suspect.obsID == obsID)
 								return suspect;
@@ -108,21 +121,22 @@ public class GameMechanicsController
 		}
 		return null;
 	}
-	
+
 	public Observation localizeSprite(StateObservationMulti stateObs, Observation observation)
 	{
 		int worldXDimension = stateObs.getObservationGrid().length;
 		int worldYDimension = stateObs.getObservationGrid()[0].length;
-		
-		return localizeSprite(stateObs, observation.obsID, observation.position, Math.max(worldXDimension / 2, worldYDimension / 2));
+
+		return localizeSprite(stateObs, observation.obsID, observation.position,
+				Math.max(worldXDimension / 2 + 1, worldYDimension / 2 + 1));
 	}
 
 	public Observation localizeSprite(StateObservation stateObs, int obsID, Vector2d position)
 	{
 		int worldXDimension = stateObs.getObservationGrid().length;
 		int worldYDimension = stateObs.getObservationGrid()[0].length;
-		
-		return localizeSprite(stateObs, obsID, position, Math.max(worldXDimension / 2, worldYDimension / 2));
+
+		return localizeSprite(stateObs, obsID, position, Math.max(worldXDimension / 2 + 1, worldYDimension / 2 + 1));
 	}
 
 	public Types.ACTIONS chooseDirection(Vector2d observationPosition, Vector2d playerNewPosition,
@@ -204,5 +218,25 @@ public class GameMechanicsController
 		if (playerGoodActions.contains(lastAction))
 			return lastAction;
 		return null;
+	}
+	
+	/**
+	 * Returns Manhattan distance between position1 and position2. 
+	 * Assumes that upper and lower as well as right and left map edges are glued.
+	 * @param position1
+	 * @param position2
+	 * @return Manhattan distance.
+	 */
+	public double getManhattanDistanceInPX(Vector2d position1, Vector2d position2)
+	{
+		return (AuxUtils.mod((int) ((position1.x - position2.x) / gameKnowledge.getBlockSize()), gameKnowledge.getWorldXDimension()) 
+				+ AuxUtils.mod((int) ((position1.y - position2.y) / gameKnowledge.getBlockSize()), gameKnowledge.getWorldYDimension()))
+				* gameKnowledge.getBlockSize(); 
+	}
+	
+	public double getManhattanDistanceInBlockSizes(Vector2d position1, Vector2d position2)
+	{
+		return AuxUtils.mod((int) ((position1.x - position2.x) / gameKnowledge.getBlockSize()), gameKnowledge.getWorldXDimension()) 
+				+ AuxUtils.mod((int) ((position1.y - position2.y) / gameKnowledge.getBlockSize()), gameKnowledge.getWorldYDimension());
 	}
 }

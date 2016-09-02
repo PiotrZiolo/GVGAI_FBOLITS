@@ -11,6 +11,7 @@ import NextLevel.moduleFB.moduleFBTP.MechanicsController.PathFinderNode;
 import NextLevel.mechanicsController.PathFinder;
 import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.utils.Pair;
+import baseStructure.utils.LogHandler;
 import NextLevel.moduleFB.moduleFBTP.FBTPGameKnowledge;
 import core.game.Event;
 import core.game.StateObservation;
@@ -218,7 +219,8 @@ public class FBTPPathFinder extends PathFinder
 			stateObsCopy = advanceSimplified(stateObsCopy, Types.ACTIONS.ACTION_USE);
 			stateObsCopy = advanceSimplified(stateObsCopy, act);
 
-			if (!stateObsCopy2.getAvatarPosition(playerID).equals(stateObsCopy.getAvatarPosition(playerID)))
+			if (!stateObsCopy2.getAvatarPosition(playerID).equals(stateObsCopy.getAvatarPosition(playerID)) 
+					&& stateObs.isAvatarAlive(playerID) && !stateObs.isGameOver())
 			{
 				stateObsCopy2 = stateObsCopy;
 				moves += actToString(Types.ACTIONS.ACTION_USE);
@@ -233,9 +235,17 @@ public class FBTPPathFinder extends PathFinder
 	{
 		ArrayList<Types.ACTIONS> oppAvailableActions = stateObs.getAvailableActions(1 - playerID);
 		oppAvailableActions.remove(Types.ACTIONS.ACTION_NIL);
-		oppAvailableActions.add(1, Types.ACTIONS.ACTION_NIL);
 		ACTIONS[] chosenActions = new Types.ACTIONS[2];
+		StateObservationMulti nextStateNIL;
 		StateObservationMulti nextState;
+		
+		nextStateNIL = stateObs.copy();
+		chosenActions[playerID] = act;
+		chosenActions[1 - playerID] = Types.ACTIONS.ACTION_NIL;
+		nextStateNIL.advance(chosenActions);
+		if (nextStateNIL.isAvatarAlive(1 - playerID))
+			return nextStateNIL;
+		
 		for (Types.ACTIONS oppAction : oppAvailableActions)
 		{
 			nextState = stateObs.copy();
@@ -245,7 +255,7 @@ public class FBTPPathFinder extends PathFinder
 			if (nextState.isAvatarAlive(1 - playerID))
 				return nextState;
 		}
-		return null;
+		return nextStateNIL;
 	}
 
 	private boolean checkAdvance(Vector2d previous, Vector2d current)
@@ -371,11 +381,16 @@ public class FBTPPathFinder extends PathFinder
 
 				if (next.equals(goal))
 				{
+					// TODO PZi: What is this fragment for? Isn't it obvious that if the avatar reached the goal with the last act, 
+					// then orientation is consistent with move?
+					
 					Direction orientation = vectorToDirection(previous.stateObs.getAvatarOrientation(playerID));
 					StateObservationMulti stateObsCopy = previous.stateObs.copy();
 
 					if (!gameMechanicsController.isOrientationConsistentWithMove(act, orientation))
 					{
+						// TODO WARNING: advanceSimpliefied returns null if the avatar dies, 
+						// hence in such a case null will returned
 						stateObsCopy = advanceSimplified(stateObsCopy, act);
 					}
 					return new Pair<StateObservation, Types.ACTIONS>(stateObsCopy, act);

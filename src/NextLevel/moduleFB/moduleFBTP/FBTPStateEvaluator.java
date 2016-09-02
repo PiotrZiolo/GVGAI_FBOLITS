@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import NextLevel.StateEvaluator;
+import NextLevel.StateHandler;
 import NextLevel.moduleFB.SpriteTypeFeatures;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
@@ -30,10 +31,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 	private int avatarHealthPoints;
 	private int pointScale;
 
-	public FBTPStateEvaluator(FBTPGameKnowledge gameKnowledge, InfluenceMap map)
+	public FBTPStateEvaluator(FBTPGameKnowledge gameKnowledge)
 	{
 		this.gameKnowledge = gameKnowledge;
-		this.map = map;
 		this.mappedState = null;
 		this.destination = null;
 		this.mappedObjects = new HashMap<Integer, InfluencePoint>();
@@ -43,6 +43,11 @@ public class FBTPStateEvaluator extends StateEvaluator
 		this.boardStateScore = 0;
 		for (int i = 0; i < 12; i++)
 			weights[i] = 1;
+	}
+	
+	public void setInfluenceMap(InfluenceMap map)
+	{
+		this.map = map;
 	}
 
 	public void setWeights(double[] newWeights)
@@ -333,8 +338,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 		return score;
 	}
 
-	public double evaluateSprite(Observation observation)
+	public double evaluateSprite(StateObservation stateObs, Observation observation)
 	{
+		this.mappedState = (StateObservationMulti) stateObs;
 		InfluenceMap map = new InfluenceMap(mappedState, gameKnowledge);
 		InfluencePoint influencePoint = new InfluencePoint(observation.obsID, observation.position,
 				getInfluenceValue(observation.itype), 1);
@@ -342,8 +348,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 		return map.getInfluenceValue(mappedState.getAvatarPosition(gameKnowledge.getPlayerID()));
 	}
 
-	public HashMap<Integer, Double> evaluateSprites(ArrayList<Observation> observations)
+	public HashMap<Integer, Double> evaluateSprites(StateObservation stateObs, ArrayList<Observation> observations)
 	{
+		this.mappedState = (StateObservationMulti) stateObs;
 		InfluenceMap map = new InfluenceMap(mappedState, gameKnowledge);
 		InfluencePoint influencePoint = new InfluencePoint(1,
 				mappedState.getAvatarPosition(gameKnowledge.getPlayerID()), 1, 1);

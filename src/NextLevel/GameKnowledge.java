@@ -11,6 +11,9 @@ public class GameKnowledge
 	protected int numOfPlayerActions;
 	protected ArrayList<Types.ACTIONS> playerActions;
 	protected ArrayList<Types.ACTIONS> playerMoveActions;
+	protected int worldXDimension;
+	protected int worldYDimension;
+	protected double blockSize;
 
 	protected GameObjectives gameObjectives;
 
@@ -65,5 +68,35 @@ public class GameKnowledge
 	public ArrayList<Types.ACTIONS> getPlayerMoveActions()
 	{
 		return playerMoveActions;
+	}
+	
+	public int getWorldXDimension()
+	{
+		return worldXDimension;
+	}
+
+	public void setWorldXDimension(int worldXDimension)
+	{
+		this.worldXDimension = worldXDimension;
+	}
+
+	public int getWorldYDimension()
+	{
+		return worldYDimension;
+	}
+
+	public void setWorldYDimension(int worldYDimension)
+	{
+		this.worldYDimension = worldYDimension;
+	}
+	
+	public double getBlockSize()
+	{
+		return blockSize;
+	}
+
+	public void setBlockSize(double blockSize)
+	{
+		this.blockSize = blockSize;
 	}
 }
