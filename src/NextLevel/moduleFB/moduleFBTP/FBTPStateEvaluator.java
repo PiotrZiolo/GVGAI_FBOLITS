@@ -8,7 +8,9 @@ import java.util.Set;
 
 import NextLevel.StateEvaluator;
 import NextLevel.StateHandler;
+import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.moduleFB.SpriteTypeFeatures;
+import NextLevel.utils.LogHandler;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import core.game.Observation;
@@ -30,9 +32,13 @@ public class FBTPStateEvaluator extends StateEvaluator
 	private FBTPGameKnowledge gameKnowledge;
 	private int avatarHealthPoints;
 	private int pointScale;
+	private TPGameMechanicsController gameMechanicsController;
+	
+	private final double curiosityFactor = 0.01;
 
-	public FBTPStateEvaluator(FBTPGameKnowledge gameKnowledge)
+	public FBTPStateEvaluator(FBTPGameKnowledge gameKnowledge, TPGameMechanicsController gameMechanicsController)
 	{
+		this.gameMechanicsController = gameMechanicsController;
 		this.gameKnowledge = gameKnowledge;
 		this.mappedState = null;
 		this.destination = null;
@@ -67,34 +73,25 @@ public class FBTPStateEvaluator extends StateEvaluator
 		if (mappedState != null)
 		{
 			map.reset();
-			ArrayList<Observation>[][] grid = mappedState.getObservationGrid();
-			int width = (int) (mappedState.getWorldDimension().getWidth() / mappedState.getBlockSize());
-			int height = (int) (mappedState.getWorldDimension().getHeight() / mappedState.getBlockSize());
-			for (int x = 0; x < width; x++)
+			ArrayList<Observation> observations = this.gameMechanicsController.getListOfSprites(mappedState);
+			for (Observation obs : observations)
 			{
-				for (int y = 0; y < height; y++)
+				SpriteTypeFeatures sprite = gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
+				if (sprite != null)
 				{
-					ArrayList<Observation> observations = grid[x][y];
-					for (Observation obs : observations)
+					if (!sprite.moving && (sprite.allowingVictory || sprite.collectable || sprite.givingVictory
+							|| sprite.changingPoints > 0 || sprite.dangerousOtherwise))
 					{
-						SpriteTypeFeatures sprite = gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
-						if (sprite != null)
-						{
-							if (!sprite.moving && (sprite.allowingVictory || sprite.collectable || sprite.givingVictory
-									|| sprite.changingPoints > 0 || sprite.dangerousOtherwise))
-							{
-								mappedObjects.put(obs.obsID, new InfluencePoint(obs.obsID, obs.position,
-										getInfluenceValue(obs.itype), functionValue(obs.itype)));
-								map.addObject(mappedObjects.get(obs.obsID));
-							}
-							else
-							{
-								unmappedObjects.put(obs.obsID, new InfluencePoint(obs.obsID, obs.position,
-										getInfluenceValue(obs.itype), functionValue(obs.itype)));
-							}
-							boardStateScore += getExistanceScore(obs.itype);
-						}
+						mappedObjects.put(obs.obsID, new InfluencePoint(obs.obsID, obs.position,
+								getInfluenceValue(obs.itype), functionValue(obs.itype)));
+						map.addObject(mappedObjects.get(obs.obsID));
 					}
+					else
+					{
+						unmappedObjects.put(obs.obsID, new InfluencePoint(obs.obsID, obs.position,
+								getInfluenceValue(obs.itype), functionValue(obs.itype)));
+					}
+					boardStateScore += getExistanceScore(obs.itype);
 				}
 			}
 		}
@@ -106,6 +103,8 @@ public class FBTPStateEvaluator extends StateEvaluator
 		SpriteTypeFeatures sprite = gameKnowledge.getSpriteTypeFeaturesByType(type);
 		if (sprite != null)
 		{
+			LogHandler.writeLog("Sprite features> type: " + type + ", features: " + sprite.print(), "FBTPStateEvaluator.getInfluenceValue", 0);
+			
 			if (sprite.passable || sprite.destroyable)
 			{
 				if (sprite.givingVictory)
@@ -184,34 +183,26 @@ public class FBTPStateEvaluator extends StateEvaluator
 		if (unmappedObjects != null)
 			unmappedObjects.clear();
 		Map<Integer, InfluencePoint> mappedObjectsNew = new HashMap<Integer, InfluencePoint>();
-		ArrayList<Observation>[][] grid = newState.getObservationGrid();
-		int width = (int) (newState.getWorldDimension().getWidth() / newState.getBlockSize());
-		int height = (int) (newState.getWorldDimension().getHeight() / newState.getBlockSize());
-		for (int x = 0; x < width; x++)
+		
+		ArrayList<Observation> observations = this.gameMechanicsController.getListOfSprites(newState);
+		for (Observation obs : observations)
 		{
-			for (int y = 0; y < height; y++)
+			SpriteTypeFeatures sprite = gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
+			if (sprite != null)
 			{
-				ArrayList<Observation> observations = grid[x][y];
-				for (Observation obs : observations)
+				if (!sprite.moving && (sprite.allowingVictory || sprite.collectable || sprite.givingVictory
+						|| sprite.changingPoints > 0 || sprite.dangerousOtherwise))
 				{
-					SpriteTypeFeatures sprite = gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
-					if (sprite != null)
-					{
-						if (!sprite.moving && (sprite.allowingVictory || sprite.collectable || sprite.givingVictory
-								|| sprite.changingPoints > 0 || sprite.dangerousOtherwise))
-						{
-							mappedObjectsNew.put(obs.obsID, new InfluencePoint(obs.obsID, obs.position,
-									getInfluenceValue(obs.itype), functionValue(obs.itype)));
-							map.addObject(mappedObjectsNew.get(obs.obsID));
-						}
-						else
-						{
-							unmappedObjects.put(obs.obsID, new InfluencePoint(obs.obsID, obs.position,
-									getInfluenceValue(obs.itype), functionValue(obs.itype)));
-						}
-						boardStateScore += getExistanceScore(obs.itype);
-					}
+					mappedObjectsNew.put(obs.obsID, new InfluencePoint(obs.obsID, obs.position,
+							getInfluenceValue(obs.itype), functionValue(obs.itype)));
+					map.addObject(mappedObjectsNew.get(obs.obsID));
 				}
+				else
+				{
+					unmappedObjects.put(obs.obsID, new InfluencePoint(obs.obsID, obs.position,
+							getInfluenceValue(obs.itype), functionValue(obs.itype)));
+				}
+				boardStateScore += getExistanceScore(obs.itype);
 			}
 		}
 		Set<Integer> newKeys = mappedObjectsNew.keySet();
@@ -220,11 +211,11 @@ public class FBTPStateEvaluator extends StateEvaluator
 		oldKeys.removeAll(mappedObjectsNew.keySet());
 		Set<Integer> sharedKeys = mappedObjects.keySet();
 		sharedKeys.retainAll(mappedObjectsNew.keySet());
-
-		for (int key : newKeys)
+		
+		for (int key : oldKeys)
 			map.removeObject(key);
-
-		for (int key : newKeys)
+		
+		for (int key : sharedKeys)
 			if (mappedObjects.get(key).position != mappedObjectsNew.get(key).position)
 				map.removeObject(key);
 
@@ -233,7 +224,7 @@ public class FBTPStateEvaluator extends StateEvaluator
 		for (int key : newKeys)
 			map.addObject(mappedObjectsNew.get(key));
 
-		for (int key : newKeys)
+		for (int key : sharedKeys)
 			if (mappedObjects.get(key).position != mappedObjectsNew.get(key).position)
 				map.addObject(mappedObjectsNew.get(key));
 
@@ -286,8 +277,8 @@ public class FBTPStateEvaluator extends StateEvaluator
 
 	public double evaluateState(StateObservation stateObs)
 	{
-		mappedState = (StateObservationMulti) stateObs;
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
+		this.mappedState = stateObsMulti;
 		FBTPGameKnowledge gameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		
 		int playerID = gameKnowledge.getPlayerID();
@@ -308,9 +299,8 @@ public class FBTPStateEvaluator extends StateEvaluator
 		return score;
 	}
 
-	public double evaluateStateWithDestination(StateObservation stateObs, Vector2d destination)
+	public double evaluateStateWithDestination(StateObservationMulti stateObsMulti, Vector2d destination)
 	{
-		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		FBTPGameKnowledge gameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		
 		int playerID = gameKnowledge.getPlayerID();
@@ -338,9 +328,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 		return score;
 	}
 
-	public double evaluateSprite(StateObservation stateObs, Observation observation)
+	public double evaluateSprite(StateObservationMulti stateObsMulti, Observation observation)
 	{
-		this.mappedState = (StateObservationMulti) stateObs;
+		this.mappedState = stateObsMulti;
 		InfluenceMap map = new InfluenceMap(mappedState, gameKnowledge);
 		InfluencePoint influencePoint = new InfluencePoint(observation.obsID, observation.position,
 				getInfluenceValue(observation.itype), 1);
@@ -348,9 +338,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 		return map.getInfluenceValue(mappedState.getAvatarPosition(gameKnowledge.getPlayerID()));
 	}
 
-	public HashMap<Integer, Double> evaluateSprites(StateObservation stateObs, ArrayList<Observation> observations)
+	public HashMap<Integer, Double> evaluateSprites(StateObservationMulti stateObs, ArrayList<Observation> observations)
 	{
-		this.mappedState = (StateObservationMulti) stateObs;
+		this.mappedState = stateObs;
 		InfluenceMap map = new InfluenceMap(mappedState, gameKnowledge);
 		InfluencePoint influencePoint = new InfluencePoint(1,
 				mappedState.getAvatarPosition(gameKnowledge.getPlayerID()), 1, 1);
@@ -358,7 +348,20 @@ public class FBTPStateEvaluator extends StateEvaluator
 
 		HashMap<Integer, Double> score = new HashMap<Integer, Double>();
 		for (Observation obs : observations)
-			score.put(obs.obsID, getInfluenceValue(obs.itype) * map.getInfluenceValue(obs.position));
+		{
+			score.put(obs.obsID, (getInfluenceValue(obs.itype) + this.curiosityFactor) * map.getInfluenceValue(obs.position));
+			LogHandler.writeLog(
+					"POI id: " + obs.obsID + ", type: "	+ obs.itype + 
+					", category: " + obs.category + ", position: " + obs.position + 
+					", value: " + score.get(obs.obsID) + ", type influence value: " + getInfluenceValue(obs.itype)
+					+ ", position influence value: " + map.getInfluenceValue(obs.position),
+					"FBTPStateEvaluator.evaluateSprites", 3);
+			SpriteTypeFeatures sprite = gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
+			if (sprite != null)
+			{
+				LogHandler.writeLog("Sprite features> type: " + obs.itype + ", features: " + sprite.print(), "FBTPStateEvaluator.evaluateSprites", 3);
+			}
+		}
 
 		return score;
 	}

@@ -142,7 +142,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			observations.add(poi.observation);
 		}
 
-		HashMap<Integer, Double> spriteEvaluations = fbtpStateEvaluator.evaluateSprites(this.rootStateObs,
+		HashMap<Integer, Double> spriteEvaluations = fbtpStateEvaluator.evaluateSprites(rootStateObsMulti,
 				observations);
 		double highestImportance = 0;
 
@@ -159,8 +159,9 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 					highestImportance = node.totalValue;
 
 				LogHandler.writeLog(
-						"POI id: " + poi.observation.obsID + ", category: " + poi.observation.category + ", type: "
-								+ poi.observation.itype + ", position" + poi.position + ", value: " + node.totalValue,
+						"POI id: " + poi.observation.obsID + ", type: "	+ poi.observation.itype + 
+						", category: " + poi.observation.category + ", position: " + poi.position + 
+						", value: " + node.totalValue,
 						"TPOLITSMovePlanner.initializePOINodes", 3);
 			}
 
@@ -257,7 +258,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			newObservations.add(poi.observation);
 		}
 
-		HashMap<Integer, Double> spriteEvaluations = fbtpStateEvaluator.evaluateSprites(this.rootStateObs,
+		HashMap<Integer, Double> spriteEvaluations = fbtpStateEvaluator.evaluateSprites(rootStateObsMulti,
 				newObservations);
 
 		// Add new POIs to nodesNearPOIs with their initial evaluation
@@ -517,7 +518,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		{
 			double nodeValue = node.getValue();
 
-			nodeValue = Utils.normalise(nodeValue, this.bounds[0], this.bounds[1]);
+			// nodeValue = Utils.normalise(nodeValue, this.bounds[0], this.bounds[1]);
 
 			double uctValue = nodeValue
 					+ this.uctConstant * Math.sqrt(Math.log(numExplorations + 1) / (node.numVisits + this.epsilon));

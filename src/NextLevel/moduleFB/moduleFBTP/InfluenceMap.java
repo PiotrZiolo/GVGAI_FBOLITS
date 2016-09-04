@@ -1,5 +1,6 @@
 package NextLevel.moduleFB.moduleFBTP;
 
+import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.moduleFB.SpriteTypeFeatures;
 import NextLevel.utils.VectorInt2d;
 import core.game.StateObservationMulti;
@@ -16,11 +17,14 @@ public class InfluenceMap
 	private Map<Integer, InfluencePoint> objectMap;
 	private StateObservationMulti state;
 	private FBTPGameKnowledge gameKnowledge;
+	//private TPGameMechanicsController gameMechanicsController;
 
-	public InfluenceMap(StateObservationMulti initialState, FBTPGameKnowledge initialKnowledge)
+	public InfluenceMap(StateObservationMulti initialState, FBTPGameKnowledge initialKnowledge/*,
+			TPGameMechanicsController gameMechanicsController*/)
 	{
-		state = initialState;
-		gameKnowledge = initialKnowledge;
+		this.state = initialState;
+		this.gameKnowledge = initialKnowledge;
+		//this.gameMechanicsController = gameMechanicsController;
 
 		ArrayList<Observation> grid[][] = state.getObservationGrid();
 
@@ -193,11 +197,11 @@ public class InfluenceMap
 		switch (functionType)
 		{
 			case 1:
-				return 1. / distance;
+				return 1. / ((double)distance);
 			case 2:
-				return Math.pow(2, 1 - distance);
+				return Math.pow(2, 1. - ((double)distance));
 			case 3:
-				return state.getWorldDimension().getWidth() + state.getWorldDimension().getHeight() - distance;
+				return state.getWorldDimension().getWidth() + state.getWorldDimension().getHeight() - ((double)distance);
 		}
 		return 1;
 	}

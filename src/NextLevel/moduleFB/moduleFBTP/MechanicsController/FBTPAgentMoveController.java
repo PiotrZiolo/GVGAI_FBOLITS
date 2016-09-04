@@ -52,7 +52,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 	}
 
 	// not tested in the new class structure
-	public StateObservationMulti approachSprite(StateObservationMulti stateObs, Observation observation) // I think it's useless right now
+	/*public StateObservationMulti approachSprite(StateObservationMulti stateObs, Observation observation) // I think it's useless right now
 	{
 		FBTPGameKnowledge gameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		TPGameMechanicsController gameMechanicsController = (TPGameMechanicsController) this.gameMechanicsController;
@@ -353,7 +353,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 			}
 		}
 		return null;
-	}
+	}*/
 
 	/**
 	 * Checks if positions position1 and position2 are within numMoves moves of the avatar of the player with playerID id.
@@ -421,13 +421,14 @@ public class FBTPAgentMoveController extends AgentMoveController
 	 */
 	public ACTIONS getGreedyAction(StateObservationMulti stateObs, int playerID)
 	{
+		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
-		Types.ACTIONS oppAction = getNonDyingAction(stateObs, 1 - playerID, 1);
+		Types.ACTIONS oppAction = Types.ACTIONS.ACTION_NIL;
 		ACTIONS[] chosenActions = new Types.ACTIONS[2];
 		StateObservationMulti nextState;
 		double bestScore = -10000000.0;
 		Types.ACTIONS bestAction = Types.ACTIONS.ACTION_NIL;
-		TPWinScoreStateEvaluator scoreEvaluator = new TPWinScoreStateEvaluator(); // WTF is that?
+		TPWinScoreStateEvaluator scoreEvaluator = new TPWinScoreStateEvaluator(fbtpGameKnowledge);
 		for (Types.ACTIONS action : availableActions)
 		{
 			nextState = stateObs.copy();
@@ -474,8 +475,11 @@ public class FBTPAgentMoveController extends AgentMoveController
 			allActions.addAll(pathFinderOutput.second());
 
 			obs = this.gameMechanicsController.localizeSprite(currentState, obs);
-			if (currentState.getAvatarPosition(playerID).dist(obs.position) <= 1.2 * currentState.getBlockSize())
-				return new Pair<StateObservationMulti, ArrayList<ACTIONS>>(currentState, allActions);
+			if (obs!=null)
+				if (currentState.getAvatarPosition(playerID).dist(obs.position) <= 1.2 * currentState.getBlockSize())
+					return new Pair<StateObservationMulti, ArrayList<ACTIONS>>(currentState, allActions);
+			else
+				return null;
 		}
 		return null;
 	}
@@ -524,15 +528,22 @@ public class FBTPAgentMoveController extends AgentMoveController
 		{
 			Pair<StateObservation, Types.ACTIONS> pathFinderOutput = ((FBTPPathFinder) pathFinder)
 					.findPathForTesting(obs.position, currentState, elapsedTimer, timeLimit);
-
+			/*System.out.println("pathFinderOutput");
+			System.out.println(pathFinderOutput);
+			System.out.println(obs.position);
+			System.out.println(currentState.getAvatarPosition(playerID));*/
+			
 			if (pathFinderOutput == null)
 				return null;
 
 			currentState = (StateObservationMulti) pathFinderOutput.first();
 
 			obs = this.gameMechanicsController.localizeSprite(currentState, obs);
-			if (currentState.getAvatarPosition(playerID).dist(obs.position) <= 1.2 * currentState.getBlockSize()) // not sure if its enough
-				return new Pair<StateObservationMulti, ACTIONS>(currentState, pathFinderOutput.second());
+			if (obs!=null)
+				if (currentState.getAvatarPosition(playerID).dist(obs.position) <= 1.2 * currentState.getBlockSize()) // not sure if its enough
+					return new Pair<StateObservationMulti, ACTIONS>(currentState, pathFinderOutput.second());
+			else
+				return null;
 		}
 		return null;
 	}

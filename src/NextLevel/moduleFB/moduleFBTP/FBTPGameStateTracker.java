@@ -75,31 +75,25 @@ public class FBTPGameStateTracker extends GameStateTracker
 			observationIdToPoiIndex.put(this.pois.get(index).observation.obsID, index);
 
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
-		ArrayList<Observation>[][] observationTable = stateObsMulti.getObservationGrid();
+		ArrayList<Observation> observationList = ((TPGameMechanicsController)this.gameMechanicsController).getListOfSprites(stateObsMulti);
 		this.newPOIs.clear();
-		for (ArrayList<Observation>[] observationArray : observationTable)
+		for (Observation obs : observationList)
 		{
-			for (ArrayList<Observation> observationList : observationArray)
+			if (!observationIdToPoiIndex.containsKey(obs.itype))
 			{
-				for (Observation obs : observationList)
-				{
-					if (!observationIdToPoiIndex.containsKey(obs.itype))
-					{
-						LogHandler.writeLog("Adding new POI| id: " + obs.obsID + ", type: " + obs.itype 
-								+ ", category: " + obs.category + ", position: [" + obs.position.x + ", " 
-								+ obs.position.y + "]", "FBTPGameStateTracker.searchForNewPOIs", 3);
-						
-						PointOfInterest poi = new PointOfInterest(POITYPE.SPRITE, obs, 0);
-						
-						SpriteTypeFeatures features = this.gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
-						if (features != null)
-							poi.track = features.moving;
-						else
-							poi.track = true;
-						this.pois.add(poi);
-						this.newPOIs.add(poi);
-					}
-				}
+				LogHandler.writeLog("Adding new POI| id: " + obs.obsID + ", type: " + obs.itype 
+						+ ", category: " + obs.category + ", position: [" + obs.position.x + ", " 
+						+ obs.position.y + "]", "FBTPGameStateTracker.searchForNewPOIs", 3);
+				
+				PointOfInterest poi = new PointOfInterest(POITYPE.SPRITE, obs, 0);
+				
+				SpriteTypeFeatures features = this.gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
+				if (features != null)
+					poi.track = features.moving;
+				else
+					poi.track = true;
+				this.pois.add(poi);
+				this.newPOIs.add(poi);
 			}
 		}
 	}

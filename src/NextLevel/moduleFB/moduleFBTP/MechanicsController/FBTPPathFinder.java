@@ -117,8 +117,6 @@ public class FBTPPathFinder extends PathFinder
 				break;
 			}
 
-			queue.poll();
-
 			// System.out.println("");
 			for (Types.ACTIONS act : actions)
 			{
@@ -155,8 +153,11 @@ public class FBTPPathFinder extends PathFinder
 		}
 
 		this.timeLimit = 0;
-		return new Pair<StateObservation, ArrayList<ACTIONS>>((StateObservation) finalObs,
-				translateString(bestPath.path));
+		if (finalObs!=null && translateString(bestPath.path)!=null)
+			return new Pair<StateObservation, ArrayList<ACTIONS>>((StateObservation) finalObs,
+					translateString(bestPath.path));
+		
+		return null;
 	}
 
 	private double getDistanceScore(StateObservationMulti stateObs)
@@ -328,7 +329,7 @@ public class FBTPPathFinder extends PathFinder
 			ElapsedCpuTimer elapsedTimer, long timeLimit)
 	{
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
-		this.timeLimit = (long) timeLimit;
+		this.timeLimit = timeLimit;
 		this.elapsedTimer = elapsedTimer;
 		this.playerID = gameKnowledge.getPlayerID();
 		this.firstObs = stateObsMulti.copy();
@@ -348,13 +349,19 @@ public class FBTPPathFinder extends PathFinder
 
 		PathFinderNode goal = new PathFinderNode(0, "", firstObs, goalPosition);
 		PathFinderNode bestPath = new PathFinderNode(10 * currentScore, "", stateObsMulti, playerID);
-
+		
 		while (!queue.isEmpty())
 		{
 			if (this.timeLimit > 0)
 				if (startTime - elapsedTimer.remainingTimeMillis() >= this.timeLimit)
+				{
+					//System.out.println("Out of Time");
 					break;
+				}
 			PathFinderNode previous = queue.peek();
+			/*System.out.println("vortex");
+			System.out.println(previous.positionV);
+			System.out.println(goalPosition);*/
 			queue.poll();
 
 			/*
@@ -366,31 +373,31 @@ public class FBTPPathFinder extends PathFinder
 			 * }
 			 */
 
-			queue.poll(); // why is that here!?
-
 			// System.out.println("");
 			for (Types.ACTIONS act : actions)
 			{
 				Pair<StateObservationMulti, String> adv = advance(previous.stateObs, act);
 				StateObservationMulti currentObs = adv.first();
-				if (!checkAdvance(previous.positionV, currentObs.getAvatarPosition(playerID)))
+				if (!checkAdvance(previous.positionV, currentObs.getAvatarPosition(playerID)) &&
+						previous.stateObs.getAvatarPosition(playerID).dist(goal.positionV) >
+						previous.stateObs.getAvatarSpeed(playerID) * previous.stateObs.getBlockSize())
 					continue;
 				double cost = getScore(previous.stateObs, currentObs, false);
 				cost += adv.second().length() * currentObs.getBlockSize() * currentObs.getAvatarSpeed(playerID);
 				PathFinderNode next = new PathFinderNode(cost, previous.path + adv.second(), currentObs, playerID);
-
-				if (next.equals(goal))
+				
+				if (next.equals(goal) || ( (currentObs.isGameOver() ||
+						checkAdvance(previous.positionV, currentObs.getAvatarPosition(playerID))) && 
+						previous.stateObs.getAvatarPosition(playerID).dist(goal.positionV) <=
+						previous.stateObs.getAvatarSpeed(playerID) * previous.stateObs.getBlockSize()))
 				{
-					// TODO PZi: What is this fragment for? Isn't it obvious that if the avatar reached the goal with the last act, 
-					// then orientation is consistent with move?
+					//System.out.println("goal");
 					
 					Direction orientation = vectorToDirection(previous.stateObs.getAvatarOrientation(playerID));
 					StateObservationMulti stateObsCopy = previous.stateObs.copy();
 
 					if (!gameMechanicsController.isOrientationConsistentWithMove(act, orientation))
 					{
-						// TODO WARNING: advanceSimpliefied returns null if the avatar dies, 
-						// hence in such a case null will returned
 						stateObsCopy = advanceSimplified(stateObsCopy, act);
 					}
 					return new Pair<StateObservation, Types.ACTIONS>(stateObsCopy, act);

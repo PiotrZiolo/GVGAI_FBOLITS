@@ -37,7 +37,7 @@ public class Agent extends AbstractMultiPlayer
 
 	private int timeForLearningDuringInitialization = 0;
 	private int timeForLearningDuringMove = 0;
-	private int timeForChoosingMove = 30;
+	private int timeForChoosingMove = 400;
 
 	// Objects structure
 
@@ -94,7 +94,7 @@ public class Agent extends AbstractMultiPlayer
 		gameKnowledgeExplorer.initialLearn(stateObs, playerID, elapsedTimer, timeForLearningDuringInitialization);
 		
 		stateHandler = new FBTPStateHandler();
-		stateEvaluator = new FBTPStateEvaluator(gameKnowledge);
+		stateEvaluator = new FBTPStateEvaluator(gameKnowledge, gameMechanicsController);
 		stateEvaluatorTeacher = new FBTPStateEvaluatorTeacher(stateEvaluator, gameKnowledge);
 		stateEvaluatorTeacher.initializeEvaluator(stateObs);
 		

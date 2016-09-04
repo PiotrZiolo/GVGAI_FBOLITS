@@ -21,10 +21,9 @@ public class TPWinScoreStateEvaluator extends StateEvaluator
 		
 	}
 	
-	public TPWinScoreStateEvaluator(TPGameKnowledge gameKnowledge, StateHandler stateHandler)
+	public TPWinScoreStateEvaluator(TPGameKnowledge gameKnowledge)
 	{
 		this.gameKnowledge = gameKnowledge;
-		this.stateHandler = stateHandler;
 	}
 	
 	public double evaluateState(StateObservation stateObs)

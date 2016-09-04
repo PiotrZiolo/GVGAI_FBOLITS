@@ -1,11 +1,17 @@
 package NextLevel.mechanicsController;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.TreeSet;
 
 import NextLevel.moduleFB.SpriteTypeFeatures;
 import NextLevel.moduleTP.TPGameKnowledge;
 import NextLevel.moduleTP.TPSituationOfInterest;
+import NextLevel.utils.AuxUtils;
+import baseStructure.utils.LogHandler;
 import core.game.Event;
+import core.game.Observation;
+import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import ontology.Types;
 import tools.Vector2d;
@@ -14,6 +20,7 @@ public class TPGameMechanicsController extends GameMechanicsController
 {
 	// Real types of fields
 	// protected TPGameKnowledge gameKnowledge;
+	boolean treatFromAvatarAsSprite = false;
 
 	public TPGameMechanicsController(TPGameKnowledge gameKnowledge)
 	{
@@ -121,5 +128,216 @@ public class TPGameMechanicsController extends GameMechanicsController
 		return (!sprite.collectable && !sprite.allowingVictory && !sprite.dangerousOtherwise && !sprite.givingVictory
 				&& !sprite.givingDefeat && sprite.changingPoints == 0 && sprite.changingValuesOfOtherObjects == 0
 				&& sprite.dangerousToAvatar == 0);
+	}
+	
+	public ArrayList<Observation> getListOfSprites (StateObservationMulti state)
+	{
+		ArrayList<Observation> listOfSprites = new ArrayList<Observation>();
+		ArrayList<Observation> part[];
+		
+		if (treatFromAvatarAsSprite)
+		{
+			part = state.getFromAvatarSpritesPositions();
+			if (part!=null)
+				for (ArrayList<Observation> array : part)
+					listOfSprites.addAll(array);
+		}
+		
+		part = state.getImmovablePositions();
+		if (part!=null)
+			for (ArrayList<Observation> array : part)
+				listOfSprites.addAll(array);
+		
+		part = state.getMovablePositions();
+		if (part!=null)
+			for (ArrayList<Observation> array : part)
+				listOfSprites.addAll(array);
+		
+		part = state.getNPCPositions();
+		if (part!=null)
+			for (ArrayList<Observation> array : part)
+				listOfSprites.addAll(array);
+		
+		part = state.getPortalsPositions();
+		if (part!=null)
+			for (ArrayList<Observation> array : part)
+				listOfSprites.addAll(array);
+		
+		part = state.getResourcesPositions();
+		if (part!=null)
+			for (ArrayList<Observation> array : part)
+				listOfSprites.addAll(array);
+		
+		Observation opponent = getPlayerObservation(((TPGameKnowledge)gameKnowledge).getOppID(), state);
+		if (opponent!=null)
+			listOfSprites.add(opponent);
+		
+		return listOfSprites;
+	}
+	
+	public Observation getPlayerObservation (int playerID, StateObservationMulti stateObs)
+	{
+		ArrayList<Observation> observations = stateObs.getObservationGrid()
+				[(int) (stateObs.getAvatarPosition(playerID).x/stateObs.getBlockSize())]
+				[(int) (stateObs.getAvatarPosition(playerID).y/stateObs.getBlockSize())];
+		
+		Observation opp = null;
+		
+		for (Observation obs : observations)
+		{
+			if ( obs.category == 0 )
+			{
+				if ( opp != null )
+					return null;
+				opp = obs;
+			}
+		}
+		
+		return opp;
+	}
+	
+	/**
+	 * Localizes a sprite given by observation on the map in state stateObs.
+	 * Returns null if the sprite is not on the map.
+	 * 
+	 * @param stateObs
+	 *            State in which the sprite is to be found.
+	 * @param observation
+	 *            Earlier observation of the sprite.
+	 * @param searchBreadth
+	 *            How far from the observation position to search.
+	 * @param maxDistance
+	 *            How far from the previous position should the sprite be searched for.
+	 */
+	public Observation localizeSprite(StateObservationMulti stateObs, int obsID, Vector2d position, int maxDistance,
+			boolean searchFullBoard)
+	{
+		ArrayList<Observation> suspects;
+
+		int[] start = { (int) (position.x / stateObs.getBlockSize()),
+				(int) (position.y / stateObs.getBlockSize()) };
+		LogHandler.writeLog("start x: " + start[0], "GameMechanicsController.localizeSprite", 0);
+		LogHandler.writeLog("start y: " + start[1], "GameMechanicsController.localizeSprite", 0);
+
+		int worldXDimension = stateObs.getObservationGrid().length;
+		int worldYDimension = stateObs.getObservationGrid()[0].length;
+		LogHandler.writeLog("worldXDimension: " + worldXDimension, "GameMechanicsController.localizeSprite", 0);
+		LogHandler.writeLog("worldYDimension: " + worldYDimension, "GameMechanicsController.localizeSprite", 0);
+
+		int distance = 0;
+
+		while (distance <= maxDistance)
+		{
+			for (int i = -distance; i <= distance; i = i + 1)
+			{
+				if (i == -distance || i == distance)
+				{
+					for (int j = -distance; j <= distance; j = j + 1)
+					{
+						int x = AuxUtils.mod(start[0] + i, worldXDimension);
+						int y = AuxUtils.mod(start[1] + j, worldYDimension);
+						LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
+								"GameMechanicsController.localizeSprite", 0);
+						suspects = stateObs.getObservationGrid()[x][y];
+						for (Observation suspect : suspects)
+							if (suspect.obsID == obsID)
+								return suspect;
+					}
+				}
+				else
+				{
+					for (int j = -distance; j <= distance; j = j + 2 * distance)
+					{
+						int x = AuxUtils.mod(start[0] + i, worldXDimension);
+						int y = AuxUtils.mod(start[1] + j, worldYDimension);
+						LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
+								"GameMechanicsController.localizeSprite", 0);
+						suspects = stateObs.getObservationGrid()[x][y];
+						for (Observation suspect : suspects)
+							if (suspect.obsID == obsID)
+								return suspect;
+					}
+				}
+			}
+			distance++;
+		}
+		if (searchFullBoard)
+		{
+			getListOfSprites(stateObs);
+		}
+		return null;
+	}
+
+	public Observation localizeSprite(StateObservationMulti stateObs, Observation observation)
+	{
+		return localizeSprite(stateObs, observation.obsID, observation.position);
+	}
+
+	public Observation localizeSprite(StateObservationMulti stateObs, int obsID, Vector2d position)
+	{
+		int worldXDimension = stateObs.getObservationGrid().length;
+		int worldYDimension = stateObs.getObservationGrid()[0].length;
+
+		int rangeX = Math.min( 2, worldXDimension/2 + 1 );
+		int rangeY = Math.min( 2, worldYDimension/2 + 1 );
+
+		return localizeSprite(stateObs, obsID, position, Math.max(rangeX, rangeY), false);
+
+		//return localizeSprite(stateObs, obsID, position,
+		//		Math.max(worldXDimension / 2 + 1, worldYDimension / 2 + 1), false);
+	}
+
+	public ArrayList<Observation> getListOfSpritesRepresentants(StateObservationMulti state, Vector2d refPosition)
+	{
+		ArrayList<Observation> listOfSprites = new ArrayList<Observation>();
+		ArrayList<Observation> part[];
+
+		if (treatFromAvatarAsSprite)
+		{
+			part = state.getFromAvatarSpritesPositions(refPosition);
+			listOfSprites.addAll(getRepresentatives(part, refPosition));
+		}
+		
+		part = state.getImmovablePositions(refPosition);
+		listOfSprites.addAll(getRepresentatives(part, refPosition));
+		
+		part = state.getMovablePositions(refPosition);
+		listOfSprites.addAll(getRepresentatives(part, refPosition));
+		
+		part = state.getNPCPositions(refPosition);
+		listOfSprites.addAll(getRepresentatives(part, refPosition));
+		
+		part = state.getPortalsPositions(refPosition);
+		listOfSprites.addAll(getRepresentatives(part, refPosition));
+		
+		part = state.getResourcesPositions(refPosition);
+		listOfSprites.addAll(getRepresentatives(part, refPosition));
+		
+		Observation opponent = getPlayerObservation(((TPGameKnowledge)gameKnowledge).getOppID(), state);
+		if (opponent!=null)
+			if (opponent.position != refPosition)
+				listOfSprites.add(opponent);
+		
+		return listOfSprites;
+	}
+
+	private ArrayList<Observation> getRepresentatives(ArrayList<Observation>[] part, Vector2d refPosition)
+	{
+		ArrayList<Observation> listOfSprites = new ArrayList<Observation>();
+		if (part!=null)
+		{
+			for (ArrayList<Observation> array : part)
+			{
+				for ( Observation obs : array )
+				{
+					if (obs.position!=refPosition)
+					{
+						listOfSprites.add(obs);
+						break;
+					}
+				}
+			}
+		}
+		return listOfSprites;
 	}
 }

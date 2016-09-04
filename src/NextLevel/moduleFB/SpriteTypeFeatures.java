@@ -129,12 +129,18 @@ public class SpriteTypeFeatures
 		this.allowingVictory = allowingVictory;
 	}
 
-	public void print()
+	public String print()
 	{
-		LogHandler.writeLog("[" + this.category + ", " + this.type + ", " + this.dangerousToAvatar + ", "
+		return "[" + this.category + ", " + this.type + ", " + this.dangerousToAvatar + ", "
+				+ this.dangerousOtherwise + ", " + this.destroyable + ", " + this.collectable + ", "
+				+ this.givingVictory + ", " + this.givingDefeat + ", " + this.changingPoints + ", " + this.passable
+				+ ", " + this.moving + ", " + this.speed + ", " + this.changingValuesOfOtherObjects + ", "
+				+ this.allowingVictory + "]";
+		/*LogHandler.writeLog("[" + this.category + ", " + this.type + ", " + this.dangerousToAvatar + ", "
 				+ this.dangerousOtherwise + ", " + this.destroyable + ", " + this.collectable + ", "
 				+ this.givingVictory + ", " + this.givingDefeat + ", " + this.changingPoints + ", " + this.passable
 				+ ", " + this.moving + ", " + this.speed + ", " + this.changingValuesOfOtherObjects + ", "
 				+ this.allowingVictory + "]", "SpriteTypeFeatures.print", 0);
+		*/
 	}
 }
