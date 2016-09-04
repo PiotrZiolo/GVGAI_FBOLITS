@@ -41,8 +41,8 @@ public class Agent extends AbstractMultiPlayer
 
 	// Objects structure
 
-	private TPOLITSMovePlanner movePlanner;
-	private BasicFBTPGameKnowledgeExplorer gameKnowledgeExplorer;
+	private TPOLMCTSMovePlanner movePlanner;
+	private FBTPGameKnowledgeExplorer gameKnowledgeExplorer;
 	private FBTPGameKnowledge gameKnowledge;
 	private FBTPAgentMoveController agentMoveController;
 	private TPGameMechanicsController gameMechanicsController;
@@ -82,7 +82,7 @@ public class Agent extends AbstractMultiPlayer
 		agentMoveController = new FBTPAgentMoveController(gameKnowledge, gameMechanicsController);
 		//agentMoveController.setParameters(false, approachingSpriteMovesLimit);
 		gameStateTracker = new FBTPGameStateTracker(gameMechanicsController, gameKnowledge);
-		gameKnowledgeExplorer = new BasicFBTPGameKnowledgeExplorer(gameKnowledge, agentMoveController,
+		gameKnowledgeExplorer = new FBTPGameKnowledgeExplorer(gameKnowledge, agentMoveController,
 				gameMechanicsController, gameStateTracker);
 
 		// Learning
@@ -98,8 +98,8 @@ public class Agent extends AbstractMultiPlayer
 		stateEvaluatorTeacher = new FBTPStateEvaluatorTeacher(stateEvaluator, gameKnowledge);
 		stateEvaluatorTeacher.initializeEvaluator(stateObs);
 		
-		movePlanner = new TPOLITSMovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer,
-				agentMoveController , gameMechanicsController, gameStateTracker);
+		movePlanner = new TPOLMCTSMovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer,
+				agentMoveController);
 		movePlanner.initialize(stateObs);
 	}
 

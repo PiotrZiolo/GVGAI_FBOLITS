@@ -69,7 +69,7 @@ public class TreeSearchMovePlanner extends MovePlanner
 		this.rootStateObs = rootState.getStateObservation();
 		this.mainElapsedTimer = elapsedTimer;
 
-		LogHandler.writeLog("Hello", "TPOLITSMovePlanner.chooseAction", 1);
+		LogHandler.writeLog("Hello", "TPOLITSMovePlanner.chooseAction", 0);
 		initializeForTreeSearch();
 
 		searchTree();
