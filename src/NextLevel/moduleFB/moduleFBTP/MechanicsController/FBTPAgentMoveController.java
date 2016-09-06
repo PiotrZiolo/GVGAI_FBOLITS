@@ -369,7 +369,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 	public boolean isPositionWithinGivenMoveRange(StateObservationMulti stateObs, Vector2d position, int numMoves,
 			int playerID)
 	{
-		if (gameMechanicsController.getManhattanDistanceInBlockSizes(stateObs.getAvatarPosition(playerID),
+		if (gameMechanicsController.getManhattanDistanceInAvatarSteps(stateObs.getAvatarPosition(playerID),
 				position) > numMoves)
 		{
 			return false;
@@ -377,10 +377,15 @@ public class FBTPAgentMoveController extends AgentMoveController
 		else
 		{
 			FBTPPathFinder fbtpPathFinder = (FBTPPathFinder) this.pathFinder;
-			Pair<StateObservation, ArrayList<Types.ACTIONS>> approachInfo = fbtpPathFinder.findPath(position, stateObs,
-					elapsedTimer, 1);
+			Pair<StateObservation, ArrayList<Types.ACTIONS>> approachInfo = fbtpPathFinder.findPathToAreaNearPosition(position, stateObs,
+					elapsedTimer, 20);
+			
+			LogHandler.writeLog("Range path found: " + ((approachInfo != null) 
+					? "yes Size: " + approachInfo.second().size() + " " + approachInfo.second()
+					: "no"), 
+					"FBTPAgentMoveController.isPositionWithinGivenMoveRange", 3);
 
-			if (approachInfo != null && approachInfo.second().size() < numMoves)
+			if (approachInfo != null && approachInfo.second().size() <= numMoves + 1)
 				return true;
 		}
 
@@ -446,6 +451,20 @@ public class FBTPAgentMoveController extends AgentMoveController
 			}
 		}
 		return bestAction;
+		// use TPWinScoreStateEvaluator to evaluate states
+	}
+	
+	/**
+	 * Returns a random action.
+	 * 
+	 * @param playerID
+	 * @return Random action.
+	 */
+	public ACTIONS getRandomAction(StateObservationMulti stateObs, int playerID)
+	{
+		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
+		
+		return availableActions.get((new Random()).nextInt(availableActions.size()));
 		// use TPWinScoreStateEvaluator to evaluate states
 	}
 
