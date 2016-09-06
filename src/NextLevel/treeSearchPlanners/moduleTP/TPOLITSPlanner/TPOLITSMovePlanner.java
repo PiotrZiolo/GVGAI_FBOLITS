@@ -378,7 +378,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		{
 			if (this.mode == TREESEARCHMODE.APPROACH)
 			{
-				if (fbtpGameKnowledge.isGameDeterministic())
+				if (fbtpGameKnowledge.isDeterministicGame())
 					this.timeLimitForTreeSearch = 1;
 				else
 					this.timeLimitForTreeSearch = timeLimitForNonDeterministicPathSearch;
@@ -458,7 +458,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 					{
 						int maxDistance = 2;
 						int timeLimit = 1;
-						approachInfo = fbtpAgentMoveController.approachPosition(node.stateObs,
+						approachInfo = fbtpAgentMoveController.reachPosition(node.stateObs,
 								this.gameKnowledge.getPlayerID(), node.poi.position, maxDistance, timeLimit);
 					}
 
@@ -619,7 +619,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		{
 			int maxDistance = 2;
 			int timeLimit = poiExplorationRemainingLimit;
-			approachInfo = fbtpAgentMoveController.approachPosition(rootStateObsMulti, this.gameKnowledge.getPlayerID(),
+			approachInfo = fbtpAgentMoveController.reachPosition(rootStateObsMulti, this.gameKnowledge.getPlayerID(),
 					selected.poi.position, maxDistance, timeLimit);
 		}
 
@@ -806,7 +806,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 		if (this.numTurnsGoalPOINotChanged > 0 && this.goalNode.path != null)
 		{
-			if (!fbtpGameKnowledge.isGameDeterministic())
+			if (!fbtpGameKnowledge.isDeterministicGame())
 			{
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				actions[fbtpGameKnowledge.getPlayerID()] = this.goalNode.path.get(0);
@@ -832,7 +832,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 					{
 						int maxDistance = 2;
 						long timeLimit = this.timeLimitForTreeSearch - 1;
-						approachInfo = fbtpAgentMoveController.approachPosition(rootStateObsMulti,
+						approachInfo = fbtpAgentMoveController.reachPosition(rootStateObsMulti,
 								this.gameKnowledge.getPlayerID(), goalNode.poi.position, maxDistance, timeLimit);
 					}
 
@@ -861,7 +861,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			{
 				int maxDistance = 2;
 				long timeLimit = this.timeLimitForTreeSearch - 1;
-				approachInfo = fbtpAgentMoveController.approachPosition(rootStateObsMulti,
+				approachInfo = fbtpAgentMoveController.reachPosition(rootStateObsMulti,
 						this.gameKnowledge.getPlayerID(), goalNode.poi.position, maxDistance, timeLimit);
 			}
 

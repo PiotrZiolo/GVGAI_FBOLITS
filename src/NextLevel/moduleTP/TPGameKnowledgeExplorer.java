@@ -28,9 +28,8 @@ public class TPGameKnowledgeExplorer extends GameKnowledgeExplorer
 		this.agentMoveController = agentMoveController;
 		this.gameMechanicsController = gameMechanicsController;
 	}
-
-	public void initialLearn(StateObservation stateObs, int playerID, ElapsedCpuTimer elapsedTimer,
-			int timeForLearningDuringInitialization)
+	
+	public void learnBasics(StateObservation stateObs, int playerID)
 	{
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		this.stateObs = stateObsMulti;
@@ -44,18 +43,15 @@ public class TPGameKnowledgeExplorer extends GameKnowledgeExplorer
 		tpGameKnowledge.setOpponentActions(stateObsMulti.getAvailableActions(tpGameKnowledge.getOppID()));
 	}
 	
-	public void successiveLearn(StateObservation stateObs, int playerID, ElapsedCpuTimer elapsedTimer,
+	public void initialLearn(StateObservation stateObs, ElapsedCpuTimer elapsedTimer,
 			int timeForLearningDuringInitialization)
 	{
-		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
-		this.stateObs = stateObsMulti;
-		TPGameKnowledge tpGameKnowledge = (TPGameKnowledge) this.gameKnowledge;
-		tpGameKnowledge.setPlayerID(playerID);
-		tpGameKnowledge.setOppID(1 - playerID);
-		tpGameKnowledge.setNumOfPlayers(stateObsMulti.getNoPlayers());
-		tpGameKnowledge.setNumOfPlayerActions(stateObsMulti.getAvailableActions(playerID).size());
-		tpGameKnowledge.setNumOfOpponentActions(stateObsMulti.getAvailableActions(tpGameKnowledge.getOppID()).size());
-		tpGameKnowledge.setPlayerActions(stateObsMulti.getAvailableActions(playerID));
-		tpGameKnowledge.setOpponentActions(stateObsMulti.getAvailableActions(tpGameKnowledge.getOppID()));
+		this.stateObs = stateObs;
+	}
+	
+	public void successiveLearn(StateObservation stateObs, ElapsedCpuTimer elapsedTimer,
+			int timeForLearningDuringInitialization)
+	{
+		this.stateObs = stateObs;
 	}
 }

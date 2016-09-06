@@ -340,4 +340,24 @@ public class TPGameMechanicsController extends GameMechanicsController
 		}
 		return listOfSprites;
 	}
+	
+	public double getManhattanDistanceInAvatarSteps(StateObservationMulti stateObs, int playerID, Vector2d position1, Vector2d position2)
+	{
+		return getManhattanDistanceInBlockSizes(stateObs, position1, position2) / stateObs.getAvatarSpeed(playerID);
+	}
+
+	public ArrayList<Types.ACTIONS> getPlayerMoveActions(StateObservationMulti stateObs, int playerID)
+	{
+		ArrayList<Types.ACTIONS> playerActions = stateObs.getAvailableActions(playerID);
+
+		ArrayList<Types.ACTIONS> playerMoveActions = new ArrayList<Types.ACTIONS>();
+		Types.ACTIONS[] moveActions = { Types.ACTIONS.ACTION_RIGHT, Types.ACTIONS.ACTION_LEFT, Types.ACTIONS.ACTION_UP,
+				Types.ACTIONS.ACTION_DOWN };
+		for (Types.ACTIONS i : playerActions)
+			for (Types.ACTIONS j : moveActions)
+				if (j == i)
+					playerMoveActions.add(j);
+		
+		return playerMoveActions;
+	}
 }

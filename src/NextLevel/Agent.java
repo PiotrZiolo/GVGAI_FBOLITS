@@ -1,5 +1,7 @@
 package NextLevel;
 
+import java.util.ArrayList;
+
 import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.moduleFB.moduleFBTP.BasicFBTPGameKnowledgeExplorer;
@@ -12,6 +14,7 @@ import NextLevel.moduleFB.moduleFBTP.FBTPStateEvaluatorTeacher;
 import NextLevel.moduleFB.moduleFBTP.FBTPStateHandler;
 import NextLevel.moduleFB.moduleFBTP.InfluenceMap;
 import NextLevel.moduleFB.moduleFBTP.MechanicsController.FBTPAgentMoveController;
+import NextLevel.moduleFB.moduleFBTP.MechanicsController.FBTPPathFinder;
 import NextLevel.moduleTP.BasicTPState;
 import NextLevel.moduleTP.SimpleTPStateEvaluator;
 import NextLevel.moduleTP.TPGameKnowledge;
@@ -20,12 +23,15 @@ import NextLevel.moduleTP.TPStateHandler;
 import NextLevel.treeSearchPlanners.moduleTP.TPOLITSPlanner.TPOLITSMovePlanner;
 import NextLevel.treeSearchPlanners.moduleTP.TPOLMCTSPlanner.TPOLMCTSMovePlanner;
 import NextLevel.utils.LogHandler;
+import NextLevel.utils.Pair;
 import NextLevel.utils.PerformanceMonitor;
 import NextLevel.utils.StatePrinter;
+import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
 import ontology.Types;
 import tools.ElapsedCpuTimer;
+import tools.Vector2d;
 
 public class Agent extends AbstractMultiPlayer
 {
@@ -35,14 +41,14 @@ public class Agent extends AbstractMultiPlayer
 	private int oppID;
 	private int numOfPlayers;
 
-	private int timeForLearningDuringInitialization = 0;
+	private int timeForLearningDuringInitialization = 1500;
 	private int timeForLearningDuringMove = 0;
-	private int timeForChoosingMove = 400;
+	private int timeForChoosingMove = 300;
 
 	// Objects structure
 
-	private TPOLMCTSMovePlanner movePlanner;
-	private FBTPGameKnowledgeExplorer gameKnowledgeExplorer;
+	private TPOLITSMovePlanner movePlanner;
+	private BasicFBTPGameKnowledgeExplorer gameKnowledgeExplorer;
 	private FBTPGameKnowledge gameKnowledge;
 	private FBTPAgentMoveController agentMoveController;
 	private TPGameMechanicsController gameMechanicsController;
@@ -50,6 +56,10 @@ public class Agent extends AbstractMultiPlayer
 	private FBTPStateEvaluatorTeacher stateEvaluatorTeacher;
 	private FBTPStateEvaluator stateEvaluator;
 	private FBTPGameStateTracker gameStateTracker;
+	
+	//private FBTPPathFinder fbtpPathFinder;
+	//private ArrayList<Types.ACTIONS> path;
+	//private int moveNumber = 0;
 
 	// Algorithm parameters
 
@@ -73,6 +83,14 @@ public class Agent extends AbstractMultiPlayer
 		LogHandler.clearLog();
 		PerformanceMonitor.clearLog();
 		
+		LogHandler.writeLog("Speed: " + stateObs.getAvatarSpeed(playerID), "Agent.creator", 1);
+		LogHandler.writeLog("Block size: " + stateObs.getBlockSize(), "Agent.creator", 1);
+		LogHandler.writeLog("Health points: " + stateObs.getAvatarHealthPoints(playerID), "Agent.creator", 0);
+		LogHandler.writeLog("World dimensions: " + stateObs.getWorldDimension(), "Agent.creator", 1);
+		LogHandler.writeLog("World dimensions: " + stateObs.getObservationGrid().length * stateObs.getBlockSize() 
+				+ ", " + stateObs.getObservationGrid()[0].length * stateObs.getBlockSize(), "Agent.creator", 0);
+		LogHandler.writeLog("Avatar position: " + stateObs.getAvatarPosition(playerID), "Agent.creator", 3);
+		
 		this.playerID = playerID;
 		this.oppID = 1 - playerID;
 		this.numOfPlayers = stateObs.getNoPlayers();
@@ -82,7 +100,7 @@ public class Agent extends AbstractMultiPlayer
 		agentMoveController = new FBTPAgentMoveController(gameKnowledge, gameMechanicsController);
 		//agentMoveController.setParameters(false, approachingSpriteMovesLimit);
 		gameStateTracker = new FBTPGameStateTracker(gameMechanicsController, gameKnowledge);
-		gameKnowledgeExplorer = new FBTPGameKnowledgeExplorer(gameKnowledge, agentMoveController,
+		gameKnowledgeExplorer = new BasicFBTPGameKnowledgeExplorer(gameKnowledge, agentMoveController,
 				gameMechanicsController, gameStateTracker);
 
 		// Learning
@@ -90,17 +108,29 @@ public class Agent extends AbstractMultiPlayer
 		// make one advance, because many objects appear after one turn
 		stateObs.advance(new Types.ACTIONS[]{Types.ACTIONS.ACTION_NIL, Types.ACTIONS.ACTION_NIL});
 		
+		gameKnowledgeExplorer.learnBasics(stateObs, playerID);
 		gameStateTracker.runTracker(stateObs);
-		gameKnowledgeExplorer.initialLearn(stateObs, playerID, elapsedTimer, timeForLearningDuringInitialization);
+		gameKnowledgeExplorer.initialLearn(stateObs, elapsedTimer, timeForLearningDuringInitialization);
 		
 		stateHandler = new FBTPStateHandler();
 		stateEvaluator = new FBTPStateEvaluator(gameKnowledge, gameMechanicsController);
 		stateEvaluatorTeacher = new FBTPStateEvaluatorTeacher(stateEvaluator, gameKnowledge);
 		stateEvaluatorTeacher.initializeEvaluator(stateObs);
 		
-		movePlanner = new TPOLMCTSMovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer,
-				agentMoveController);
+		movePlanner = new TPOLITSMovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer,
+				agentMoveController, gameMechanicsController, gameStateTracker);
 		movePlanner.initialize(stateObs);
+		
+		/*
+		fbtpPathFinder = new FBTPPathFinder(gameKnowledge, agentMoveController, gameMechanicsController);
+		Vector2d goal = new Vector2d(690, 150);
+		Pair<StateObservation, ArrayList<Types.ACTIONS>> pathInfo 
+			= fbtpPathFinder.findPathToAreaNearPosition(goal, 
+				stateObs, new ElapsedCpuTimer(), 2000);
+		if (pathInfo != null)
+			path = pathInfo.second();
+		LogHandler.writeLog("Goal position: " + goal.x + ", " + goal.y + ", " + ((pathInfo != null) ? "Path found" : "Path not found"), "Agent.creator", 3);
+		 */
 	}
 
 	/**
@@ -115,16 +145,44 @@ public class Agent extends AbstractMultiPlayer
 	 */
 	public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer)
 	{	
-		LogHandler.writeLog("Turn: " + stateObs.getGameTick(), "FBTPGameStateTracker.searchForNewPOIs", 1);
-		
+		LogHandler.writeLog("Turn: " + stateObs.getGameTick(), "Agent.act", 3);
+
 		gameStateTracker.runTracker(stateObs);
-		gameKnowledgeExplorer.successiveLearn(stateObs, playerID, elapsedTimer, timeForLearningDuringMove);
+		gameKnowledgeExplorer.successiveLearn(stateObs, elapsedTimer, timeForLearningDuringMove);
 		stateEvaluatorTeacher.updateEvaluator();
 
 		BasicTPState state = stateHandler.prepareState(stateObs);
 
 		Types.ACTIONS action = movePlanner.chooseAction(state, elapsedTimer, timeForChoosingMove);
-
+		
+		/*
+		for (int x = 0; x < (int) (stateObs.getWorldDimension().getWidth() / stateObs.getBlockSize()); x++)
+		{
+			for (int y = 0; y < (int) (stateObs.getWorldDimension().getHeight() / stateObs.getBlockSize()); y++)
+			{
+				int xpx = x * stateObs.getBlockSize();
+				int ypx = y * stateObs.getBlockSize();
+				Pair<StateObservation, ArrayList<Types.ACTIONS>> pathInfo 
+					= fbtpPathFinder.findPathToAreaNearPosition(new Vector2d(xpx, ypx), 
+							stateObs, elapsedTimer, 20);
+				LogHandler.writeLog("Goal position: " + xpx + ", " + ypx + ", " + ((pathInfo != null) ? "Path found" : "Path not found"), "Agent.creator", 3);
+			}
+		}
+		*/
+		/*
+		Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
+		if (path != null && moveNumber < path.size())
+		{
+			action = path.get(moveNumber);
+			LogHandler.writeLog("Avatar position: " + stateObs.getAvatarPosition(playerID) + ", action: " + action, "Agent.act", 3);
+		}
+		else
+		{
+			action = Types.ACTIONS.ACTION_NIL;
+		}
+		moveNumber++;
+		*/
+		
 		return action;
 	}
 	

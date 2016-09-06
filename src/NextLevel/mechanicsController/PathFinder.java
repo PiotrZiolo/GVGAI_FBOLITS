@@ -13,6 +13,7 @@ public class PathFinder
 {
 	protected GameKnowledge gameKnowledge;
 	protected GameMechanicsController gameMechanicsController;
+	protected AgentMoveController agentMoveController;
 
 	public PathFinder()
 	{

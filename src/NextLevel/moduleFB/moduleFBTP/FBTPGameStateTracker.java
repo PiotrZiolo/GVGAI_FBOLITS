@@ -70,16 +70,16 @@ public class FBTPGameStateTracker extends GameStateTracker
 
 	protected void searchForNewPOIs(StateObservation stateObs)
 	{
-		Map<Integer, Integer> observationIdToPoiIndex = new HashMap<Integer, Integer>();
+		ArrayList<Integer> POIIDs = new ArrayList<Integer>();
 		for (int index = 0; index < this.pois.size(); index++)
-			observationIdToPoiIndex.put(this.pois.get(index).observation.obsID, index);
+			POIIDs.add(this.pois.get(index).observation.obsID);
 
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		ArrayList<Observation> observationList = ((TPGameMechanicsController)this.gameMechanicsController).getListOfSprites(stateObsMulti);
 		this.newPOIs.clear();
 		for (Observation obs : observationList)
 		{
-			if (!observationIdToPoiIndex.containsKey(obs.itype))
+			if (!(obs.itype == 0 && obs.category == 4) && !POIIDs.contains(obs.obsID))
 			{
 				LogHandler.writeLog("Adding new POI| id: " + obs.obsID + ", type: " + obs.itype 
 						+ ", category: " + obs.category + ", position: [" + obs.position.x + ", " 

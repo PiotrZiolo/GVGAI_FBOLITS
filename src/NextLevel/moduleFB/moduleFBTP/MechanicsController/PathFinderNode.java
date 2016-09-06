@@ -43,7 +43,7 @@ public class PathFinderNode
 		ID = (stateObs.getWorldDimension().width / stateObs.getBlockSize()) * positionG.second() + positionG.first();
 	}
 
-	void setPositions(Vector2d positionV)
+	private void setPositions(Vector2d positionV)
 	{
 		this.positionV = positionV;
 		positionG = new Pair<Integer, Integer>((int) positionV.x / stateObs.getBlockSize(),

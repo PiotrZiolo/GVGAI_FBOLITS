@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import NextLevel.GameKnowledge;
 import NextLevel.utils.AuxUtils;
+import NextLevel.utils.PerformanceMonitor;
 import baseStructure.utils.LogHandler;
 import core.game.Observation;
 import core.game.StateObservation;
@@ -72,8 +73,7 @@ public class GameMechanicsController
 	{
 		ArrayList<Observation> suspects;
 
-		int[] start = { (int) (position.x / stateObs.getBlockSize()),
-				(int) (position.y / stateObs.getBlockSize()) };
+		int[] start = { (int) (position.x / stateObs.getBlockSize()), (int) (position.y / stateObs.getBlockSize()) };
 		LogHandler.writeLog("start x: " + start[0], "GameMechanicsController.localizeSprite", 0);
 		LogHandler.writeLog("start y: " + start[1], "GameMechanicsController.localizeSprite", 0);
 
@@ -219,24 +219,129 @@ public class GameMechanicsController
 			return lastAction;
 		return null;
 	}
-	
+
 	/**
-	 * Returns Manhattan distance between position1 and position2. 
+	 * Returns Manhattan distance between position1 and position2.
 	 * Assumes that upper and lower as well as right and left map edges are glued.
+	 * 
 	 * @param position1
 	 * @param position2
 	 * @return Manhattan distance.
 	 */
 	public double getManhattanDistanceInPX(Vector2d position1, Vector2d position2)
 	{
-		return (AuxUtils.mod((int) ((position1.x - position2.x) / gameKnowledge.getBlockSize()), gameKnowledge.getWorldXDimension()) 
-				+ AuxUtils.mod((int) ((position1.y - position2.y) / gameKnowledge.getBlockSize()), gameKnowledge.getWorldYDimension()))
-				* gameKnowledge.getBlockSize(); 
+		if (gameKnowledge.isOpenMap())
+		{
+			double xDistance = Math.min(AuxUtils.mod((int) (position1.x - position2.x),
+					(int) (gameKnowledge.getWorldXDimensionInPX())), 
+					AuxUtils.mod((int) (position2.x - position1.x),
+							(int) (gameKnowledge.getWorldXDimensionInPX())));
+			double yDistance = Math.min(AuxUtils.mod((int) (position1.y - position2.y),
+					(int) (gameKnowledge.getWorldYDimensionInPX())), 
+					AuxUtils.mod((int) (position2.y - position1.y),
+							(int) (gameKnowledge.getWorldYDimensionInPX())));
+			
+			return (xDistance + yDistance) / gameKnowledge.getBlockSize();
+		}
+		else
+		{
+			double xDistance = Math.abs(position1.x - position2.x);
+			double yDistance = Math.abs(position1.y - position2.y);
+			
+			return xDistance + yDistance;
+		}
 	}
-	
+
+	public double getManhattanDistanceInPX(StateObservation stateObs, Vector2d position1, Vector2d position2)
+	{
+		if (gameKnowledge.isOpenMap())
+		{
+			double xDistance = Math.min(AuxUtils.mod((int) (position1.x - position2.x),
+					(int) (stateObs.getWorldDimension().getWidth())), 
+					AuxUtils.mod((int) (position2.x - position1.x),
+							(int) (stateObs.getWorldDimension().getWidth())));
+			double yDistance = Math.min(AuxUtils.mod((int) (position1.y - position2.y),
+					(int) (stateObs.getWorldDimension().getHeight())), 
+					AuxUtils.mod((int) (position2.y - position1.y),
+							(int) (stateObs.getWorldDimension().getHeight())));
+			
+			return (xDistance + yDistance) / stateObs.getBlockSize();
+		}
+		else
+		{
+			double xDistance = Math.abs(position1.x - position2.x);
+			double yDistance = Math.abs(position1.y - position2.y);
+			
+			return xDistance + yDistance;
+		}
+	}
+
 	public double getManhattanDistanceInBlockSizes(Vector2d position1, Vector2d position2)
 	{
-		return AuxUtils.mod((int) ((position1.x - position2.x) / gameKnowledge.getBlockSize()), gameKnowledge.getWorldXDimension()) 
-				+ AuxUtils.mod((int) ((position1.y - position2.y) / gameKnowledge.getBlockSize()), gameKnowledge.getWorldYDimension());
+		if (gameKnowledge.isOpenMap())
+		{
+			double xDistance = Math.min(AuxUtils.mod((int) (position1.x - position2.x),
+					(int) (gameKnowledge.getWorldXDimensionInPX())), 
+					AuxUtils.mod((int) (position2.x - position1.x),
+							(int) (gameKnowledge.getWorldXDimensionInPX())));
+			double yDistance = Math.min(AuxUtils.mod((int) (position1.y - position2.y),
+					(int) (gameKnowledge.getWorldYDimensionInPX())), 
+					AuxUtils.mod((int) (position2.y - position1.y),
+							(int) (gameKnowledge.getWorldYDimensionInPX())));
+			
+			return (xDistance + yDistance) / gameKnowledge.getBlockSize();
+		}
+		else
+		{
+			double xDistance = Math.abs(position1.x - position2.x);
+			double yDistance = Math.abs(position1.y - position2.y);
+			
+			return (xDistance + yDistance) / gameKnowledge.getBlockSize();
+		}
 	}
+
+	public double getManhattanDistanceInBlockSizes(StateObservation stateObs, Vector2d position1, Vector2d position2)
+	{
+		if (gameKnowledge.isOpenMap())
+		{			
+			double xDistance = Math.min(AuxUtils.mod((int) (position1.x - position2.x),
+					(int) (stateObs.getWorldDimension().getWidth())), 
+					AuxUtils.mod((int) (position2.x - position1.x),
+							(int) (stateObs.getWorldDimension().getWidth())));
+			double yDistance = Math.min(AuxUtils.mod((int) (position1.y - position2.y),
+					(int) (stateObs.getWorldDimension().getHeight())), 
+					AuxUtils.mod((int) (position2.y - position1.y),
+							(int) (stateObs.getWorldDimension().getHeight())));
+			
+			/*
+			LogHandler.writeLog("Open map " + AuxUtils.mod((int) (position1.y - position2.y),
+					(int) (stateObs.getWorldDimension().getHeight())) + " " 
+					+ AuxUtils.mod((int) (position2.y - position1.y),
+							(int) (stateObs.getWorldDimension().getHeight())), "GameMechanicsController.Manhattan", 0);
+			*/
+			
+			return (xDistance + yDistance) / stateObs.getBlockSize();
+		}
+		else
+		{
+			double xDistance = Math.abs(position1.x - position2.x);
+			double yDistance = Math.abs(position1.y - position2.y);
+			
+			LogHandler.writeLog("Not open map", "GameMechanicsController.Manhattan", 3);
+			
+			return (xDistance + yDistance) / stateObs.getBlockSize();
+		}
+	}
+
+	public double getManhattanDistanceInAvatarSteps(Vector2d position1, Vector2d position2)
+	{
+		return getManhattanDistanceInBlockSizes(position1, position2) / gameKnowledge.getAvatarSpeed();
+	}
+
+	public double getManhattanDistanceInAvatarSteps(StateObservation stateObs, Vector2d position1, Vector2d position2)
+	{
+		return getManhattanDistanceInBlockSizes(stateObs, position1, position2) / stateObs.getAvatarSpeed();
+	}
+
+	// another function to check if position are on the same grid element
 }

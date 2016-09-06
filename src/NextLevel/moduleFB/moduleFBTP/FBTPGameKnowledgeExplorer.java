@@ -75,8 +75,11 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		fbtpGameKnowledge.setWorldXDimension(stateObs.getObservationGrid().length);
 		fbtpGameKnowledge.setWorldYDimension(stateObs.getObservationGrid()[0].length);
 		fbtpGameKnowledge.setBlockSize(stateObs.getBlockSize());
+		fbtpGameKnowledge.setAvatarSpeed(stateObs.getAvatarSpeed());
 
-		fbtpGameKnowledge.shootingAllowed = checkWhetherShootingIsAllowed(stateObsMulti);
+		fbtpGameKnowledge.setShootingAllowed(checkWhetherShootingIsAllowed(stateObsMulti));
+		fbtpGameKnowledge.setDeterministicGame(false);
+		fbtpGameKnowledge.setOpenMap(true);
 		
 		successiveLearn(stateObs, playerID, elapsedTimer, timeForLearning);
 	}
@@ -315,7 +318,7 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 		
-		Pair<StateObservationMulti, Types.ACTIONS> testingSite = fbtpAgentMoveController.approachSpriteForTesting
+		Pair<StateObservationMulti, ArrayList<Types.ACTIONS>> testingSite = fbtpAgentMoveController.approachSprite
 				((StateObservationMulti) (soi.baseState), gameKnowledge.getPlayerID(), soi.poi.observation, 0, timeLimit);
 		
 		//System.out.println(testingSite);
@@ -332,7 +335,7 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 	
 			// try to move on sprite
 			// System.out.println("move");
-			actions[fbtpGameKnowledge.getPlayerID()] = testingSite.second();
+			actions[fbtpGameKnowledge.getPlayerID()] = testingSite.second().get(testingSite.second().size() - 1);
 			afterState = baseState.copy();
 			afterState.advance(actions);
 			testedSoi.afterState = afterState;

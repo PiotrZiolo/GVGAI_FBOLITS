@@ -35,8 +35,7 @@ public class GameKnowledgeExplorer
 		this.gameStateTracker = gameStateTracker;
 	}
 
-	public void initialLearn(StateObservation stateObs, int playerID, ElapsedCpuTimer elapsedTimer,
-			int timeForLearningDuringInitialization)
+	public void learnBasics(StateObservation stateObs, int playerID)
 	{
 		this.stateObs = stateObs;
 		this.gameKnowledge.setPlayerID(playerID);
@@ -45,13 +44,15 @@ public class GameKnowledgeExplorer
 		this.gameKnowledge.setPlayerActions(stateObs.getAvailableActions());
 	}
 	
-	public void successiveLearn(StateObservation stateObs, int playerID, ElapsedCpuTimer elapsedTimer,
+	public void initialLearn(StateObservation stateObs, ElapsedCpuTimer elapsedTimer,
 			int timeForLearningDuringInitialization)
 	{
 		this.stateObs = stateObs;
-		this.gameKnowledge.setPlayerID(playerID);
-		this.gameKnowledge.setNumOfPlayers(stateObs.getNoPlayers());
-		this.gameKnowledge.setNumOfPlayerActions(stateObs.getAvailableActions().size());
-		this.gameKnowledge.setPlayerActions(stateObs.getAvailableActions());
+	}
+	
+	public void successiveLearn(StateObservation stateObs, ElapsedCpuTimer elapsedTimer,
+			int timeForLearningDuringInitialization)
+	{
+		this.stateObs = stateObs;
 	}
 }

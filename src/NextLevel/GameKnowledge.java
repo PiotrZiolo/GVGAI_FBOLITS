@@ -14,6 +14,10 @@ public class GameKnowledge
 	protected int worldXDimension;
 	protected int worldYDimension;
 	protected double blockSize;
+	protected double avatarSpeed;
+	protected boolean deterministicGame;
+	protected boolean shootingAllowed;
+	protected boolean openMap;
 
 	protected GameObjectives gameObjectives;
 
@@ -74,6 +78,11 @@ public class GameKnowledge
 	{
 		return worldXDimension;
 	}
+	
+	public int getWorldXDimensionInPX()
+	{
+		return (int) (worldXDimension * getBlockSize());
+	}
 
 	public void setWorldXDimension(int worldXDimension)
 	{
@@ -83,6 +92,11 @@ public class GameKnowledge
 	public int getWorldYDimension()
 	{
 		return worldYDimension;
+	}
+	
+	public int getWorldYDimensionInPX()
+	{
+		return (int) (worldYDimension * getBlockSize());
 	}
 
 	public void setWorldYDimension(int worldYDimension)
@@ -98,5 +112,45 @@ public class GameKnowledge
 	public void setBlockSize(double blockSize)
 	{
 		this.blockSize = blockSize;
+	}
+	
+	public double getAvatarSpeed()
+	{
+		return avatarSpeed;
+	}
+
+	public void setAvatarSpeed(double avatarSpeed)
+	{
+		this.avatarSpeed = avatarSpeed;
+	}
+	
+	public boolean isDeterministicGame()
+	{
+		return deterministicGame;
+	}
+
+	public void setDeterministicGame(boolean deterministicGame)
+	{
+		this.deterministicGame = deterministicGame;
+	}
+
+	public boolean isOpenMap()
+	{
+		return openMap;
+	}
+
+	public void setOpenMap(boolean openMap)
+	{
+		this.openMap = openMap;
+	}
+	
+	public boolean isShootingAllowed()
+	{
+		return shootingAllowed;
+	}
+
+	public void setShootingAllowed(boolean shootingAllowed)
+	{
+		this.shootingAllowed = shootingAllowed;
 	}
 }

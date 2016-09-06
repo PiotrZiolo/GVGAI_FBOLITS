@@ -11,8 +11,6 @@ public class FBTPGameKnowledge extends TPGameKnowledge
 {
 	protected InfluenceMap influenceMap;
 
-	protected boolean deterministicGame;
-	protected boolean shootingAllowed;
 	// protected boolean useAllowed;
 
 	public FBTPGameKnowledge()
@@ -86,16 +84,6 @@ public class FBTPGameKnowledge extends TPGameKnowledge
 	public Set<Integer> getSpriteTypes()
 	{
 		return spriteTypeFeaturesMap.keySet();
-	}
-
-	public boolean isGameDeterministic()
-	{
-		return deterministicGame;
-	}
-
-	public boolean isShootingAllowed()
-	{
-		return shootingAllowed;
 	}
 
 	public int getSpriteCategory(int typeId)

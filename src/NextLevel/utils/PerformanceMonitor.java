@@ -11,7 +11,7 @@ import java.util.Date;
 public class PerformanceMonitor
 {
 	public static final boolean bLoggingOn = true; // Turn on or off all logs
-	private static final int iTarget = 2; // Select target for printing logs: 1 - screen, 2 - file, 3 - screen & file
+	private static final int iTarget = 1; // Select target for printing logs: 1 - screen, 2 - file, 3 - screen & file
 	private static final boolean bStartANewLog = true;
 	private static final boolean bPrintDateTime = true;
 	
@@ -30,9 +30,9 @@ public class PerformanceMonitor
 	
 	public void startNanoMeasure(String sMessage, String sOrigin, int iWrite)
 	{
+		writeLog(sMessage, "PerformanceMonitor|" + sOrigin, iWrite);
 		nanoTimeStart = System.nanoTime();
 		miliTimeStart = System.currentTimeMillis();
-		writeLog(sMessage, "PerformanceMonitor|" + sOrigin, iWrite);
 	}
 	
 	public void finishNanoMeasure(String sMessage, String sOrigin, int iWrite)
@@ -45,8 +45,8 @@ public class PerformanceMonitor
 	
 	public void startMiliMeasure(String sMessage, String sOrigin, int iWrite)
 	{
-		miliTimeStart = System.currentTimeMillis();
 		writeLog(sMessage, "PerformanceMonitor|" + sOrigin, iWrite);
+		miliTimeStart = System.currentTimeMillis();
 	}
 	
 	public void finishMiliMeasure(String sMessage, String sOrigin, int iWrite)

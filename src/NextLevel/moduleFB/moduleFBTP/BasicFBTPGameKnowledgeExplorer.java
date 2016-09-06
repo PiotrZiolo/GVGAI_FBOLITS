@@ -12,6 +12,7 @@ import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.moduleFB.SpriteTypeFeatures;
 import NextLevel.moduleFB.moduleFBTP.MechanicsController.FBTPAgentMoveController;
+import NextLevel.moduleTP.TPGameKnowledge;
 import NextLevel.moduleTP.TPGameKnowledgeExplorer;
 import NextLevel.moduleTP.TPSituationOfInterest;
 import NextLevel.utils.LogHandler;
@@ -58,8 +59,8 @@ public class BasicFBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 
 		this.elapsedTimer = new ElapsedCpuTimer();
 	}
-
-	public void initialLearn(StateObservation stateObs, int playerID, ElapsedCpuTimer elapsedTimer, int timeForLearning)
+	
+	public void learnBasics(StateObservation stateObs, int playerID)
 	{
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		this.stateObs = stateObsMulti;
@@ -76,9 +77,17 @@ public class BasicFBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		fbtpGameKnowledge.setWorldXDimension(stateObs.getObservationGrid().length);
 		fbtpGameKnowledge.setWorldYDimension(stateObs.getObservationGrid()[0].length);
 		fbtpGameKnowledge.setBlockSize(stateObs.getBlockSize());
+		fbtpGameKnowledge.setAvatarSpeed(stateObs.getAvatarSpeed());
+	}
 
-		fbtpGameKnowledge.shootingAllowed = true;
-		fbtpGameKnowledge.deterministicGame = false;
+	public void initialLearn(StateObservation stateObs, ElapsedCpuTimer elapsedTimer, int timeForLearning)
+	{
+		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
+		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
+		
+		fbtpGameKnowledge.setShootingAllowed(true);
+		fbtpGameKnowledge.setDeterministicGame(false);
+		fbtpGameKnowledge.setOpenMap(true);
 
 		Vector2d avatarPosition = stateObsMulti.getAvatarPosition(playerID);
 		ArrayList<Observation>[] portalPositions = stateObsMulti.getPortalsPositions(avatarPosition);
@@ -127,7 +136,7 @@ public class BasicFBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		fbtpGameKnowledge.setSpriteTypeFeaturesByType(stateObsMulti.getAvatarType(oppID), spriteTypeFeatures);
 	}
 
-	public void successiveLearn(StateObservation stateObs, int playerID, ElapsedCpuTimer elapsedTimer,
+	public void successiveLearn(StateObservation stateObs, ElapsedCpuTimer elapsedTimer,
 			int timeForLearning)
 	{
 

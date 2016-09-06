@@ -11,7 +11,8 @@ import NextLevel.moduleFB.moduleFBTP.MechanicsController.PathFinderNode;
 import NextLevel.mechanicsController.PathFinder;
 import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.utils.Pair;
-import baseStructure.utils.LogHandler;
+import NextLevel.utils.PerformanceMonitor;
+import NextLevel.utils.LogHandler;
 import NextLevel.moduleFB.moduleFBTP.FBTPGameKnowledge;
 import core.game.Event;
 import core.game.StateObservation;
@@ -26,20 +27,25 @@ public class FBTPPathFinder extends PathFinder
 {
 	// protected FBTPGameKnowledge gameKnowledge;
 	// protected TPGameMechanicsController gameMechanicsController
+	// protected FBTPAgentMoveController agentMoveController;
 	private boolean tryToDestroyObjects;
 
 	private int playerID;
 	private StateObservationMulti firstObs;
 	private Vector2d goalVector;
 	private ElapsedCpuTimer elapsedTimer;
-	private boolean allowPointsLoosing = true;
+	private boolean takePointsIntoAccount = false;
+	private boolean prohibitNegativePoints = false;
 	private double pointsValue = 1.0;
 	private boolean allowTie = false;
 	private long timeLimit;
+	private int numberOfTurnTriesNearGoal = 5;
 
-	public FBTPPathFinder(FBTPGameKnowledge gameKnowledge, TPGameMechanicsController gameMechanicsController)
+	public FBTPPathFinder(FBTPGameKnowledge gameKnowledge, FBTPAgentMoveController agentMoveController,
+			TPGameMechanicsController gameMechanicsController)
 	{
 		this.gameKnowledge = gameKnowledge;
+		this.agentMoveController = agentMoveController;
 		this.gameMechanicsController = gameMechanicsController;
 		tryToDestroyObjects = false;
 		/*
@@ -53,8 +59,8 @@ public class FBTPPathFinder extends PathFinder
 	}
 
 	/**
-	 * The method responsible for finding path from current avatar position to
-	 * the given vector
+	 * Method responsible for finding a path from current avatar position to the given position.
+	 * Null is returned if a path is not found in given time limit.
 	 * 
 	 * @param goalV
 	 *            Desired position given in Vector2d.
@@ -65,10 +71,10 @@ public class FBTPPathFinder extends PathFinder
 	 * @param playerID
 	 *            Id of the desired player.
 	 */
-
 	public Pair<StateObservation, ArrayList<Types.ACTIONS>> findPath(Vector2d goalPosition, StateObservation stateObs,
-			ElapsedCpuTimer elapsedTimer, long timeLimit)
+			ElapsedCpuTimer elapsedTimer, long timeLimit, boolean takePointsIntoAccount, boolean prohibitNegativePoints)
 	{
+		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		StateObservationMulti finalObs = null;
 		this.timeLimit = (long) timeLimit;
@@ -76,38 +82,31 @@ public class FBTPPathFinder extends PathFinder
 		this.playerID = gameKnowledge.getPlayerID();
 		this.firstObs = stateObsMulti.copy();
 		this.goalVector = goalPosition;
+		this.takePointsIntoAccount = takePointsIntoAccount;
+		this.prohibitNegativePoints = prohibitNegativePoints;
 
-		final ArrayList<Types.ACTIONS> actions = gameKnowledge.getPlayerMoveActions();
+		final ArrayList<Types.ACTIONS> actions = fbtpAgentMoveController.getPlayerMoveActions(stateObsMulti, playerID);
 
-		long startTime = 0;
+		long initialRemainingTime = 0;
 		if (this.timeLimit > 0)
-			startTime = this.elapsedTimer.remainingTimeMillis();
-		// System.out.println(startTime);
+			initialRemainingTime = this.elapsedTimer.remainingTimeMillis();
 
 		Map<Integer, Double> costMap = new HashMap<Integer, Double>();
 
-		double currentScore = getDistanceScore(stateObsMulti);
+		double currentScore = getDistanceToGoalScore(stateObsMulti);
 		PriorityQueue<PathFinderNode> queue = initializeQueue(stateObsMulti);
 		costMap.put(queue.peek().ID, currentScore);
 
 		PathFinderNode goal = new PathFinderNode(0, "", firstObs, goalPosition);
-		PathFinderNode bestPath = new PathFinderNode(10 * currentScore, "", stateObsMulti, playerID);
-
-		// System.out.println(this.elapsedTimer.remainingTimeMillis());
 
 		while (!queue.isEmpty())
 		{
 			if (this.timeLimit > 0)
-				if (startTime - elapsedTimer.remainingTimeMillis() >= this.timeLimit)
+				if (initialRemainingTime - elapsedTimer.remainingTimeMillis() >= this.timeLimit)
 					break;
+
 			PathFinderNode previous = queue.peek();
 
-			/*
-			 * System.out.println("G");
-			 * System.out.println(previous.positionG.first().toString());
-			 * System.out.println(previous.positionG.second().toString());
-			 * System.out.println(previous.cost);
-			 */
 			queue.poll();
 
 			if (previous.equals(goal))
@@ -117,89 +116,257 @@ public class FBTPPathFinder extends PathFinder
 				break;
 			}
 
-			// System.out.println("");
 			for (Types.ACTIONS act : actions)
 			{
 				Pair<StateObservationMulti, String> adv = advance(previous.stateObs, act);
 				StateObservationMulti currentObs = adv.first();
-				// System.out.println(previous.positionV + " " + currentObs.getAvatarPosition(playerID));
-				if (!checkAdvance(previous.positionV, currentObs.getAvatarPosition(playerID)))
+				if (!hasPositionChanged(previous.positionV, currentObs.getAvatarPosition(playerID)))
 					continue;
-				double cost = getScore(previous.stateObs, currentObs, true);
-				PathFinderNode next = new PathFinderNode(cost, previous.path + adv.second(), currentObs, playerID);
-				// System.out.println(act.toString());
-				// System.out.println(cost);
-				// System.out.println(goalVector.toString());
-				// System.out.println(adv.first().getAvatarPosition(0).toString());
-				// cost+=next.pathLength*orientationAvatar*currentObs.getBlockSize()*currentObs.getAvatarSpeed(playerID);
-				cost += adv.second().length() * currentObs.getBlockSize() * currentObs.getAvatarSpeed(playerID);
-				// System.out.println(cost);
-				next.cost = cost;
+				double distanceToGoal = getDistanceToGoalScore(currentObs);
+				double cost = previous.path.length() + 1 - getScore(previous.stateObs, currentObs);
+				PathFinderNode next = new PathFinderNode(cost + 1.1 * distanceToGoal, previous.path + adv.second(),
+						currentObs, playerID);
+				next.pathLength = previous.pathLength + 1;
 
 				if (!costMap.containsKey(next.ID) || costMap.get(next.ID) > next.cost)
 				{
-					// System.out.println(cost);
-					if (cost < bestPath.cost)
-					{
-						finalObs = currentObs;
-						bestPath = next;
-					}
 					costMap.put(next.ID, next.cost);
 					queue.add(next);
 				}
 			}
-
-			// System.out.println(this.elapsedTimer.remainingTimeMillis());
 		}
 
 		this.timeLimit = 0;
-		if (finalObs!=null && translateString(bestPath.path)!=null)
+		if (finalObs != null && translateString(goal.path) != null)
 			return new Pair<StateObservation, ArrayList<ACTIONS>>((StateObservation) finalObs,
-					translateString(bestPath.path));
-		
+					translateString(goal.path));
+
 		return null;
 	}
 
-	private double getDistanceScore(StateObservationMulti stateObs)
+	public Pair<StateObservation, ArrayList<Types.ACTIONS>> findPath(Vector2d goalPosition, StateObservation stateObs,
+			ElapsedCpuTimer elapsedTimer, long timeLimit)
 	{
-		Vector2d a = stateObs.getAvatarPosition(playerID);
-		double speed = stateObs.getAvatarSpeed(playerID);
-		return 0.99 * (Math.abs(a.x - goalVector.x) + Math.abs(a.y - goalVector.y)) / speed;
+		return findPath(goalPosition, stateObs, elapsedTimer, timeLimit, false, false);
 	}
 
-	private double getScore(StateObservationMulti previous, StateObservationMulti current, boolean allowPortalEvent)
+	/**
+	 * Method responsible for finding a path from current avatar position to the given position or to its vicinity.
+	 * Null is returned if a path is not found in given time limit.
+	 * 
+	 * @param goalV
+	 *            Desired position given in Vector2d.
+	 * @param stateObs
+	 *            Current game observation.
+	 * @param elapsedTimer
+	 *            Timer to determine remaining time
+	 * @param playerID
+	 *            Id of the desired player.
+	 */
+	public Pair<StateObservation, ArrayList<Types.ACTIONS>> findPathToAreaNearPosition(Vector2d goalPosition,
+			StateObservation stateObs, ElapsedCpuTimer elapsedTimer, long timeLimit, boolean takePointsIntoAccount,
+			boolean prohibitNegativePoints)
 	{
+		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
-		double inf = 1000000;
-		double distance = getDistanceScore(current);
-		double cost = previous.getGameScore(playerID) - current.getGameScore(playerID);
+		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
+		StateObservationMulti finalObs = null;
+		this.timeLimit = timeLimit;
+		this.elapsedTimer = elapsedTimer;
+		this.playerID = gameKnowledge.getPlayerID();
+		this.firstObs = stateObsMulti.copy();
+		this.goalVector = goalPosition;
+		this.takePointsIntoAccount = takePointsIntoAccount;
+		this.prohibitNegativePoints = prohibitNegativePoints;
 
-		if (!allowPortalEvent)
+		LogHandler.writeLog("Path finding start", "FBTPPathFinder.findPathToAreaNearPosition", 0);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "FBTPPathFinder.findPathToAreaNearPosition", 3);
+
+		//final ArrayList<Types.ACTIONS> actions = gameKnowledge.getPlayerMoveActions();
+		final ArrayList<Types.ACTIONS> actions = fbtpAgentMoveController.getPlayerMoveActions(stateObsMulti, playerID);
+		
+		long initialRemainingTime = 0;
+		if (this.timeLimit > 0)
+			initialRemainingTime = this.elapsedTimer.remainingTimeMillis();
+
+		Map<Integer, Double> costMap = new HashMap<Integer, Double>();
+		//performanceMonitor.finishNanoMeasure("Finish", "FBTPPathFinder.findPathToAreaNearPosition", 3);
+		
+		//performanceMonitor.startNanoMeasure("Start", "FBTPPathFinder.findPathToAreaNearPosition", 3);
+		double currentScore = getDistanceToGoalScore(stateObsMulti);
+		//LogHandler.writeLog("Path finding start", "FBTPPathFinder.findPathToAreaNearPosition", 0);
+		//performanceMonitor.finishNanoMeasure("Finish", "FBTPPathFinder.findPathToAreaNearPosition", 3);
+		
+		//performanceMonitor.startNanoMeasure("Start", "FBTPPathFinder.findPathToAreaNearPosition", 3);
+		PriorityQueue<PathFinderNode> queue = initializeQueue(stateObsMulti);
+		//performanceMonitor.finishNanoMeasure("Finish", "FBTPPathFinder.findPathToAreaNearPosition", 3);
+		//performanceMonitor.startNanoMeasure("Start", "FBTPPathFinder.findPathToAreaNearPosition", 3);
+		costMap.put(queue.peek().ID, currentScore);
+		//performanceMonitor.finishNanoMeasure("Finish", "FBTPPathFinder.findPathToAreaNearPosition", 3);
+
+		PathFinderNode goal = new PathFinderNode(0, "", firstObs, goalPosition);
+
+		while (!queue.isEmpty())
 		{
-			TreeSet<Event> newEvents = (TreeSet<Event>) previous.getEventsHistory().clone();
-			newEvents.removeAll(current.getEventsHistory());
-			for (Event event : newEvents)
-				if (fbtpGameKnowledge.getSpriteCategory(event.passiveTypeId) == 2)
-					return inf;
+			//performanceMonitor.startNanoMeasure("Start loop iteration", "FBTPPathFinder.findPathToAreaNearPosition", 3);
+			if (this.timeLimit > 0)
+				if (initialRemainingTime - elapsedTimer.remainingTimeMillis() >= this.timeLimit)
+					break;
+
+			PathFinderNode previous = queue.peek();
+
+			queue.poll();
+
+			Types.ACTIONS lastMove = fbtpAgentMoveController.getOneStepToSprite(
+					previous.stateObs.getAvatarPosition(playerID), goal.positionV,
+					previous.stateObs.getAvatarSpeed(playerID), previous.stateObs.getBlockSize());
+			LogHandler.writeLog(
+					"Avatar position: " + previous.stateObs.getAvatarPosition(playerID) + ", sprite position: "
+							+ goal.positionV + ", one step: " + ((lastMove != null) ? "yes" : "no"),
+					"FBTPAgentMoveController.findPathToAreaNearPosition", 0);
+			if (lastMove != null)
+			{
+				Direction orientation = vectorToDirection(previous.stateObs.getAvatarOrientation(playerID));
+				StateObservationMulti afterTurnState = previous.stateObs;
+				String path = previous.path;
+				if (!gameMechanicsController.isOrientationConsistentWithMove(lastMove, orientation))
+				{
+					if (fbtpGameKnowledge.isDeterministicGame())
+					{
+						afterTurnState = advanceSimplified(previous.stateObs, lastMove);
+						if (afterTurnState.isGameOver())
+							continue;
+					}
+					else
+					{
+						afterTurnState = advanceSimplified(previous.stateObs, lastMove);
+						int i = 0;
+						while (i < numberOfTurnTriesNearGoal && afterTurnState.isGameOver())
+						{
+							afterTurnState = advanceSimplified(previous.stateObs, lastMove);
+							i++;
+						}
+						if (afterTurnState.isGameOver())
+							continue;
+					}
+					path += actToString(lastMove);
+				}
+				path += actToString(lastMove);
+				goal = new PathFinderNode(0, path, afterTurnState, playerID); // The cost doesn't matter at this stage, hence 0
+				finalObs = goal.stateObs;
+				break;
+			}
+			else
+			{
+				for (Types.ACTIONS act : actions)
+				{
+					Pair<StateObservationMulti, String> adv = advance(previous.stateObs, act);
+					StateObservationMulti currentObs = adv.first();
+					if (!hasPositionChanged(previous.positionV, currentObs.getAvatarPosition(playerID)))
+						continue;
+					double distanceToGoal = getDistanceToGoalScore(currentObs);
+					double cost = previous.path.length() + 1 - getScore(previous.stateObs, currentObs);
+					PathFinderNode next = new PathFinderNode(cost + 1.1 * distanceToGoal, previous.path + adv.second(),
+							currentObs, playerID);
+					next.pathLength = previous.pathLength + 1;
+					
+					LogHandler.writeLog(
+							"Position: " + currentObs.getAvatarPosition(playerID) + ", distance to goal: "
+									+ distanceToGoal + ", cost: " + cost,
+							"FBTPAgentMoveController.findPathToAreaNearPosition", 0);
+
+					if (!costMap.containsKey(next.ID) || costMap.get(next.ID) > next.cost)
+					{
+						costMap.put(next.ID, next.cost);
+						queue.add(next);
+					}
+				}
+			}
+			//performanceMonitor.finishNanoMeasure("Finish loop iteration", "FBTPPathFinder.findPathToAreaNearPosition", 3);
 		}
 
-		if (!allowPointsLoosing && cost > 0)
+		this.timeLimit = 0;
+		if (finalObs != null && translateString(goal.path) != null)
+			return new Pair<StateObservation, ArrayList<ACTIONS>>((StateObservation) finalObs,
+					translateString(goal.path));
+		return null;
+	}
+
+	public Pair<StateObservation, ArrayList<Types.ACTIONS>> findPathToAreaNearPosition(Vector2d goalPosition,
+			StateObservation stateObs, ElapsedCpuTimer elapsedTimer, long timeLimit)
+	{
+		return findPathToAreaNearPosition(goalPosition, stateObs, elapsedTimer, timeLimit, false, false);
+	}
+
+	private PriorityQueue<PathFinderNode> initializeQueue(StateObservationMulti stateObs)
+	{
+		// int initialSize = (int) stateObs.getWorldDimension().width / stateObs.getBlockSize();
+		// initialSize *= (int) stateObs.getWorldDimension().height / stateObs.getBlockSize();
+		PriorityQueue<PathFinderNode> queue = new PriorityQueue<PathFinderNode>(100, comp);
+		queue.add(new PathFinderNode(0, "", stateObs, playerID));
+		return queue;
+	}
+
+	private double getDistanceToGoalScore(StateObservationMulti stateObs)
+	{
+		TPGameMechanicsController tpGameMechanicsController = (TPGameMechanicsController) this.gameMechanicsController;
+		return tpGameMechanicsController.getManhattanDistanceInAvatarSteps(stateObs, playerID,
+				stateObs.getAvatarPosition(playerID), goalVector);
+	}
+
+	private double getScore(StateObservationMulti previous, StateObservationMulti current)
+	{
+		double inf = 1000000;
+		double cost = 0;
+
+		// PZi: I cut "&& current.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES" from the condition,
+		// because even if the player won, this path couldn't be further developed until it reaches the goal
+		if (current.isGameOver())
 			return inf;
 
-		cost *= pointsValue;
+		// PZi: I commented the following lines; explanation above
+		// if (!allowTie && current.isGameOver() && current.getMultiGameWinner()[playerID] == Types.WINNER.NO_WINNER)
+		// return inf;
 
 		if (!current.isAvatarAlive(playerID))
 			return inf;
 
-		if (current.isGameOver() && current.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES)
-			return inf;
+		/*
+		 * // PZi: I commented this fragment, since type=2 doesn't identify portals. Category is needed, and it is not available in the Event class.
+		 * // One could take category from sprite features from game knowledge, but it won't work during initialization.
+		 * if (!allowPortalEvent)
+		 * {
+		 * // PZI: I changed previous for current and vice versa in the following two lines
+		 * TreeSet<Event> newEvents = (TreeSet<Event>) current.getEventsHistory().clone();
+		 * newEvents.removeAll(previous.getEventsHistory());
+		 * for (Event event : newEvents)
+		 * if (fbtpGameKnowledge.getSpriteCategory(event.passiveTypeId) == 2)
+		 * return inf;
+		 * }
+		 */
 
-		if (!allowTie && current.isGameOver() && current.getMultiGameWinner()[playerID] == Types.WINNER.NO_WINNER)
-			return inf;
+		if (takePointsIntoAccount)
+		{
+			cost = previous.getGameScore(playerID) - current.getGameScore(playerID);
 
-		return distance + cost;
+			if (!prohibitNegativePoints && cost > 0)
+				return inf;
+
+			cost *= pointsValue;
+		}
+
+		return cost;
 	}
 
+	/**
+	 * This method tries to execute a move described by act. If there is an obstacle prohibiting the agent to make this move,
+	 * a use action is invoked in hope of destroying the obstacle.
+	 * 
+	 * @param stateObs
+	 * @param act
+	 * @return A pair of the state after the act and a sequence of moves - act and possibly turning and use before it.
+	 */
 	private Pair<StateObservationMulti, String> advance(StateObservationMulti stateObs, Types.ACTIONS act)
 	{
 		Direction orientation = vectorToDirection(stateObs.getAvatarOrientation(playerID));
@@ -220,7 +387,7 @@ public class FBTPPathFinder extends PathFinder
 			stateObsCopy = advanceSimplified(stateObsCopy, Types.ACTIONS.ACTION_USE);
 			stateObsCopy = advanceSimplified(stateObsCopy, act);
 
-			if (!stateObsCopy2.getAvatarPosition(playerID).equals(stateObsCopy.getAvatarPosition(playerID)) 
+			if (!stateObsCopy2.getAvatarPosition(playerID).equals(stateObsCopy.getAvatarPosition(playerID))
 					&& stateObs.isAvatarAlive(playerID) && !stateObs.isGameOver())
 			{
 				stateObsCopy2 = stateObsCopy;
@@ -232,6 +399,14 @@ public class FBTPPathFinder extends PathFinder
 		return new Pair<StateObservationMulti, String>(stateObsCopy2, moves);
 	}
 
+	/**
+	 * This method tries to advance stateObs, choosing an appropriate opponent action, so that the avatar doesn't die making action act.
+	 * If such a scenario is unobtainable, stateObs with opponent action NIL is returned.
+	 * 
+	 * @param stateObs
+	 * @param act
+	 * @return Advanced state after making act.
+	 */
 	private StateObservationMulti advanceSimplified(StateObservationMulti stateObs, Types.ACTIONS act)
 	{
 		ArrayList<Types.ACTIONS> oppAvailableActions = stateObs.getAvailableActions(1 - playerID);
@@ -239,14 +414,14 @@ public class FBTPPathFinder extends PathFinder
 		ACTIONS[] chosenActions = new Types.ACTIONS[2];
 		StateObservationMulti nextStateNIL;
 		StateObservationMulti nextState;
-		
+
 		nextStateNIL = stateObs.copy();
 		chosenActions[playerID] = act;
 		chosenActions[1 - playerID] = Types.ACTIONS.ACTION_NIL;
 		nextStateNIL.advance(chosenActions);
 		if (nextStateNIL.isAvatarAlive(1 - playerID))
 			return nextStateNIL;
-		
+
 		for (Types.ACTIONS oppAction : oppAvailableActions)
 		{
 			nextState = stateObs.copy();
@@ -259,30 +434,9 @@ public class FBTPPathFinder extends PathFinder
 		return nextStateNIL;
 	}
 
-	private boolean checkAdvance(Vector2d previous, Vector2d current)
+	private boolean hasPositionChanged(Vector2d previous, Vector2d current)
 	{
 		return !(previous.x == current.x && previous.y == current.y);
-	}
-
-	private Comparator<PathFinderNode> comp = new Comparator<PathFinderNode>()
-	{
-		public int compare(PathFinderNode a, PathFinderNode b)
-		{
-			if (a.cost > b.cost)
-				return 1;
-			if (a.cost == b.cost)
-				return 0;
-			return -1;
-		}
-	};
-
-	private PriorityQueue<PathFinderNode> initializeQueue(StateObservationMulti stateObs)
-	{
-		int initialSize = (int) stateObs.getWorldDimension().width / stateObs.getBlockSize();
-		initialSize *= (int) stateObs.getWorldDimension().height / stateObs.getBlockSize();
-		PriorityQueue<PathFinderNode> queue = new PriorityQueue<PathFinderNode>(initialSize, comp);
-		queue.add(new PathFinderNode(0, "", stateObs, playerID));
-		return queue;
 	}
 
 	private String actToString(Types.ACTIONS act)
@@ -325,98 +479,15 @@ public class FBTPPathFinder extends PathFinder
 		return new Direction(v.x, v.y);
 	}
 
-	public Pair<StateObservation, Types.ACTIONS> findPathForTesting(Vector2d goalPosition, StateObservation stateObs,
-			ElapsedCpuTimer elapsedTimer, long timeLimit)
+	private Comparator<PathFinderNode> comp = new Comparator<PathFinderNode>()
 	{
-		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
-		this.timeLimit = timeLimit;
-		this.elapsedTimer = elapsedTimer;
-		this.playerID = gameKnowledge.getPlayerID();
-		this.firstObs = stateObsMulti.copy();
-		this.goalVector = goalPosition;
-
-		final ArrayList<Types.ACTIONS> actions = gameKnowledge.getPlayerMoveActions();
-
-		long startTime = 0;
-		if (this.timeLimit > 0)
-			startTime = this.elapsedTimer.remainingTimeMillis();
-
-		Map<Integer, Double> costMap = new HashMap<Integer, Double>();
-
-		double currentScore = getDistanceScore(stateObsMulti);
-		PriorityQueue<PathFinderNode> queue = initializeQueue(stateObsMulti);
-		costMap.put(queue.peek().ID, currentScore);
-
-		PathFinderNode goal = new PathFinderNode(0, "", firstObs, goalPosition);
-		PathFinderNode bestPath = new PathFinderNode(10 * currentScore, "", stateObsMulti, playerID);
-		
-		while (!queue.isEmpty())
+		public int compare(PathFinderNode a, PathFinderNode b)
 		{
-			if (this.timeLimit > 0)
-				if (startTime - elapsedTimer.remainingTimeMillis() >= this.timeLimit)
-				{
-					//System.out.println("Out of Time");
-					break;
-				}
-			PathFinderNode previous = queue.peek();
-			/*System.out.println("vortex");
-			System.out.println(previous.positionV);
-			System.out.println(goalPosition);*/
-			queue.poll();
-
-			/*
-			 * if (previous.equals(goal))
-			 * {
-			 * goal = previous;
-			 * finalObs = goal.stateObs;
-			 * break;
-			 * }
-			 */
-
-			// System.out.println("");
-			for (Types.ACTIONS act : actions)
-			{
-				Pair<StateObservationMulti, String> adv = advance(previous.stateObs, act);
-				StateObservationMulti currentObs = adv.first();
-				if (!checkAdvance(previous.positionV, currentObs.getAvatarPosition(playerID)) &&
-						previous.stateObs.getAvatarPosition(playerID).dist(goal.positionV) >
-						previous.stateObs.getAvatarSpeed(playerID) * previous.stateObs.getBlockSize())
-					continue;
-				double cost = getScore(previous.stateObs, currentObs, false);
-				cost += adv.second().length() * currentObs.getBlockSize() * currentObs.getAvatarSpeed(playerID);
-				PathFinderNode next = new PathFinderNode(cost, previous.path + adv.second(), currentObs, playerID);
-				
-				if (next.equals(goal) || ( (currentObs.isGameOver() ||
-						checkAdvance(previous.positionV, currentObs.getAvatarPosition(playerID))) && 
-						previous.stateObs.getAvatarPosition(playerID).dist(goal.positionV) <=
-						previous.stateObs.getAvatarSpeed(playerID) * previous.stateObs.getBlockSize()))
-				{
-					//System.out.println("goal");
-					
-					Direction orientation = vectorToDirection(previous.stateObs.getAvatarOrientation(playerID));
-					StateObservationMulti stateObsCopy = previous.stateObs.copy();
-
-					if (!gameMechanicsController.isOrientationConsistentWithMove(act, orientation))
-					{
-						stateObsCopy = advanceSimplified(stateObsCopy, act);
-					}
-					return new Pair<StateObservation, Types.ACTIONS>(stateObsCopy, act);
-				}
-				next.cost = cost;
-
-				if (!costMap.containsKey(next.ID) || costMap.get(next.ID) > next.cost)
-				{
-					if (cost < bestPath.cost)
-					{
-						bestPath = next;
-					}
-					costMap.put(next.ID, next.cost);
-					queue.add(next);
-				}
-			}
+			if (a.cost > b.cost)
+				return 1;
+			if (a.cost == b.cost)
+				return 0;
+			return -1;
 		}
-
-		this.timeLimit = 0;
-		return null;
-	}
+	};
 }
