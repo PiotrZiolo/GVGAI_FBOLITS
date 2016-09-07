@@ -1152,7 +1152,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				bestValue = score;
 			}
 			LogHandler.writeLog("Child: " + child.actionIndex + " AdjEmaxScore: " + getNodeAdjustedEmaxScore(child)
-					+ " Best value: " + bestValue + " Child value: " + child.getValue(), "TPOLITSMovePlanner.exploitNode", 3);
+					+ " Best value: " + bestValue + " Child value: " + child.getValue(), "TPOLITSMovePlanner.exploitNode", 0);
 		}
 
 		Types.ACTIONS[] actions = new Types.ACTIONS[2];

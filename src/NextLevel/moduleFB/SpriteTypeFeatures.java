@@ -33,15 +33,27 @@ public class SpriteTypeFeatures
 	/**
 	 * Can it give victory?
 	 */
-	public boolean givingVictory;
+	public boolean givingVictoryMove;
 	/**
 	 * Can it give defeat?
 	 */
-	public boolean givingDefeat;
+	public boolean givingDefeatMove;
 	/**
 	 * Amount of points it give
 	 */
-	public double changingPoints;
+	public double changingPointsMove;
+	/**
+	 * Can avatar pass through it?
+	 */
+	public boolean givingVictoryUse;
+	/**
+	 * Can it give defeat?
+	 */
+	public boolean givingDefeatUse;
+	/**
+	 * Amount of points it give
+	 */
+	public double changingPointsUse;
 	/**
 	 * Can avatar pass through it?
 	 */
@@ -62,6 +74,10 @@ public class SpriteTypeFeatures
 	 * does collecting/destroying it allow to achieve victory?
 	 */
 	public boolean allowingVictory;
+	/**
+	 * were features updated this turn?
+	 */
+	public boolean featuresUpdatedThisTurn;
 
 	/**
 	 * Public constructor with default values
@@ -74,14 +90,18 @@ public class SpriteTypeFeatures
 		this.dangerousOtherwise = false;
 		this.destroyable = false;
 		this.collectable = false;
-		this.givingVictory = false;
-		this.givingDefeat = false;
-		this.changingPoints = 0;
+		this.givingVictoryMove = false;
+		this.givingDefeatMove = false;
+		this.changingPointsMove = 0;
+		this.givingVictoryUse = false;
+		this.givingDefeatUse = false;
+		this.changingPointsUse = 0;
 		this.passable = false;
 		this.moving = false;
 		this.speed = 0;
 		this.changingValuesOfOtherObjects = 0;
 		this.allowingVictory = false;
+		this.featuresUpdatedThisTurn = true;
 	}
 
 	/**
@@ -95,22 +115,27 @@ public class SpriteTypeFeatures
 		this.dangerousOtherwise = false;
 		this.destroyable = false;
 		this.collectable = false;
-		this.givingVictory = false;
-		this.givingDefeat = false;
-		this.changingPoints = 0;
+		this.givingVictoryMove = false;
+		this.givingDefeatMove = false;
+		this.changingPointsMove = 0;
+		this.givingVictoryUse = false;
+		this.givingDefeatUse = false;
+		this.changingPointsUse = 0;
 		this.passable = false;
 		this.moving = false;
 		this.speed = 0;
 		this.changingValuesOfOtherObjects = 0;
 		this.allowingVictory = false;
+		this.featuresUpdatedThisTurn = true;
 	}
 
 	/**
 	 * Public constructor with given values
 	 */
 	public SpriteTypeFeatures(int category, int type, double dangerousToAvatar, boolean dangerousOtherwise,
-			boolean destroyable, boolean collectable, boolean givingVictory, boolean givingDefeat,
-			double changingPoints, boolean passable, boolean moving, double speed,
+			boolean destroyable, boolean collectable, boolean givingVictoryMove, boolean givingDefeatMove,
+			double changingPointsMove, boolean givingVictoryUse, boolean givingDefeatUse,
+			double changingPointsUse, boolean passable, boolean moving, double speed,
 			double increasingValuesOfOtherObjects, boolean allowingVictory)
 	{
 		this.category = category;
@@ -119,23 +144,28 @@ public class SpriteTypeFeatures
 		this.dangerousOtherwise = dangerousOtherwise;
 		this.destroyable = destroyable;
 		this.collectable = collectable;
-		this.givingVictory = givingVictory;
-		this.givingDefeat = givingDefeat;
-		this.changingPoints = changingPoints;
+		this.givingVictoryMove = givingVictoryMove;
+		this.givingDefeatMove = givingDefeatMove;
+		this.changingPointsMove = changingPointsMove;
+		this.givingVictoryUse = givingVictoryUse;
+		this.givingDefeatUse = givingDefeatUse;
+		this.changingPointsUse = changingPointsUse;
 		this.passable = passable;
 		this.moving = moving;
 		this.speed = speed;
 		this.changingValuesOfOtherObjects = 0;
 		this.allowingVictory = allowingVictory;
+		this.featuresUpdatedThisTurn = true;
 	}
 
 	public String print()
 	{
 		return "[" + this.category + ", " + this.type + ", " + this.dangerousToAvatar + ", "
 				+ this.dangerousOtherwise + ", " + this.destroyable + ", " + this.collectable + ", "
-				+ this.givingVictory + ", " + this.givingDefeat + ", " + this.changingPoints + ", " + this.passable
-				+ ", " + this.moving + ", " + this.speed + ", " + this.changingValuesOfOtherObjects + ", "
-				+ this.allowingVictory + "]";
+				+ this.givingVictoryMove + ", " + this.givingDefeatMove + ", " + this.changingPointsMove + ", "
+				+ this.givingVictoryUse + ", " + this.givingDefeatUse + ", " + this.changingPointsUse + ", "
+				+ this.passable + ", " + this.moving + ", " + this.speed + ", "
+				+ this.changingValuesOfOtherObjects + ", " + this.allowingVictory + "]";
 		/*LogHandler.writeLog("[" + this.category + ", " + this.type + ", " + this.dangerousToAvatar + ", "
 				+ this.dangerousOtherwise + ", " + this.destroyable + ", " + this.collectable + ", "
 				+ this.givingVictory + ", " + this.givingDefeat + ", " + this.changingPoints + ", " + this.passable

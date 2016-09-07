@@ -44,10 +44,10 @@ public class FBTPStateEvaluator extends StateEvaluator
 		this.destination = null;
 		this.mappedObjects = new HashMap<Integer, InfluencePoint>();
 		this.unmappedObjects = new HashMap<Integer, InfluencePoint>();
-		this.weights = new double[12];
+		this.weights = new double[14];
 		this.pointScale = 1;
 		this.boardStateScore = 0;
-		for (int i = 0; i < 12; i++)
+		for (int i = 0; i < 13; i++)
 			weights[i] = 1;
 	}
 	
@@ -58,9 +58,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 
 	public void setWeights(double[] newWeights)
 	{
-		if (newWeights.length >= 12)
+		if (newWeights.length >= 14)
 		{
-			for (int i = 0; i < 12; i++)
+			for (int i = 0; i < 13; i++)
 				weights[i] = newWeights[i];
 		}
 
@@ -79,8 +79,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 				SpriteTypeFeatures sprite = gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
 				if (sprite != null)
 				{
-					if (!sprite.moving && (sprite.allowingVictory || sprite.collectable || sprite.givingVictory
-							|| sprite.changingPoints > 0 || sprite.dangerousOtherwise))
+					if (!sprite.moving && (sprite.allowingVictory || sprite.collectable || sprite.givingVictoryUse ||
+							sprite.givingVictoryMove || sprite.changingPointsUse > 0 ||
+							sprite.changingPointsMove > 0 || sprite.dangerousOtherwise))
 					{
 						mappedObjects.put(obs.obsID, new InfluencePoint(obs.obsID, obs.position,
 								getInfluenceValue(obs.itype), functionValue(obs.itype)));
@@ -107,7 +108,7 @@ public class FBTPStateEvaluator extends StateEvaluator
 			
 			if (sprite.passable || sprite.destroyable)
 			{
-				if (sprite.givingVictory)
+				if (sprite.givingVictoryUse || sprite.givingVictoryMove)
 					score += weights[0];
 
 				if (sprite.allowingVictory)
@@ -123,8 +124,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 				if (sprite.dangerousOtherwise)
 					score -= weights[3];
 
-				if ((sprite.changingPoints < 0 && sprite.moving) || sprite.changingPoints > 0)
-					score += weights[4] * sprite.changingPoints / pointScale;
+				if ((sprite.changingPointsMove < 0 && sprite.moving) ||
+						sprite.changingPointsMove > 0 || sprite.changingPointsUse > 0)
+					score += weights[4] * Math.max(sprite.changingPointsMove, sprite.changingPointsUse) / pointScale;
 
 				if ((sprite.changingValuesOfOtherObjects < 0 && sprite.moving)
 						|| sprite.changingValuesOfOtherObjects > 0)
@@ -132,6 +134,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 
 				if (sprite.collectable)
 					score += weights[6];
+				
+				if (sprite.givingDefeatMove && sprite.moving)
+					score -= weights[7];
 			}
 		}
 		return score;
@@ -146,24 +151,27 @@ public class FBTPStateEvaluator extends StateEvaluator
 			if (sprite.passable || sprite.destroyable)
 			{
 				if (sprite.allowingVictory)
-					score -= weights[7];
+					score -= weights[8];
 
 				if (sprite.dangerousToAvatar > 0)
 				{
 					if (avatarHealthPoints == 0)
-						score -= weights[8];
+						score -= weights[9];
 					else
-						score -= weights[8] * sprite.dangerousToAvatar / avatarHealthPoints;
+						score -= weights[9] * sprite.dangerousToAvatar / avatarHealthPoints;
 				}
 
 				if (sprite.dangerousOtherwise)
-					score -= weights[9];
+					score -= weights[10];
 
 				if (sprite.changingValuesOfOtherObjects != 0)
-					score -= weights[10] * (sprite.changingValuesOfOtherObjects / pointScale);
+					score -= weights[11] * (sprite.changingValuesOfOtherObjects / pointScale);
 
 				if (sprite.collectable)
-					score -= weights[11];
+					score -= weights[12];
+				
+				if (sprite.givingDefeatMove && sprite.moving)
+					score -= weights[13];
 			}
 		}
 		return score;
@@ -190,8 +198,9 @@ public class FBTPStateEvaluator extends StateEvaluator
 			SpriteTypeFeatures sprite = gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
 			if (sprite != null)
 			{
-				if (!sprite.moving && (sprite.allowingVictory || sprite.collectable || sprite.givingVictory
-						|| sprite.changingPoints > 0 || sprite.dangerousOtherwise))
+				if (!sprite.moving && (sprite.allowingVictory || sprite.collectable || sprite.givingVictoryUse ||
+						sprite.givingVictoryMove || sprite.changingPointsUse > 0 ||
+						sprite.changingPointsMove > 0 || sprite.dangerousOtherwise))
 				{
 					mappedObjectsNew.put(obs.obsID, new InfluencePoint(obs.obsID, obs.position,
 							getInfluenceValue(obs.itype), functionValue(obs.itype)));
@@ -289,12 +298,12 @@ public class FBTPStateEvaluator extends StateEvaluator
 		if (stateObsMulti.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES)
 			return -999999999;
 
-		//updateInfluenceMap(stateObsMulti);
-		//double score = map.getInfluenceValue(stateObsMulti.getAvatarPosition(playerID));
-		//score += getUnmappedScore();
-		//score += getMappedPoints();
-		//score += boardStateScore;
-		double score = stateObsMulti.getGameScore(playerID);
+		updateInfluenceMap(stateObsMulti);
+		double score = map.getInfluenceValue(stateObsMulti.getAvatarPosition(playerID));
+		score += getUnmappedScore();
+		score += getMappedPoints();
+		score += boardStateScore;
+		score += stateObsMulti.getGameScore(playerID);
 
 		return score;
 	}

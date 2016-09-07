@@ -101,9 +101,7 @@ public class FBTPPathFinder extends PathFinder
 				if (initialRemainingTime - elapsedTimer.remainingTimeMillis() >= this.timeLimit)
 					break;
 
-			PathFinderNode previous = queue.peek();
-
-			queue.poll();
+			PathFinderNode previous = queue.poll();
 
 			if (previous.equals(goal))
 			{

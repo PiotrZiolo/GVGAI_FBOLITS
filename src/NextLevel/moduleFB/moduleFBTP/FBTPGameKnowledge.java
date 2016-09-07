@@ -38,16 +38,13 @@ public class FBTPGameKnowledge extends TPGameKnowledge
 		return gameKnowledgeCopy;
 	}
 
-	public SpriteTypeFeatures getSpriteTypeFeaturesByType(int iType)
+	public SpriteTypeFeatures getSpriteTypeFeaturesByType(int type)
 	{
-		if (spriteTypeFeaturesMap.containsKey(iType))
+		if (spriteTypeFeaturesMap.containsKey(type))
 		{
-			return spriteTypeFeaturesMap.get(iType);
+			return spriteTypeFeaturesMap.get(type);
 		}
-		else
-		{
-			return null;
-		}
+		return null;
 	}
 
 	public HashMap<Integer, SpriteTypeFeatures> getSpriteTypeFeaturesByCategory(int iCategory)
@@ -68,6 +65,7 @@ public class FBTPGameKnowledge extends TPGameKnowledge
 
 	public void setSpriteTypeFeaturesByType(int iType, SpriteTypeFeatures spriteTypeFeatures)
 	{
+		spriteTypeFeatures.featuresUpdatedThisTurn = true;
 		spriteTypeFeaturesMap.put(iType, spriteTypeFeatures);
 	}
 

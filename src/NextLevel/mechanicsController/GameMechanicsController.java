@@ -74,7 +74,7 @@ public class GameMechanicsController
 		ArrayList<Observation> suspects;
 
 		LogHandler.writeLog("Searching for sprite with id: " + obsID + " and last location: " + position, 
-				"GameMechanicsController.localizeSprite", 3);
+				"GameMechanicsController.localizeSprite", 0);
 		int[] start = { (int) (position.x / stateObs.getBlockSize()), (int) (position.y / stateObs.getBlockSize()) };
 		LogHandler.writeLog("start x: " + start[0], "GameMechanicsController.localizeSprite", 0);
 		LogHandler.writeLog("start y: " + start[1], "GameMechanicsController.localizeSprite", 0);

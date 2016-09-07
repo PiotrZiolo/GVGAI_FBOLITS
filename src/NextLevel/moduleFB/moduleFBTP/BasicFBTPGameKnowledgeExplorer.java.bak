@@ -2,17 +2,26 @@ package NextLevel.moduleFB.moduleFBTP;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.PriorityQueue;
+import java.util.TreeSet;
 
+import NextLevel.GameStateTracker;
+import NextLevel.PointOfInterest;
+import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.moduleFB.SpriteTypeFeatures;
 import NextLevel.moduleFB.moduleFBTP.MechanicsController.FBTPAgentMoveController;
+import NextLevel.moduleTP.TPGameKnowledge;
 import NextLevel.moduleTP.TPGameKnowledgeExplorer;
 import NextLevel.moduleTP.TPSituationOfInterest;
 import NextLevel.utils.LogHandler;
+import NextLevel.utils.Pair;
+import core.game.Event;
 import core.game.Observation;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
+import ontology.Types;
 import tools.ElapsedCpuTimer;
 import tools.Vector2d;
 
@@ -154,28 +163,28 @@ public class BasicFBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		switch (category)
 		{
 			case 1:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, false, false,
-						0,false, false, 0, true, false, 0, 0, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, false, false, 0,
+						true, false, 0, 0, false);
 				break;
 			case 2:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false,
-						0, true, false, 0, true, false, 0, 1, true);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, true, false, 0,
+						true, false, 0, 1, true);
 				break;
 			case 3:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false,
-						0, false, false, 0, false, true, 1, 0, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false, 0,
+						false, true, 1, 0, false);
 				break;
 			case 4:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false,
-						0, false, false, 0, false, false, 0, 0, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false, 0,
+						false, false, 0, 0, false);
 				break;
 			case 5:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false,
-						0, false, false, 0, false, true, 1, 0, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false, 0,
+						false, true, 1, 0, false);
 				break;
 			case 6:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false,
-						0, false, false, 0, false, true, 0, 0, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false, 0,
+						false, true, 0, 0, false);
 				break;
 			default:
 				break;
@@ -198,16 +207,16 @@ public class BasicFBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		switch (category)
 		{
 			case 0:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, false, false,
-						0,false, false, 0, true, false, 0, 0, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, true, false, false, true, 1,
+						false, true, 1, 0, false);
 				break;
 			case 1:
 
 				break;
 
 			case 2:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false,
-						0, true, false, 0, true, false, 0, 1, true);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, true, true, false, 1, true,
+						false, 0, 1, true);
 				break;
 
 			case 3:
@@ -215,18 +224,18 @@ public class BasicFBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 				break;
 
 			case 4:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false,
-						0, false, false, 0, false, false, 0, 0, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, true, false, false, false, 0,
+						false, false, 0, 0, false);
 				break;
 
 			case 5:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false,
-						0, false, false, 0, false, true, 1, 0, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, false, false, false, true, 0,
+						false, true, 1, 0, false);
 				break;
 
 			case 6:
-				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 0, false, false, false, false, false,
-						0, false, false, 0, false, true, 0, 0, false);
+				spriteTypeFeatures = new SpriteTypeFeatures(category, type, 1, false, true, false, false, true, 1,
+						false, true, 1, 0, false);
 				break;
 
 			default:

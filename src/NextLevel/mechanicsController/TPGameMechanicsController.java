@@ -124,8 +124,12 @@ public class TPGameMechanicsController extends GameMechanicsController
 
 	public boolean isSpriteDoingNothing(SpriteTypeFeatures sprite)
 	{
-		return (!sprite.collectable && !sprite.allowingVictory && !sprite.dangerousOtherwise && !sprite.givingVictory
-				&& !sprite.givingDefeat && sprite.changingPoints == 0 && sprite.changingValuesOfOtherObjects == 0
+		if (sprite==null)
+			return true;
+		
+		return (!sprite.collectable && !sprite.allowingVictory && !sprite.dangerousOtherwise && !sprite.givingVictoryMove
+				&& !sprite.givingDefeatMove && sprite.changingPointsMove == 0 && !sprite.givingVictoryUse
+				&& !sprite.givingDefeatUse && sprite.changingPointsUse == 0 && sprite.changingValuesOfOtherObjects == 0
 				&& sprite.dangerousToAvatar == 0);
 	}
 	
@@ -223,8 +227,7 @@ public class TPGameMechanicsController extends GameMechanicsController
 		
 		Observation opponent = getPlayerObservation(((TPGameKnowledge)gameKnowledge).getOppID(), state);
 		if (opponent!=null)
-			if (opponent.position != refPosition)
-				listOfSprites.add(opponent);
+			listOfSprites.add(opponent);
 		
 		return listOfSprites;
 	}
@@ -267,5 +270,31 @@ public class TPGameMechanicsController extends GameMechanicsController
 					playerMoveActions.add(j);
 		
 		return playerMoveActions;
+	}
+
+	public int getSpriteCategoryFromState(int spriteType, StateObservationMulti state)
+	{
+		ArrayList<Observation> spritesRepresentants = getListOfSpritesRepresentants(state,
+				state.getAvatarPosition(gameKnowledge.getPlayerID()));
+		
+		for (Observation sprite : spritesRepresentants)
+		{
+			if(sprite.itype == spriteType);
+				return sprite.category;
+		}
+		return -1;
+	}
+
+	public Observation getSpriteRepresentant(int spriteType, StateObservationMulti state)
+	{
+		ArrayList<Observation> spritesRepresentants = getListOfSpritesRepresentants(state,
+				state.getAvatarPosition(gameKnowledge.getPlayerID()));
+		
+		for (Observation sprite : spritesRepresentants)
+		{
+			if(sprite.itype == spriteType);
+				return sprite;
+		}
+		return null;
 	}
 }

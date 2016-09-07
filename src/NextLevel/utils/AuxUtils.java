@@ -11,9 +11,9 @@ public class AuxUtils
 	{
 		int index = 0;
 
-		for (; index < stateObs.getAvailableActions().size(); index++)
+		for (; index < stateObs.getAvailableActions(playerID).size(); index++)
 		{
-			if (action == stateObs.getAvailableActions().get(index))
+			if (action == stateObs.getAvailableActions(playerID).get(index))
 				break;
 		}
 
