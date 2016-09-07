@@ -9,9 +9,7 @@ import ontology.Types;
 
 public class TPWinScoreStateEvaluator extends StateEvaluator
 {
-	// Real types of fields
-	// protected TPGameKnowledge gameKnowledge;
-	// protected StateHandler stateHandler;
+	private int playerID;
 	
 	private static final double HUGE_NEGATIVE = -10000000.0;
     private static final double HUGE_POSITIVE =  10000000.0;
@@ -21,20 +19,19 @@ public class TPWinScoreStateEvaluator extends StateEvaluator
 		
 	}
 	
-	public TPWinScoreStateEvaluator(TPGameKnowledge gameKnowledge)
+	public TPWinScoreStateEvaluator(int playerID)
 	{
-		this.gameKnowledge = gameKnowledge;
+		this.playerID = playerID;
 	}
 	
 	public double evaluateState(StateObservation stateObs)
 	{
 		StateObservationMulti stateObsMulti = (StateObservationMulti)stateObs;
-		TPGameKnowledge tpGameKnowledge = (TPGameKnowledge) this.gameKnowledge;
 		
 		boolean gameOver = stateObsMulti.isGameOver();
 
-        Types.WINNER win = stateObsMulti.getMultiGameWinner()[tpGameKnowledge.getPlayerID()];
-        double rawScore = stateObsMulti.getGameScore(tpGameKnowledge.getPlayerID());
+        Types.WINNER win = stateObsMulti.getMultiGameWinner()[playerID];
+        double rawScore = stateObsMulti.getGameScore(playerID);
 
         if(gameOver && win == Types.WINNER.PLAYER_LOSES)
             rawScore += HUGE_NEGATIVE;

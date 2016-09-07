@@ -89,6 +89,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	protected long timeLimitForOneAdvance = 1; // in ms;
 	protected int minimumNumOfPOIExplorations = 3;
 	protected double goalPOIHandicap = 1.5;
+	protected double uctConstantInExplore = 5;
 	protected double uctConstant = Math.sqrt(2);
 	protected double[] bounds = new double[] { -Double.MAX_VALUE, Double.MAX_VALUE };
 	protected int numOfRolloutsInExplore = 10;
@@ -550,7 +551,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				{
 					double nodeValue = node.getValue();
 					// nodeValue = Utils.normalise(nodeValue, this.bounds[0], this.bounds[1]);
-					double uctValue = nodeValue + this.uctConstant * Math.sqrt(rootStateObsMulti.getGameTick() / node.numVisits);
+					double uctValue = nodeValue + this.uctConstantInExplore * Math.sqrt(rootStateObsMulti.getGameTick() / node.numVisits);
 
 					uctValue = Utils.noise(uctValue, this.epsilon, this.randomGenerator.nextDouble()); // break ties randomly
 
@@ -615,7 +616,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
 			// int safeTurns = Math.min(3, this.shotTestingWaitingTurns - turn);
 
-			playerAction = Types.ACTIONS.ACTION_NIL; // fbtpAgentMoveController.getNonDyingAction(shotStateObs, fbtpGameKnowledge.getPlayerID(), safeTurns);
+			playerAction = Types.ACTIONS.ACTION_NIL; // fbtpAgentMoveController.getRandomNonDyingAction(shotStateObs, fbtpGameKnowledge.getPlayerID(), safeTurns);
 			oppAction = Types.ACTIONS.ACTION_NIL; // fbtpAgentMoveController.getRandomAction(shotStateObs, fbtpGameKnowledge.getOppID());
 			actions = new Types.ACTIONS[2];
 			actions[fbtpGameKnowledge.getPlayerID()] = playerAction;
@@ -668,7 +669,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		}
 
 		LogHandler.writeLog(
-				"Exploring approach> " + ((approachInfo != null) ? approachInfo.second().size() : "no path found"),
+				"Exploring approach> " + ((approachInfo != null) ? "Path length: " + approachInfo.second().size() : "no path found"),
 				"TPOLITSMovePlanner.exploreApproach", 3);
 		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.exploreApproach", 3);
 	}
@@ -704,8 +705,9 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				//Types.ACTIONS randomAction = rolloutState.getAvailableActions().get(this.randomGenerator.nextInt(rolloutState.getAvailableActions().size()));
 
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
-				actions[fbtpGameKnowledge.getPlayerID()] = fbtpAgentMoveController.getNonDyingAction(rolloutState,
+				Types.ACTIONS action = fbtpAgentMoveController.getRandomNonDyingAction(rolloutState,
 						fbtpGameKnowledge.getPlayerID());
+				actions[fbtpGameKnowledge.getPlayerID()] = ((action != null) ? action : Types.ACTIONS.ACTION_NIL);
 				actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getRandomAction(rolloutState, 
 						fbtpGameKnowledge.getOppID());
 
@@ -1085,11 +1087,18 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		TPOLITSTreeNode tpolmctsNode = (TPOLITSTreeNode) node;
 
 		Types.ACTIONS[] actions = new Types.ACTIONS[2];
-		actions[fbtpGameKnowledge.getPlayerID()] = fbtpAgentMoveController.getNonDyingAction(stateObsMulti, 
+		Types.ACTIONS action = fbtpAgentMoveController.getRandomNonDyingAction(stateObsMulti,
 				fbtpGameKnowledge.getPlayerID());
+		actions[fbtpGameKnowledge.getPlayerID()] = ((action != null) ? action : Types.ACTIONS.ACTION_NIL);
 		actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getGreedyAction(stateObsMulti,
 				fbtpGameKnowledge.getOppID());
 
+		int bestAction = gameMechanicsController.actToIndex(stateObsMulti.getAvailableActions(fbtpGameKnowledge.getPlayerID()), 
+				actions[fbtpGameKnowledge.getPlayerID()]);
+		
+		LogHandler.writeLog("Available actions: " + stateObsMulti.getAvailableActions(fbtpGameKnowledge.getPlayerID())
+			+ "Action: " + actions[fbtpGameKnowledge.getPlayerID()] + " Best action: " + bestAction, "TPOLITSMovePlanner.expandNode", 0);
+		
 		stateObsMulti.advance(actions);
 
 		double tabooBias = 0.0;
@@ -1104,9 +1113,6 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			}
 			i++;
 		}
-		
-		int bestAction = gameMechanicsController.actToIndex(stateObsMulti.getAvailableActions(fbtpGameKnowledge.getPlayerID()), 
-				actions[fbtpGameKnowledge.getPlayerID()]);
 
 		TPOLITSTreeNode child = new TPOLITSTreeNode(tpolmctsNode, gameKnowledge.getNumOfPlayerActions(),
 				tpolmctsNode.depth + 1, bestAction, tabooBias);

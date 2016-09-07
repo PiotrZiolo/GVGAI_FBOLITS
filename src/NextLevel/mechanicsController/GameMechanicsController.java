@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import NextLevel.GameKnowledge;
 import NextLevel.utils.AuxUtils;
 import NextLevel.utils.PerformanceMonitor;
-import baseStructure.utils.LogHandler;
+import NextLevel.utils.LogHandler;
 import core.game.Observation;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
@@ -73,6 +73,8 @@ public class GameMechanicsController
 	{
 		ArrayList<Observation> suspects;
 
+		LogHandler.writeLog("Searching for sprite with id: " + obsID + " and last location: " + position, 
+				"GameMechanicsController.localizeSprite", 3);
 		int[] start = { (int) (position.x / stateObs.getBlockSize()), (int) (position.y / stateObs.getBlockSize()) };
 		LogHandler.writeLog("start x: " + start[0], "GameMechanicsController.localizeSprite", 0);
 		LogHandler.writeLog("start y: " + start[1], "GameMechanicsController.localizeSprite", 0);
@@ -396,7 +398,7 @@ public class GameMechanicsController
 	{
 		for (int index = 0; index < availableActions.size(); index++)
 		{
-			if (availableActions.get(index) == act)
+			if (act == availableActions.get(index))
 				return index;
 		}
 		return 0;

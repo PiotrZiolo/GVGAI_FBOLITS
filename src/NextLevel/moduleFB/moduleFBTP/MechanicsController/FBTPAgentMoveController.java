@@ -400,26 +400,42 @@ public class FBTPAgentMoveController extends AgentMoveController
 		FBTPPathFinder fbtpPathFinder = (FBTPPathFinder) this.pathFinder;
 		StateObservationMulti currentState = stateObs.copy();
 		long startTime = elapsedTimer.remainingTimeMillis();
-		Observation obs = observation;
+		
+		// boolean localized = ((this.gameMechanicsController.localizeSprite(currentState, observation) != null) ? true : false);
+		
 		while (startTime - elapsedTimer.remainingTimeMillis() < timeLimit)
 		{
 			Pair<StateObservation, ArrayList<ACTIONS>> pathFinderOutput = fbtpPathFinder
-					.findPathToAreaNearPosition(obs.position, currentState, elapsedTimer, timeLimit);
+					.findPathToAreaNearPosition(observation.position, currentState, elapsedTimer, timeLimit);
 
 			if (pathFinderOutput == null)
+			{
+				LogHandler.writeLog("PathFinder returned null", "FBTPAgentMoveController.approachSprite", 3);
 				return null;
+			}
 
 			currentState = (StateObservationMulti) pathFinderOutput.first();
 
-			obs = this.gameMechanicsController.localizeSprite(currentState, obs);
-			if (obs != null)
+			observation = this.gameMechanicsController.localizeSprite(currentState, observation);
+			if (observation != null)
 			{
-				if (gameMechanicsController.isAvatarOneStepFromSprite(currentState.getAvatarPosition(playerID), obs.position, 
+				if (gameMechanicsController.isAvatarOneStepFromSprite(currentState.getAvatarPosition(playerID), observation.position, 
 						currentState.getAvatarSpeed(), currentState.getBlockSize()))
+				{
+					LogHandler.writeLog("PathFinder returned path, obs was localized and it was one step from avatar at the end", "FBTPAgentMoveController.approachSprite", 3);
 					return new Pair<StateObservationMulti, ArrayList<ACTIONS>>(currentState, pathFinderOutput.second());
+				}
+				else
+				{
+					LogHandler.writeLog("PathFinder returned path, obs was localized, but it was not one step from avatar", "FBTPAgentMoveController.approachSprite", 3);
+				}
 			}
 			else
+			{
+				LogHandler.writeLog("PathFinder returned path, but obs was not localized" 
+						+ " Path: " + pathFinderOutput.second(), "FBTPAgentMoveController.approachSprite", 3);
 				return null;
+			}
 		}
 		return null;
 	}
@@ -466,7 +482,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 	 */
 	public ACTIONS getNonDyingAction(StateObservationMulti stateObs, int playerID, int safeTurns)
 	{
-		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
+		ArrayList<Types.ACTIONS> availableActions = new ArrayList<Types.ACTIONS>(stateObs.getAvailableActions(playerID));
 		availableActions.remove(Types.ACTIONS.ACTION_NIL);
 		Collections.shuffle(availableActions);
 		availableActions.add(0, Types.ACTIONS.ACTION_NIL); // so that ACTION_NIL goes always first
@@ -488,10 +504,28 @@ public class FBTPAgentMoveController extends AgentMoveController
 	
 	public ACTIONS getNonDyingAction(StateObservationMulti stateObs, int playerID)
 	{
-		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
+		ArrayList<Types.ACTIONS> availableActions = new ArrayList<Types.ACTIONS>(stateObs.getAvailableActions(playerID));
 		availableActions.remove(Types.ACTIONS.ACTION_NIL);
 		Collections.shuffle(availableActions);
 		availableActions.add(0, Types.ACTIONS.ACTION_NIL); // so that ACTION_NIL goes always first
+		ACTIONS[] chosenActions = new Types.ACTIONS[2];
+		StateObservationMulti nextState;
+		for (Types.ACTIONS action : availableActions)
+		{
+			nextState = stateObs.copy();
+			chosenActions[playerID] = action;
+			chosenActions[1 - playerID] = Types.ACTIONS.ACTION_NIL;
+			nextState.advance(chosenActions);
+			if (nextState.isAvatarAlive(playerID))
+				return action;
+		}
+		return null;
+	}
+	
+	public ACTIONS getRandomNonDyingAction(StateObservationMulti stateObs, int playerID)
+	{
+		ArrayList<Types.ACTIONS> availableActions = new ArrayList<Types.ACTIONS>(stateObs.getAvailableActions(playerID));
+		Collections.shuffle(availableActions);
 		ACTIONS[] chosenActions = new Types.ACTIONS[2];
 		StateObservationMulti nextState;
 		for (Types.ACTIONS action : availableActions)
@@ -514,14 +548,39 @@ public class FBTPAgentMoveController extends AgentMoveController
 	 */
 	public ACTIONS getGreedyAction(StateObservationMulti stateObs, int playerID)
 	{
-		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
-		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
+		ArrayList<Types.ACTIONS> availableActions = new ArrayList<Types.ACTIONS>(stateObs.getAvailableActions(playerID));
 		Types.ACTIONS oppAction = Types.ACTIONS.ACTION_NIL;
 		ACTIONS[] chosenActions = new Types.ACTIONS[2];
 		StateObservationMulti nextState;
 		double bestScore = -10000000.0;
 		Types.ACTIONS bestAction = Types.ACTIONS.ACTION_NIL;
-		TPWinScoreStateEvaluator scoreEvaluator = new TPWinScoreStateEvaluator(fbtpGameKnowledge);
+		TPWinScoreStateEvaluator scoreEvaluator = new TPWinScoreStateEvaluator(playerID);
+		for (Types.ACTIONS action : availableActions)
+		{
+			nextState = stateObs.copy();
+			chosenActions[playerID] = action;
+			chosenActions[1 - playerID] = oppAction;
+			nextState.advance(chosenActions);
+			double score = scoreEvaluator.evaluateState(nextState);
+			if (score > bestScore)
+			{
+				bestScore = score;
+				bestAction = action;
+			}
+		}
+		return bestAction;
+	}
+	
+	public ACTIONS getRandomGreedyAction(StateObservationMulti stateObs, int playerID)
+	{
+		ArrayList<Types.ACTIONS> availableActions = new ArrayList<Types.ACTIONS>(stateObs.getAvailableActions(playerID));
+		Collections.shuffle(availableActions);
+		Types.ACTIONS oppAction = Types.ACTIONS.ACTION_NIL;
+		ACTIONS[] chosenActions = new Types.ACTIONS[2];
+		StateObservationMulti nextState;
+		double bestScore = -10000000.0;
+		Types.ACTIONS bestAction = Types.ACTIONS.ACTION_NIL;
+		TPWinScoreStateEvaluator scoreEvaluator = new TPWinScoreStateEvaluator(playerID);
 		for (Types.ACTIONS action : availableActions)
 		{
 			nextState = stateObs.copy();

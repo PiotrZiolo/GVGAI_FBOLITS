@@ -161,6 +161,18 @@ public class Agent extends AbstractMultiPlayer
 		//LogHandler.writeLog("State evaluation: " + stateEvaluator.evaluateState(stateObs), "Agent.act", 3);
 		//stateObs.advance(new Types.ACTIONS[]{Types.ACTIONS.ACTION_NIL, Types.ACTIONS.ACTION_NIL});
 		//LogHandler.writeLog("State evaluation: " + stateEvaluator.evaluateState(stateObs), "Agent.act", 3);
+		
+		/*
+		Types.ACTIONS[] actions = new Types.ACTIONS[2];
+		Types.ACTIONS action = agentMoveController.getRandomNonDyingAction(stateObs,
+				gameKnowledge.getPlayerID());
+		actions[gameKnowledge.getPlayerID()] = ((action != null) ? action : Types.ACTIONS.ACTION_NIL);
+		actions[gameKnowledge.getOppID()] = agentMoveController.getGreedyAction(stateObs,
+				gameKnowledge.getOppID());
+		
+		LogHandler.writeLog("Avatar non dying action: " + actions[gameKnowledge.getPlayerID()]
+				+ " Opponent greedy action: " + actions[gameKnowledge.getOppID()], "Agent.act", 3);
+		*/
 		 
 		Types.ACTIONS action = movePlanner.chooseAction(state, elapsedTimer, timeForChoosingMove);
 		

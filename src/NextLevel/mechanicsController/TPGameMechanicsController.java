@@ -119,7 +119,7 @@ public class TPGameMechanicsController extends GameMechanicsController
 
 	public boolean isSpriteWall(SpriteTypeFeatures sprite)
 	{
-		return (sprite.type == 4 && !sprite.passable && !sprite.destroyable);
+		return (sprite.category == 4 && !sprite.passable && !sprite.destroyable);
 	}
 
 	public boolean isSpriteDoingNothing(SpriteTypeFeatures sprite)
