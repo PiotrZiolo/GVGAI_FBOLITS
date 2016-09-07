@@ -12,7 +12,7 @@ import NextLevel.mechanicsController.PathFinder;
 import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.utils.Pair;
 import NextLevel.utils.PerformanceMonitor;
-import NextLevel.utils.LogHandler;
+// import NextLevel.utils.LogHandler;
 import NextLevel.moduleFB.moduleFBTP.FBTPGameKnowledge;
 import core.game.Event;
 import core.game.StateObservation;
@@ -212,10 +212,12 @@ public class FBTPPathFinder extends PathFinder
 			Types.ACTIONS lastMove = gameMechanicsController.getOneStepToSprite(
 					previous.stateObs.getAvatarPosition(playerID), goal.positionV,
 					previous.stateObs.getAvatarSpeed(playerID), previous.stateObs.getBlockSize());
+			/*
 			LogHandler.writeLog(
 					"Avatar position: " + previous.stateObs.getAvatarPosition(playerID) + ", sprite position: "
 							+ goal.positionV + ", one step: " + ((lastMove != null) ? "yes" : "no"),
 					"FBTPAgentMoveController.findPathToAreaNearPosition", 0);
+			*/
 			if (lastMove != null)
 			{
 				Direction orientation = vectorToDirection(previous.stateObs.getAvatarOrientation(playerID));
@@ -261,12 +263,12 @@ public class FBTPPathFinder extends PathFinder
 					PathFinderNode next = new PathFinderNode(cost + distanceToGoal, previous.path + adv.second(),
 							currentObs, playerID);
 					next.pathLength = previous.pathLength + 1;
-					
+					/*
 					LogHandler.writeLog(
 							"Position: " + currentObs.getAvatarPosition(playerID) + ", distance to goal: "
 									+ distanceToGoal + ", cost: " + cost,
 							"FBTPAgentMoveController.findPathToAreaNearPosition", 0);
-
+					*/
 					if (!costMap.containsKey(next.ID) || costMap.get(next.ID) > next.cost)
 					{
 						costMap.put(next.ID, next.cost);
@@ -276,13 +278,13 @@ public class FBTPPathFinder extends PathFinder
 			}
 			//performanceMonitor.finishNanoMeasure("Finish loop iteration", "FBTPPathFinder.findPathToAreaNearPosition", 3);
 		}
-		
+		/*
 		LogHandler.writeLog("Path finding start> Goal position: " + goalPosition
 				+ " Avatar position: " + stateObsMulti.getAvatarPosition(playerID)
 				+ " Time limit: " + timeLimit
 				+ " Path found: " + ((finalObs != null) ? "yes" : "no"), 
 				"FBTPPathFinder.findPathToAreaNearPosition", 3);
-
+		*/
 		this.timeLimit = 0;
 		if (finalObs != null && translateString(goal.path) != null)
 			return new Pair<StateObservation, ArrayList<ACTIONS>>((StateObservation) finalObs,

@@ -7,10 +7,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import NextLevel.StateEvaluator;
-import NextLevel.StateHandler;
 import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.moduleFB.SpriteTypeFeatures;
-import NextLevel.utils.LogHandler;
+// import NextLevel.utils.LogHandler;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import core.game.Observation;
@@ -23,6 +22,7 @@ public class FBTPStateEvaluator extends StateEvaluator
 	// protected FBTPGameKnowledge gameKnowledge;
 	// protected FBTPStateHandler stateHandler;
 	private InfluenceMap map;
+	private InfluenceMap playerInfluenceMap;
 	private StateObservationMulti mappedState;
 	private Map<Integer, InfluencePoint> mappedObjects;
 	private Map<Integer, InfluencePoint> unmappedObjects;
@@ -104,7 +104,7 @@ public class FBTPStateEvaluator extends StateEvaluator
 		SpriteTypeFeatures sprite = gameKnowledge.getSpriteTypeFeaturesByType(type);
 		if (sprite != null)
 		{
-			LogHandler.writeLog("Sprite features> type: " + type + ", features: " + sprite.print(), "FBTPStateEvaluator.getInfluenceValue", 0);
+			// LogHandler.writeLog("Sprite features> type: " + type + ", features: " + sprite.print(), "FBTPStateEvaluator.getInfluenceValue", 0);
 			
 			if (sprite.passable || sprite.destroyable)
 			{
@@ -225,7 +225,7 @@ public class FBTPStateEvaluator extends StateEvaluator
 			map.removeObject(key);
 		
 		for (int key : sharedKeys)
-			if (mappedObjects.get(key).position != mappedObjectsNew.get(key).position)
+			if (!mappedObjects.get(key).position.equals(mappedObjectsNew.get(key).position))
 				map.removeObject(key);
 
 		map.update(newState, gameKnowledge);
@@ -234,7 +234,7 @@ public class FBTPStateEvaluator extends StateEvaluator
 			map.addObject(mappedObjectsNew.get(key));
 
 		for (int key : sharedKeys)
-			if (mappedObjects.get(key).position != mappedObjectsNew.get(key).position)
+			if (!mappedObjects.get(key).position.equals(mappedObjectsNew.get(key).position))
 				map.addObject(mappedObjectsNew.get(key));
 
 		mappedObjects = mappedObjectsNew;
@@ -298,12 +298,12 @@ public class FBTPStateEvaluator extends StateEvaluator
 		if (stateObsMulti.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES)
 			return -999999999;
 
-		updateInfluenceMap(stateObsMulti);
-		double score = map.getInfluenceValue(stateObsMulti.getAvatarPosition(playerID));
-		score += getUnmappedScore();
-		score += getMappedPoints();
-		score += boardStateScore;
-		score += stateObsMulti.getGameScore(playerID);
+		//updateInfluenceMap(stateObsMulti);
+		//double score = map.getInfluenceValue(stateObsMulti.getAvatarPosition(playerID));
+		//score += getUnmappedScore();
+		//score += getMappedPoints();
+		//score += boardStateScore;
+		double score = stateObsMulti.getGameScore(playerID);
 
 		return score;
 	}
@@ -336,40 +336,40 @@ public class FBTPStateEvaluator extends StateEvaluator
 
 		return score;
 	}
-
-	public double evaluateSprite(StateObservationMulti stateObsMulti, Observation observation)
+	
+	public void initializePlayerInfluenceMap(StateObservationMulti stateObsMulti)
 	{
 		this.mappedState = stateObsMulti;
-		InfluenceMap map = new InfluenceMap(mappedState, gameKnowledge);
-		InfluencePoint influencePoint = new InfluencePoint(observation.obsID, observation.position,
-				getInfluenceValue(observation.itype), 1);
-		map.addObject(influencePoint);
-		return map.getInfluenceValue(mappedState.getAvatarPosition(gameKnowledge.getPlayerID()));
-	}
-
-	public HashMap<Integer, Double> evaluateSprites(StateObservationMulti stateObs, ArrayList<Observation> observations)
-	{
-		this.mappedState = stateObs;
-		InfluenceMap map = new InfluenceMap(mappedState, gameKnowledge);
+		playerInfluenceMap = new InfluenceMap(mappedState, gameKnowledge);
 		InfluencePoint influencePoint = new InfluencePoint(1,
 				mappedState.getAvatarPosition(gameKnowledge.getPlayerID()), 1, 1);
-		map.addObject(influencePoint);
+		playerInfluenceMap.addObject(influencePoint);
+	}
 
+	public double evaluateSprite(Observation observation)
+	{
+		return (getInfluenceValue(observation.itype) + this.curiosityFactor) * playerInfluenceMap.getInfluenceValue(observation.position);
+	}
+
+	public HashMap<Integer, Double> evaluateSprites(ArrayList<Observation> observations)
+	{
 		HashMap<Integer, Double> score = new HashMap<Integer, Double>();
 		for (Observation obs : observations)
 		{
-			score.put(obs.obsID, (getInfluenceValue(obs.itype) + this.curiosityFactor) * map.getInfluenceValue(obs.position));
+			score.put(obs.obsID, (getInfluenceValue(obs.itype) + this.curiosityFactor) * playerInfluenceMap.getInfluenceValue(obs.position));
+			/*
 			LogHandler.writeLog(
 					"POI id: " + obs.obsID + ", type: "	+ obs.itype + 
 					", category: " + obs.category + ", position: " + obs.position + 
 					", value: " + score.get(obs.obsID) + ", type influence value: " + getInfluenceValue(obs.itype)
-					+ ", position influence value: " + map.getInfluenceValue(obs.position),
-					"FBTPStateEvaluator.evaluateSprites", 3);
+					+ ", position influence value: " + playerInfluenceMap.getInfluenceValue(obs.position),
+					"FBTPStateEvaluator.evaluateSprites", 0);
 			SpriteTypeFeatures sprite = gameKnowledge.getSpriteTypeFeaturesByType(obs.itype);
 			if (sprite != null)
 			{
-				LogHandler.writeLog("Sprite features> type: " + obs.itype + ", features: " + sprite.print(), "FBTPStateEvaluator.evaluateSprites", 3);
+				LogHandler.writeLog("Sprite features> type: " + obs.itype + ", features: " + sprite.print(), "FBTPStateEvaluator.evaluateSprites", 0);
 			}
+			*/
 		}
 
 		return score;

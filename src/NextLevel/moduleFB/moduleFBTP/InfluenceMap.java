@@ -1,6 +1,5 @@
 package NextLevel.moduleFB.moduleFBTP;
 
-import NextLevel.mechanicsController.TPGameMechanicsController;
 import NextLevel.moduleFB.SpriteTypeFeatures;
 import NextLevel.utils.VectorInt2d;
 import core.game.StateObservationMulti;

@@ -42,14 +42,14 @@ public class Agent extends AbstractMultiPlayer
 	private int oppID;
 	private int numOfPlayers;
 
-	private int timeForLearningDuringInitialization = 1500;
-	private int timeForLearningDuringMove = 0;
-	private int timeForChoosingMove = 1000;
+	private int timeForLearningDuringInitialization = 500;
+	private int timeForLearningDuringMove = 100;
+	private int timeForChoosingMove = 30;
 
 	// Objects structure
 
 	private TPOLITSMovePlanner movePlanner;
-	private BasicFBTPGameKnowledgeExplorer gameKnowledgeExplorer;
+	private FBTPGameKnowledgeExplorer gameKnowledgeExplorer;
 	private FBTPGameKnowledge gameKnowledge;
 	private FBTPAgentMoveController agentMoveController;
 	private TPGameMechanicsController gameMechanicsController;
@@ -81,8 +81,9 @@ public class Agent extends AbstractMultiPlayer
 	 */
 	public Agent(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer, int playerID)
 	{
-		LogHandler.clearLog();
 		PerformanceMonitor.clearLog();
+		/*
+		LogHandler.clearLog();
 
 		LogHandler.writeLog("Speed: " + stateObs.getAvatarSpeed(playerID), "Agent.creator", 1);
 		LogHandler.writeLog("Block size: " + stateObs.getBlockSize(), "Agent.creator", 1);
@@ -91,6 +92,7 @@ public class Agent extends AbstractMultiPlayer
 		LogHandler.writeLog("World dimensions: " + stateObs.getObservationGrid().length * stateObs.getBlockSize() + ", "
 				+ stateObs.getObservationGrid()[0].length * stateObs.getBlockSize(), "Agent.creator", 0);
 		LogHandler.writeLog("Avatar position: " + stateObs.getAvatarPosition(playerID), "Agent.creator", 3);
+		*/
 
 		this.playerID = playerID;
 		this.oppID = 1 - playerID;
@@ -101,7 +103,7 @@ public class Agent extends AbstractMultiPlayer
 		agentMoveController = new FBTPAgentMoveController(gameKnowledge, gameMechanicsController);
 		// agentMoveController.setParameters(false, approachingSpriteMovesLimit);
 		gameStateTracker = new FBTPGameStateTracker(gameMechanicsController, gameKnowledge);
-		gameKnowledgeExplorer = new BasicFBTPGameKnowledgeExplorer(gameKnowledge, agentMoveController,
+		gameKnowledgeExplorer = new FBTPGameKnowledgeExplorer(gameKnowledge, agentMoveController,
 				gameMechanicsController, gameStateTracker);
 
 		// Learning
@@ -150,13 +152,14 @@ public class Agent extends AbstractMultiPlayer
 	
 		//Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
 		
+		gameKnowledgeExplorer.learnBasics(stateObs, playerID);
 		gameStateTracker.runTracker(stateObs);
 		gameKnowledgeExplorer.successiveLearn(stateObs, elapsedTimer, timeForLearningDuringMove);
 		stateEvaluatorTeacher.updateEvaluator();
 		
 		BasicTPState state = stateHandler.prepareState(stateObs);
 		
-		//LogHandler.writeLog("From avatar sprite: " + agentMoveController.isFromAvatarSpriteOnTheMap(stateObs, playerID), "Agent.act", 3);
+		//LogHandler.writeLog("From avatar sprite type: " + gameKnowledge.getFromAvatarSpriteType(), "Agent.act", 3);
 		
 		//LogHandler.writeLog("State evaluation: " + stateEvaluator.evaluateState(stateObs), "Agent.act", 3);
 		//stateObs.advance(new Types.ACTIONS[]{Types.ACTIONS.ACTION_NIL, Types.ACTIONS.ACTION_NIL});

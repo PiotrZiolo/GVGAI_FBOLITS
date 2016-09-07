@@ -2,15 +2,13 @@ package NextLevel.moduleFB.moduleFBTP.MechanicsController;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Random;
 
 import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.TPGameMechanicsController;
-import NextLevel.moduleFB.SpriteTypeFeatures;
 import NextLevel.moduleFB.moduleFBTP.FBTPGameKnowledge;
 import NextLevel.moduleTP.TPWinScoreStateEvaluator;
-import NextLevel.utils.LogHandler;
+// import NextLevel.utils.LogHandler;
 import NextLevel.utils.Pair;
 import core.game.Observation;
 import core.game.StateObservation;
@@ -366,17 +364,22 @@ public class FBTPAgentMoveController extends AgentMoveController
 		{
 			return false;
 		}
+		else if (gameMechanicsController.isAvatarOneStepFromSprite(stateObs.getAvatarPosition(playerID), position, 
+				stateObs.getAvatarSpeed(playerID), stateObs.getBlockSize()))
+		{
+			return true;
+		}
 		else
 		{
 			FBTPPathFinder fbtpPathFinder = (FBTPPathFinder) this.pathFinder;
 			Pair<StateObservation, ArrayList<Types.ACTIONS>> approachInfo = fbtpPathFinder.findPathToAreaNearPosition(position, stateObs,
-					elapsedTimer, 20);
-			
+					elapsedTimer, 2);
+			/*
 			LogHandler.writeLog("Range path found: " + ((approachInfo != null) 
 					? "yes Size: " + approachInfo.second().size() + " " + approachInfo.second()
 					: "no"), 
 					"FBTPAgentMoveController.isPositionWithinGivenMoveRange", 3);
-
+			 */
 			if (approachInfo != null && approachInfo.second().size() <= numMoves + 1)
 				return true;
 		}
@@ -410,7 +413,7 @@ public class FBTPAgentMoveController extends AgentMoveController
 
 			if (pathFinderOutput == null)
 			{
-				LogHandler.writeLog("PathFinder returned null", "FBTPAgentMoveController.approachSprite", 3);
+				// LogHandler.writeLog("PathFinder returned null", "FBTPAgentMoveController.approachSprite", 3);
 				return null;
 			}
 
@@ -422,18 +425,22 @@ public class FBTPAgentMoveController extends AgentMoveController
 				if (gameMechanicsController.isAvatarOneStepFromSprite(currentState.getAvatarPosition(playerID), observation.position, 
 						currentState.getAvatarSpeed(), currentState.getBlockSize()))
 				{
-					LogHandler.writeLog("PathFinder returned path, obs was localized and it was one step from avatar at the end", "FBTPAgentMoveController.approachSprite", 3);
+					// LogHandler.writeLog("PathFinder returned path, obs was localized and it was one step from avatar at the end", "FBTPAgentMoveController.approachSprite", 3);
 					return new Pair<StateObservationMulti, ArrayList<ACTIONS>>(currentState, pathFinderOutput.second());
 				}
+				/*
 				else
 				{
 					LogHandler.writeLog("PathFinder returned path, obs was localized, but it was not one step from avatar", "FBTPAgentMoveController.approachSprite", 3);
 				}
+				*/
 			}
 			else
 			{
+				/*
 				LogHandler.writeLog("PathFinder returned path, but obs was not localized" 
 						+ " Path: " + pathFinderOutput.second(), "FBTPAgentMoveController.approachSprite", 3);
+				*/
 				return null;
 			}
 		}

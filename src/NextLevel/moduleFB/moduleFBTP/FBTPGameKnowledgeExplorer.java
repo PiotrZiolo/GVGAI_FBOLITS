@@ -150,6 +150,9 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 			if (event.gameStep != stateObs.getGameTick() - 1)
 				return false;
 
+			if (!((FBTPGameKnowledge) gameKnowledge).getSpriteTypes().contains(event.passiveTypeId))
+				return true;
+
 			if (!((TPGameMechanicsController) gameMechanicsController)
 					.isSpriteWall(((FBTPGameKnowledge) gameKnowledge).getSpriteTypeFeaturesByType(event.passiveTypeId)))
 			{
@@ -602,6 +605,7 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 
 	private boolean checkWhetherShootingIsAllowed(StateObservationMulti stateObs)
 	{
+		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		ArrayList<Types.ACTIONS> initialActions = stateObs.getAvailableActions(playerID);
 		if (initialActions.contains(Types.ACTIONS.ACTION_NIL))
 			initialActions.remove(Types.ACTIONS.ACTION_NIL);
@@ -622,7 +626,8 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 			actions[this.playerID] = initialAction;
 			stateObsCopy.advance(actions);
 
-			ArrayList<Observation>[] initialFromAvatarSprites = stateObsCopy.getFromAvatarSpritesPositions();
+			ArrayList<Observation>[] initialFromAvatarSprites = stateObsCopy
+					.getFromAvatarSpritesPositions(stateObs.getAvatarPosition(fbtpGameKnowledge.getPlayerID()));
 			ArrayList<Integer> initialFromAvatarSpritesId = new ArrayList<Integer>();
 			if (initialFromAvatarSprites != null)
 			{
@@ -635,7 +640,8 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 			actions2[this.playerID] = Types.ACTIONS.ACTION_USE;
 			stateObsCopy.advance(actions2);
 
-			ArrayList<Observation>[] laterFromAvatarSprites = stateObsCopy.getFromAvatarSpritesPositions();
+			ArrayList<Observation>[] laterFromAvatarSprites = stateObsCopy
+					.getFromAvatarSpritesPositions(stateObs.getAvatarPosition(fbtpGameKnowledge.getPlayerID()));
 			HashMap<Integer, Observation> newSpriteObservationMap = new HashMap<Integer, Observation>();
 			if (laterFromAvatarSprites != null)
 			{
@@ -656,7 +662,8 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 			StateObservationMulti stateObsCopyCopy = stateObsCopy.copy();
 			stateObsCopyCopy.advance(new Types.ACTIONS[] { Types.ACTIONS.ACTION_NIL, Types.ACTIONS.ACTION_NIL });
 
-			ArrayList<Observation>[] finalFromAvatarSprites = stateObsCopyCopy.getFromAvatarSpritesPositions();
+			ArrayList<Observation>[] finalFromAvatarSprites = stateObsCopyCopy
+					.getFromAvatarSpritesPositions(stateObs.getAvatarPosition(fbtpGameKnowledge.getPlayerID()));
 			if (finalFromAvatarSprites != null)
 			{
 				for (ArrayList<Observation> spriteArray : finalFromAvatarSprites)
@@ -664,7 +671,10 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 						if (newSpriteObservationMap.containsKey(sprite.obsID))
 						{
 							if (!newSpriteObservationMap.get(sprite.obsID).position.equals(sprite.position))
+							{
+								fbtpGameKnowledge.setFromAvatarSpriteType(sprite.itype);
 								return true;
+							}
 						}
 			}
 		}

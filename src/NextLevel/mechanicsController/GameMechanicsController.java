@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import NextLevel.GameKnowledge;
 import NextLevel.utils.AuxUtils;
 import NextLevel.utils.PerformanceMonitor;
-import NextLevel.utils.LogHandler;
+//import NextLevel.utils.LogHandler;
 import core.game.Observation;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
@@ -73,16 +73,18 @@ public class GameMechanicsController
 	{
 		ArrayList<Observation> suspects;
 
+		/*
 		LogHandler.writeLog("Searching for sprite with id: " + obsID + " and last location: " + position, 
 				"GameMechanicsController.localizeSprite", 0);
+		*/
 		int[] start = { (int) (position.x / stateObs.getBlockSize()), (int) (position.y / stateObs.getBlockSize()) };
-		LogHandler.writeLog("start x: " + start[0], "GameMechanicsController.localizeSprite", 0);
-		LogHandler.writeLog("start y: " + start[1], "GameMechanicsController.localizeSprite", 0);
+		//LogHandler.writeLog("start x: " + start[0], "GameMechanicsController.localizeSprite", 0);
+		//LogHandler.writeLog("start y: " + start[1], "GameMechanicsController.localizeSprite", 0);
 
 		int worldXDimension = stateObs.getObservationGrid().length;
 		int worldYDimension = stateObs.getObservationGrid()[0].length;
-		LogHandler.writeLog("worldXDimension: " + worldXDimension, "GameMechanicsController.localizeSprite", 0);
-		LogHandler.writeLog("worldYDimension: " + worldYDimension, "GameMechanicsController.localizeSprite", 0);
+		//LogHandler.writeLog("worldXDimension: " + worldXDimension, "GameMechanicsController.localizeSprite", 0);
+		//LogHandler.writeLog("worldYDimension: " + worldYDimension, "GameMechanicsController.localizeSprite", 0);
 
 		int distance = 0;
 
@@ -96,8 +98,10 @@ public class GameMechanicsController
 					{
 						int x = AuxUtils.mod(start[0] + i, worldXDimension);
 						int y = AuxUtils.mod(start[1] + j, worldYDimension);
+						/*
 						LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
 								"GameMechanicsController.localizeSprite", 0);
+						*/
 						suspects = stateObs.getObservationGrid()[x][y];
 						for (Observation suspect : suspects)
 							if (suspect.obsID == obsID)
@@ -110,8 +114,10 @@ public class GameMechanicsController
 					{
 						int x = AuxUtils.mod(start[0] + i, worldXDimension);
 						int y = AuxUtils.mod(start[1] + j, worldYDimension);
+						/*
 						LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
 								"GameMechanicsController.localizeSprite", 0);
+						*/
 						suspects = stateObs.getObservationGrid()[x][y];
 						for (Observation suspect : suspects)
 							if (suspect.obsID == obsID)
@@ -329,7 +335,7 @@ public class GameMechanicsController
 			double xDistance = Math.abs(position1.x - position2.x);
 			double yDistance = Math.abs(position1.y - position2.y);
 			
-			LogHandler.writeLog("Not open map", "GameMechanicsController.Manhattan", 3);
+			//LogHandler.writeLog("Not open map", "GameMechanicsController.Manhattan", 3);
 			
 			return (xDistance + yDistance) / stateObs.getBlockSize();
 		}

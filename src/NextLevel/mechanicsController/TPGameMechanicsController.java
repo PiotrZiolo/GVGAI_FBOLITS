@@ -1,17 +1,13 @@
 package NextLevel.mechanicsController;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.TreeSet;
 
 import NextLevel.moduleFB.SpriteTypeFeatures;
 import NextLevel.moduleTP.TPGameKnowledge;
 import NextLevel.moduleTP.TPSituationOfInterest;
-import NextLevel.utils.AuxUtils;
-import baseStructure.utils.LogHandler;
 import core.game.Event;
 import core.game.Observation;
-import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import ontology.Types;
 import tools.Vector2d;

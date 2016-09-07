@@ -14,7 +14,7 @@ public class CompetitionParameters
     /**
      * Milliseconds allowed per controller action.
      */
-    public static int ACTION_TIME = 2000;
+    public static int ACTION_TIME = 400;
 
     /**
      * Milliseconds for controller disqualification, if it returns an action after this time.
@@ -24,7 +24,7 @@ public class CompetitionParameters
     /** 
      * Milliseconds allowed for controller initialization.
      */
-    public static int INITIALIZATION_TIME = 2000;
+    public static int INITIALIZATION_TIME = 1000;
 
     /**
      * Milliseconds allowed for controller tear down.
