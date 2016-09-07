@@ -117,7 +117,7 @@ public class FBTPPathFinder extends PathFinder
 				if (!hasPositionChanged(previous.positionV, currentObs.getAvatarPosition(playerID)))
 					continue;
 				double distanceToGoal = getDistanceToGoalScore(currentObs);
-				double cost = previous.path.length() + 1 - getScore(previous.stateObs, currentObs);
+				double cost = previous.pathLength + 1 - getScore(previous.stateObs, currentObs);
 				PathFinderNode next = new PathFinderNode(cost + distanceToGoal, previous.path + adv.second(),
 						currentObs, playerID);
 				next.pathLength = previous.pathLength + 1;
@@ -259,8 +259,8 @@ public class FBTPPathFinder extends PathFinder
 					if (!hasPositionChanged(previous.positionV, currentObs.getAvatarPosition(playerID)))
 						continue;
 					double distanceToGoal = getDistanceToGoalScore(currentObs);
-					double cost = previous.path.length() + 1 - getScore(previous.stateObs, currentObs);
-					PathFinderNode next = new PathFinderNode(cost + distanceToGoal, previous.path + adv.second(),
+					double cost = previous.pathLength + 1 - getScore(previous.stateObs, currentObs);
+					PathFinderNode next = new PathFinderNode(cost + 2 * distanceToGoal, previous.path + adv.second(),
 							currentObs, playerID);
 					next.pathLength = previous.pathLength + 1;
 					/*

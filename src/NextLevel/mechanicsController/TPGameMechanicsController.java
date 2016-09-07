@@ -120,78 +120,79 @@ public class TPGameMechanicsController extends GameMechanicsController
 
 	public boolean isSpriteDoingNothing(SpriteTypeFeatures sprite)
 	{
-		if (sprite==null)
+		if (sprite == null)
 			return true;
-		
-		return (!sprite.collectable && !sprite.allowingVictory && !sprite.dangerousOtherwise && !sprite.givingVictoryMove
-				&& !sprite.givingDefeatMove && sprite.changingPointsMove == 0 && !sprite.givingVictoryUse
-				&& !sprite.givingDefeatUse && sprite.changingPointsUse == 0 && sprite.changingValuesOfOtherObjects == 0
-				&& sprite.dangerousToAvatar == 0);
+
+		return (!sprite.collectable && !sprite.allowingVictory && !sprite.dangerousOtherwise
+				&& !sprite.givingVictoryMove && !sprite.givingDefeatMove && sprite.changingPointsMove == 0
+				&& !sprite.givingVictoryUse && !sprite.givingDefeatUse && sprite.changingPointsUse == 0
+				&& sprite.changingValuesOfOtherObjects == 0 && sprite.dangerousToAvatar == 0);
 	}
-	
-	public ArrayList<Observation> getListOfSprites (StateObservationMulti state)
+
+	public ArrayList<Observation> getListOfSprites(StateObservationMulti state)
 	{
 		ArrayList<Observation> listOfSprites = new ArrayList<Observation>();
 		ArrayList<Observation> part[];
-		
+
 		if (treatFromAvatarAsSprite)
 		{
 			part = state.getFromAvatarSpritesPositions();
-			if (part!=null)
+			if (part != null)
 				for (ArrayList<Observation> array : part)
 					listOfSprites.addAll(array);
 		}
-		
+
 		part = state.getImmovablePositions();
-		if (part!=null)
+		if (part != null)
 			for (ArrayList<Observation> array : part)
 				listOfSprites.addAll(array);
-		
+
 		part = state.getMovablePositions();
-		if (part!=null)
+		if (part != null)
 			for (ArrayList<Observation> array : part)
 				listOfSprites.addAll(array);
-		
+
 		part = state.getNPCPositions();
-		if (part!=null)
+		if (part != null)
 			for (ArrayList<Observation> array : part)
 				listOfSprites.addAll(array);
-		
+
 		part = state.getPortalsPositions();
-		if (part!=null)
+		if (part != null)
 			for (ArrayList<Observation> array : part)
 				listOfSprites.addAll(array);
-		
+
 		part = state.getResourcesPositions();
-		if (part!=null)
+		if (part != null)
 			for (ArrayList<Observation> array : part)
 				listOfSprites.addAll(array);
-		
-		Observation opponent = getPlayerObservation(((TPGameKnowledge)gameKnowledge).getOppID(), state);
-		if (opponent!=null)
+
+		Observation opponent = getPlayerObservation(((TPGameKnowledge) gameKnowledge).getOppID(), state);
+		if (opponent != null)
 			listOfSprites.add(opponent);
-		
+
 		return listOfSprites;
 	}
-	
-	public Observation getPlayerObservation (int playerID, StateObservationMulti stateObs)
+
+	public Observation getPlayerObservation(int playerID, StateObservationMulti stateObs)
 	{
-		ArrayList<Observation> observations = stateObs.getObservationGrid()
-				[(int) (stateObs.getAvatarPosition(playerID).x/stateObs.getBlockSize())]
-				[(int) (stateObs.getAvatarPosition(playerID).y/stateObs.getBlockSize())];
-		
+		ArrayList<Observation> observations = stateObs
+				.getObservationGrid()[(int) (stateObs.getAvatarPosition(playerID).x
+						/ stateObs.getBlockSize())][(int) (stateObs.getAvatarPosition(playerID).y
+								/ stateObs.getBlockSize())];
+
 		Observation opp = null;
-		
+
 		for (Observation obs : observations)
 		{
-			if ( obs.category == 0 )
+			if (obs.category == 0)
 			{
-				if ( opp != null )
-					return null;
+				if (gameKnowledge.getAvatarSpriteId() == obs.obsID)
+					return obs;
 				opp = obs;
 			}
 		}
-		
+
 		return opp;
 	}
 
@@ -205,39 +206,39 @@ public class TPGameMechanicsController extends GameMechanicsController
 			part = state.getFromAvatarSpritesPositions(refPosition);
 			listOfSprites.addAll(getRepresentatives(part, refPosition));
 		}
-		
+
 		part = state.getImmovablePositions(refPosition);
 		listOfSprites.addAll(getRepresentatives(part, refPosition));
-		
+
 		part = state.getMovablePositions(refPosition);
 		listOfSprites.addAll(getRepresentatives(part, refPosition));
-		
+
 		part = state.getNPCPositions(refPosition);
 		listOfSprites.addAll(getRepresentatives(part, refPosition));
-		
+
 		part = state.getPortalsPositions(refPosition);
 		listOfSprites.addAll(getRepresentatives(part, refPosition));
-		
+
 		part = state.getResourcesPositions(refPosition);
 		listOfSprites.addAll(getRepresentatives(part, refPosition));
-		
-		Observation opponent = getPlayerObservation(((TPGameKnowledge)gameKnowledge).getOppID(), state);
-		if (opponent!=null)
+
+		Observation opponent = getPlayerObservation(((TPGameKnowledge) gameKnowledge).getOppID(), state);
+		if (opponent != null)
 			listOfSprites.add(opponent);
-		
+
 		return listOfSprites;
 	}
 
 	private ArrayList<Observation> getRepresentatives(ArrayList<Observation>[] part, Vector2d refPosition)
 	{
 		ArrayList<Observation> listOfSprites = new ArrayList<Observation>();
-		if (part!=null)
+		if (part != null)
 		{
 			for (ArrayList<Observation> array : part)
 			{
-				for ( Observation obs : array )
+				for (Observation obs : array)
 				{
-					if (obs.position!=refPosition)
+					if (obs.position != refPosition)
 					{
 						listOfSprites.add(obs);
 						break;
@@ -247,8 +248,9 @@ public class TPGameMechanicsController extends GameMechanicsController
 		}
 		return listOfSprites;
 	}
-	
-	public double getManhattanDistanceInAvatarSteps(StateObservationMulti stateObs, int playerID, Vector2d position1, Vector2d position2)
+
+	public double getManhattanDistanceInAvatarSteps(StateObservationMulti stateObs, int playerID, Vector2d position1,
+			Vector2d position2)
 	{
 		return getManhattanDistanceInBlockSizes(stateObs, position1, position2) / stateObs.getAvatarSpeed(playerID);
 	}
@@ -264,7 +266,7 @@ public class TPGameMechanicsController extends GameMechanicsController
 			for (Types.ACTIONS j : moveActions)
 				if (j == i)
 					playerMoveActions.add(j);
-		
+
 		return playerMoveActions;
 	}
 
@@ -272,11 +274,12 @@ public class TPGameMechanicsController extends GameMechanicsController
 	{
 		ArrayList<Observation> spritesRepresentants = getListOfSpritesRepresentants(state,
 				state.getAvatarPosition(gameKnowledge.getPlayerID()));
-		
+
 		for (Observation sprite : spritesRepresentants)
 		{
-			if(sprite.itype == spriteType);
-				return sprite.category;
+			if (sprite.itype == spriteType)
+				;
+			return sprite.category;
 		}
 		return -1;
 	}
@@ -285,12 +288,31 @@ public class TPGameMechanicsController extends GameMechanicsController
 	{
 		ArrayList<Observation> spritesRepresentants = getListOfSpritesRepresentants(state,
 				state.getAvatarPosition(gameKnowledge.getPlayerID()));
-		
+
 		for (Observation sprite : spritesRepresentants)
 		{
-			if(sprite.itype == spriteType);
-				return sprite;
+			if (sprite.itype == spriteType)
+				;
+			return sprite;
 		}
 		return null;
+	}
+
+	public int getPlayerId(int playerID, StateObservationMulti stateObs)
+	{
+		ArrayList<Observation> observations = stateObs
+				.getObservationGrid()[(int) (stateObs.getAvatarPosition(playerID).x
+						/ stateObs.getBlockSize())][(int) (stateObs.getAvatarPosition(playerID).y
+								/ stateObs.getBlockSize())];
+
+		for (Observation obs : observations)
+		{
+			if (obs.category == 0)
+			{
+				return obs.obsID;
+			}
+		}
+
+		return 0;
 	}
 }

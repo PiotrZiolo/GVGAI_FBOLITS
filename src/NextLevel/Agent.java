@@ -42,7 +42,7 @@ public class Agent extends AbstractMultiPlayer
 	private int oppID;
 	private int numOfPlayers;
 
-	private int timeForLearningDuringInitialization = 500;
+	private int timeForLearningDuringInitialization = 600;
 	private int timeForLearningDuringMove = 100;
 	private int timeForChoosingMove = 30;
 
@@ -148,7 +148,7 @@ public class Agent extends AbstractMultiPlayer
 	 */
 	public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer)
 	{
-		LogHandler.writeLog("Turn: " + stateObs.getGameTick(), "Agent.act", 3);
+		//LogHandler.writeLog("Turn: " + stateObs.getGameTick(), "Agent.act", 3);
 	
 		//Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
 		

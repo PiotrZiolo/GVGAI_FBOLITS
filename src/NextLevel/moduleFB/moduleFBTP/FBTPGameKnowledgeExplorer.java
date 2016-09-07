@@ -86,6 +86,9 @@ public class FBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 
 		long startTime = elapsedTimer.remainingTimeMillis();
+		fbtpGameKnowledge.setAvatarSpriteId(
+				((TPGameMechanicsController) gameMechanicsController).getPlayerId(playerID, stateObsMulti));
+
 		fbtpGameKnowledge.setShootingAllowed(checkWhetherShootingIsAllowed(stateObsMulti));
 		fbtpGameKnowledge.setDeterministicGame(checkDeterminism(stateObsMulti, true));
 		fbtpGameKnowledge.setOpenMap(true);

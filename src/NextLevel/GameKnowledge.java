@@ -19,6 +19,7 @@ public class GameKnowledge
 	protected boolean deterministicGame;
 	protected boolean shootingAllowed;
 	protected boolean openMap;
+	protected int avatarSpriteId;
 
 	protected GameObjectives gameObjectives;
 
@@ -163,5 +164,15 @@ public class GameKnowledge
 	public void setShootingAllowed(boolean shootingAllowed)
 	{
 		this.shootingAllowed = shootingAllowed;
+	}
+	
+	public void setAvatarSpriteId(int id)
+	{
+		this.avatarSpriteId = id;
+	}
+
+	public int getAvatarSpriteId()
+	{
+		return this.avatarSpriteId;
 	}
 }

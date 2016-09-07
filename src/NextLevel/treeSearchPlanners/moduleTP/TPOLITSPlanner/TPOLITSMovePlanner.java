@@ -22,9 +22,9 @@ import NextLevel.moduleTP.TPGameKnowledgeExplorer;
 import NextLevel.treeSearchPlanners.TreeNode;
 import NextLevel.treeSearchPlanners.TreeSearchMovePlanner;
 import NextLevel.utils.AuxUtils;
-import NextLevel.utils.LogHandler;
+//import NextLevel.utils.LogHandler;
 import NextLevel.utils.Pair;
-import NextLevel.utils.PerformanceMonitor;
+//import NextLevel.utils.PerformanceMonitor;
 import core.game.Observation;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
@@ -133,8 +133,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	private void initializePOINodes()
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.initializePOINodes", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.initializePOINodes", 3);
 
 		FBTPStateEvaluator fbtpStateEvaluator = (FBTPStateEvaluator) this.stateEvaluator;
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
@@ -165,10 +165,10 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				// if (node.totalValue > highestImportance)
 				// highestImportance = node.totalValue;
 				/*
-				LogHandler.writeLog("POI id: " + poi.observation.obsID + ", type: " + poi.observation.itype
-						+ ", category: " + poi.observation.category + ", position: " + poi.position + ", value: "
-						+ node.totalValue, "TPOLITSMovePlanner.initializePOINodes", 0);
-				*/
+				 * LogHandler.writeLog("POI id: " + poi.observation.obsID + ", type: " + poi.observation.itype
+				 * + ", category: " + poi.observation.category + ", position: " + poi.position + ", value: "
+				 * + node.totalValue, "TPOLITSMovePlanner.initializePOINodes", 0);
+				 */
 			}
 
 			nodesNearPOIs.add(node);
@@ -189,12 +189,12 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			nodesNearPOIs.add(node);
 
 			/*
-			LogHandler.writeLog("Shot POI> position: " + node.poi.position + ", value: " + node.totalValue,
-					"TPOLITSMovePlanner.initializePOINodes", 0);
-			*/
+			 * LogHandler.writeLog("Shot POI> position: " + node.poi.position + ", value: " + node.totalValue,
+			 * "TPOLITSMovePlanner.initializePOINodes", 0);
+			 */
 		}
 
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.initializePOINodes", 3);
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.initializePOINodes", 3);
 	}
 
 	public ACTIONS chooseAction(State state, ElapsedCpuTimer elapsedTimer, long timeForChoosingMove)
@@ -230,8 +230,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	protected void initializeForChooseAction()
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.initializeForChooseAction", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.initializeForChooseAction", 3);
 		this.previousMode = this.mode;
 
 		if (this.goalNode == null)
@@ -247,19 +247,19 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				memoryIndex = 0;
 			}
 		}
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.initializeForChooseAction", 3);
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.initializeForChooseAction", 3);
 	}
 
 	protected void updatePOIList()
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.updatePOIList", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.updatePOIList", 3);
 		FBTPStateEvaluator fbtpStateEvaluator = (FBTPStateEvaluator) this.stateEvaluator;
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
-		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs; 
-		
+		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
+
 		// Add new POIs, remove POIs which dissappeared
-		
+
 		for (PointOfInterest poi : gameStateTracker.getNewPOIs())
 		{
 			TPOLITSTreeNode node = new TPOLITSTreeNode(gameKnowledge.getNumOfPlayerActions(), poi);
@@ -285,17 +285,17 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				}
 			}
 		}
-		
+
 		// Evaluate POIs
-		
+
 		Collections.sort(nodesNearPOIs, nodesComparator);
-		
+
 		fbtpStateEvaluator.initializePlayerInfluenceMap(rootStateObsMulti);
-		
+
 		double avgTimeTaken = 0;
 		double acumTimeTaken = 0;
 		long initialRemaining = mainElapsedTimer.remainingTimeMillis();
-		long timeForInitialization = (int) Math.max(3, ((double) this.totalTimeForChoosingMove) / 4); 
+		long timeForInitialization = (int) Math.max(3, ((double) this.totalTimeForChoosingMove) / 4);
 		long remaining = timeForInitialization;
 		int numIters = 0;
 
@@ -309,69 +309,69 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				node.totalValue = fbtpStateEvaluator.evaluateSprite(node.poi.observation);
 				node.numVisits = 1;
 				/*
-				LogHandler.writeLog(
-						"POI id: " + node.poi.observation.obsID + ", category: " + node.poi.observation.category + ", type: "
-								+ node.poi.observation.itype + ", position: " + node.poi.position 
-								+ ", distance: " + node.poi.observation.sqDist + ", value: " + node.totalValue,
-						"TPOLITSMovePlanner.updatePOIList", 3);
-				*/
+				 * LogHandler.writeLog(
+				 * "POI id: " + node.poi.observation.obsID + ", category: " + node.poi.observation.category + ", type: "
+				 * + node.poi.observation.itype + ", position: " + node.poi.position
+				 * + ", distance: " + node.poi.observation.sqDist + ", value: " + node.totalValue,
+				 * "TPOLITSMovePlanner.updatePOIList", 3);
+				 */
 			}
-			
+
 			numIters++;
 			acumTimeTaken += (elapsedTimerIteration.elapsedMillis());
 			avgTimeTaken = acumTimeTaken / numIters;
 			remaining = timeForInitialization - (initialRemaining - mainElapsedTimer.remainingTimeMillis());
 		}
-		
+
 		/*
-		// Evaluate new POIs
-
-		ArrayList<Observation> newObservations = new ArrayList<Observation>();
-		for (PointOfInterest poi : gameStateTracker.getNewPOIs())
-		{
-			newObservations.add(poi.observation);
-		}
-
-		HashMap<Integer, Double> spriteEvaluations = fbtpStateEvaluator.evaluateSprites(newObservations);
-
-		// Add new POIs to nodesNearPOIs with their initial evaluation
-
-		for (PointOfInterest poi : gameStateTracker.getNewPOIs())
-		{
-			TPOLITSTreeNode node = new TPOLITSTreeNode(gameKnowledge.getNumOfPlayerActions(), poi);
-
-			if (poi.poiType == POITYPE.SPRITE)
-			{
-				node.totalValue = spriteEvaluations.get(poi.observation.obsID);
-				node.numVisits = 1;
-
-				LogHandler.writeLog(
-						"POI id: " + poi.observation.obsID + ", category: " + poi.observation.category + ", type: "
-								+ poi.observation.itype + ", position: " + poi.position + ", value: " + node.totalValue,
-						"TPOLITSMovePlanner.updatePOIList", 0);
-			}
-
-			nodesNearPOIs.add(node);
-		}
-
-		for (PointOfInterest poi : gameStateTracker.getRemovedPOIs())
-		{
-			for (int index = 0; index < this.nodesNearPOIs.size(); index++)
-			{
-				if (this.nodesNearPOIs.get(index).poi.poiType == POITYPE.SPRITE
-						&& this.nodesNearPOIs.get(index).poi.observation.obsID == poi.observation.obsID)
-				{
-					if (this.goalNode != null && this.goalNode.poi.poiType == POITYPE.SPRITE
-							&& this.goalNode.poi.observation.obsID == poi.observation.obsID)
-					{
-						this.goalNode = null;
-					}
-					this.nodesNearPOIs.remove(index);
-					break;
-				}
-			}
-		}
-		*/
+		 * // Evaluate new POIs
+		 * 
+		 * ArrayList<Observation> newObservations = new ArrayList<Observation>();
+		 * for (PointOfInterest poi : gameStateTracker.getNewPOIs())
+		 * {
+		 * newObservations.add(poi.observation);
+		 * }
+		 * 
+		 * HashMap<Integer, Double> spriteEvaluations = fbtpStateEvaluator.evaluateSprites(newObservations);
+		 * 
+		 * // Add new POIs to nodesNearPOIs with their initial evaluation
+		 * 
+		 * for (PointOfInterest poi : gameStateTracker.getNewPOIs())
+		 * {
+		 * TPOLITSTreeNode node = new TPOLITSTreeNode(gameKnowledge.getNumOfPlayerActions(), poi);
+		 * 
+		 * if (poi.poiType == POITYPE.SPRITE)
+		 * {
+		 * node.totalValue = spriteEvaluations.get(poi.observation.obsID);
+		 * node.numVisits = 1;
+		 * 
+		 * LogHandler.writeLog(
+		 * "POI id: " + poi.observation.obsID + ", category: " + poi.observation.category + ", type: "
+		 * + poi.observation.itype + ", position: " + poi.position + ", value: " + node.totalValue,
+		 * "TPOLITSMovePlanner.updatePOIList", 0);
+		 * }
+		 * 
+		 * nodesNearPOIs.add(node);
+		 * }
+		 * 
+		 * for (PointOfInterest poi : gameStateTracker.getRemovedPOIs())
+		 * {
+		 * for (int index = 0; index < this.nodesNearPOIs.size(); index++)
+		 * {
+		 * if (this.nodesNearPOIs.get(index).poi.poiType == POITYPE.SPRITE
+		 * && this.nodesNearPOIs.get(index).poi.observation.obsID == poi.observation.obsID)
+		 * {
+		 * if (this.goalNode != null && this.goalNode.poi.poiType == POITYPE.SPRITE
+		 * && this.goalNode.poi.observation.obsID == poi.observation.obsID)
+		 * {
+		 * this.goalNode = null;
+		 * }
+		 * this.nodesNearPOIs.remove(index);
+		 * break;
+		 * }
+		 * }
+		 * }
+		 */
 
 		if (shootingScenarioNode != null)
 		{
@@ -379,15 +379,15 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		}
 
 		/*
-		LogHandler.writeLog("Number of POIs: " + this.nodesNearPOIs.size(), "TPOLITSMovePlanner.updatePOIList", 0);
-		*/
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.updatePOIList", 3);
+		 * LogHandler.writeLog("Number of POIs: " + this.nodesNearPOIs.size(), "TPOLITSMovePlanner.updatePOIList", 0);
+		 */
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.updatePOIList", 3);
 	}
 
 	protected void setGoalPOI()
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.setGoalPOI", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.setGoalPOI", 3);
 		double bestValue = -Double.MAX_VALUE;
 
 		for (int index = 0; index < this.nodesNearPOIs.size(); index++)
@@ -407,20 +407,20 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		}
 
 		/*
-		LogHandler
-				.writeLog(
-						"Goal node type: " + goalNode.poi.poiType + ", position: " + goalNode.poi.position + ", value: "
-								+ goalNode.getValue() + ((goalNode.poi.observation != null)
-										? ", POI type: " + goalNode.poi.observation.itype : ""),
-						"TPOLITSMovePlanner.setGoalPOI", 3);
-		*/
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.setGoalPOI", 3);
+		 * LogHandler
+		 * .writeLog(
+		 * "Goal node type: " + goalNode.poi.poiType + ", position: " + goalNode.poi.position + ", value: "
+		 * + goalNode.getValue() + ((goalNode.poi.observation != null)
+		 * ? ", POI type: " + goalNode.poi.observation.itype : ""),
+		 * "TPOLITSMovePlanner.setGoalPOI", 3);
+		 */
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.setGoalPOI", 3);
 	}
 
 	protected void chooseMode()
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.chooseMode", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.chooseMode", 3);
 		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
@@ -430,10 +430,10 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				poiPosition, this.poiCloseDistanceThreshold, fbtpGameKnowledge.getPlayerID());
 
 		/*
-		LogHandler.writeLog("Player position: " + rootStateObsMulti.getAvatarPosition(fbtpGameKnowledge.getPlayerID())
-				+ " Goal POI position: " + goalNode.poi.position + " Close: "
-				+ ((isAvatarCloseToGoalPOI) ? "yes" : "no"), "TPOLITSMovePlanner.chooseMode", 3);
-		*/
+		 * LogHandler.writeLog("Player position: " + rootStateObsMulti.getAvatarPosition(fbtpGameKnowledge.getPlayerID())
+		 * + " Goal POI position: " + goalNode.poi.position + " Close: "
+		 * + ((isAvatarCloseToGoalPOI) ? "yes" : "no"), "TPOLITSMovePlanner.chooseMode", 3);
+		 */
 
 		TREESEARCHMODE previousMode = this.mode;
 
@@ -447,9 +447,9 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		long remainingTimeForChoosingMove = this.totalTimeForChoosingMove - timeAlreadyUsed;
 
 		/*
-		LogHandler.writeLog("Time used for move planner initialization: " + timeAlreadyUsed,
-				"TPOLITSMovePlanner.chooseMode", 3);
-		*/
+		 * LogHandler.writeLog("Time used for move planner initialization: " + timeAlreadyUsed,
+		 * "TPOLITSMovePlanner.chooseMode", 3);
+		 */
 
 		if (remainingTimeForChoosingMove > 0)
 		{
@@ -486,6 +486,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			this.timeLimitForPOIExploration = 0;
 		}
 
+		/*
 		LogHandler.writeLog("Time for POI exploration: " + timeLimitForPOIExploration, "TPOLITSMovePlanner.chooseMode",
 				3);
 		LogHandler.writeLog("Time for single POI exploration: " + timeLimitForSinglePOIExplore,
@@ -494,18 +495,20 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 		LogHandler.writeLog("Chosen mode: " + this.mode, "TPOLITSMovePlanner.chooseMode", 3);
 		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.chooseMode", 3);
+		*/
 	}
 
 	protected void initializeForExploration()
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.initializeForExploration", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.initializeForExploration", 3);
 		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
 		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 
 		for (TPOLITSTreeNode node : nodesNearPOIs)
 		{
-			if (!(node == goalNode && this.previousMode == TREESEARCHMODE.APPROACH && this.numTurnsGoalPOINotChanged > 0))
+			if (!(node == goalNode && this.previousMode == TREESEARCHMODE.APPROACH
+					&& this.numTurnsGoalPOINotChanged > 0))
 			{
 				node.path = null;
 			}
@@ -517,9 +520,9 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				node.poiApproached = false;
 				node.stateObs = rootStateObsMulti;
 				/*
-				LogHandler.writeLog("Shot scenario> POI type: " + node.poi.poiType + ", position: " + node.poi.position,
-						"TPOLITSMovePlanner.initializeForExploration", 3);
-				*/
+				 * LogHandler.writeLog("Shot scenario> POI type: " + node.poi.poiType + ", position: " + node.poi.position,
+				 * "TPOLITSMovePlanner.initializeForExploration", 3);
+				 */
 			}
 			else if (fbtpAgentMoveController.isPositionWithinGivenMoveRange(rootStateObsMulti, poiPosition,
 					this.poiCloseDistanceThreshold, this.gameKnowledge.getPlayerID()))
@@ -528,59 +531,59 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				node.path = null;
 				node.stateObs = rootStateObsMulti;
 				/*
-				LogHandler.writeLog(
-						"POI approached scenario> POI type: " + node.poi.poiType + ", position: " + node.poi.position,
-						"TPOLITSMovePlanner.initializeForExploration", 3);
-				*/
+				 * LogHandler.writeLog(
+				 * "POI approached scenario> POI type: " + node.poi.poiType + ", position: " + node.poi.position,
+				 * "TPOLITSMovePlanner.initializeForExploration", 3);
+				 */
 			}
 			/*
-			else if (node.poi.positionChangedFromPreviousTurn)
-			{
-				node.poiApproached = false;
-
-				if (node.stateObs != null) // if a stateObs close to POI has already been found earlier, move this state towards POI
-				{
-					Pair<StateObservationMulti, ArrayList<Types.ACTIONS>> approachInfo = null;
-
-					if (node.poi.poiType == POITYPE.SPRITE)
-					{
-						int maxDistance = 2;
-						int timeLimit = 20;
-						approachInfo = fbtpAgentMoveController.approachSprite(node.stateObs,
-								this.gameKnowledge.getPlayerID(), node.poi.observation, maxDistance, timeLimit);
-					}
-					else if (node.poi.poiType == POITYPE.POSITION)
-					{
-						int maxDistance = 2;
-						int timeLimit = 20;
-						approachInfo = fbtpAgentMoveController.reachPosition(node.stateObs,
-								this.gameKnowledge.getPlayerID(), node.poi.position, maxDistance, timeLimit);
-					}
-
-					if (approachInfo != null)
-						node.stateObs = approachInfo.first();
-					node.path = null; // One could consider merging paths to reduce the number of invocations of path finding, however this may lead to very non-optimal paths
-
-					LogHandler.writeLog(
-							"POI not approached scenario>" + " short approach successful: "
-									+ ((approachInfo != null) ? "yes" : "no") + ", POI type: " + node.poi.poiType
-									+ ", position: " + node.poi.position,
-							"TPOLITSMovePlanner.initializeForExploration", 3);
-				}
-				else
-				{
-					LogHandler.writeLog("POI not approached scenario> no stateObs, POI type: " + node.poi.poiType
-							+ ", position: " + node.poi.position, "TPOLITSMovePlanner.initializeForExploration", 3);
-				}
-			}
-			*/
+			 * else if (node.poi.positionChangedFromPreviousTurn)
+			 * {
+			 * node.poiApproached = false;
+			 * 
+			 * if (node.stateObs != null) // if a stateObs close to POI has already been found earlier, move this state towards POI
+			 * {
+			 * Pair<StateObservationMulti, ArrayList<Types.ACTIONS>> approachInfo = null;
+			 * 
+			 * if (node.poi.poiType == POITYPE.SPRITE)
+			 * {
+			 * int maxDistance = 2;
+			 * int timeLimit = 20;
+			 * approachInfo = fbtpAgentMoveController.approachSprite(node.stateObs,
+			 * this.gameKnowledge.getPlayerID(), node.poi.observation, maxDistance, timeLimit);
+			 * }
+			 * else if (node.poi.poiType == POITYPE.POSITION)
+			 * {
+			 * int maxDistance = 2;
+			 * int timeLimit = 20;
+			 * approachInfo = fbtpAgentMoveController.reachPosition(node.stateObs,
+			 * this.gameKnowledge.getPlayerID(), node.poi.position, maxDistance, timeLimit);
+			 * }
+			 * 
+			 * if (approachInfo != null)
+			 * node.stateObs = approachInfo.first();
+			 * node.path = null; // One could consider merging paths to reduce the number of invocations of path finding, however this may lead to very non-optimal paths
+			 * 
+			 * LogHandler.writeLog(
+			 * "POI not approached scenario>" + " short approach successful: "
+			 * + ((approachInfo != null) ? "yes" : "no") + ", POI type: " + node.poi.poiType
+			 * + ", position: " + node.poi.position,
+			 * "TPOLITSMovePlanner.initializeForExploration", 3);
+			 * }
+			 * else
+			 * {
+			 * LogHandler.writeLog("POI not approached scenario> no stateObs, POI type: " + node.poi.poiType
+			 * + ", position: " + node.poi.position, "TPOLITSMovePlanner.initializeForExploration", 3);
+			 * }
+			 * }
+			 */
 			else
 			{
 				node.poiApproached = false;
 				node.stateObs = null;
 			}
 		}
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.initializeForExploration", 3);
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.initializeForExploration", 3);
 	}
 
 	protected void explorePOIs()
@@ -604,19 +607,19 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			avgTimeTaken = acumTimeTaken / numIters;
 			remaining = this.timeLimitForPOIExploration - (initialRemaining - mainElapsedTimer.remainingTimeMillis());
 			/*
-			LogHandler
-					.writeLog(
-							"Iteration time: " + elapsedTimerIteration.elapsedMillis() + " | cumulative time taken: "
-									+ acumTimeTaken + " | remaining: " + remaining + ")",
-							"TPOLITSMovePlanner.explorePOIs", 3);
-			*/
+			 * LogHandler
+			 * .writeLog(
+			 * "Iteration time: " + elapsedTimerIteration.elapsedMillis() + " | cumulative time taken: "
+			 * + acumTimeTaken + " | remaining: " + remaining + ")",
+			 * "TPOLITSMovePlanner.explorePOIs", 3);
+			 */
 		}
 	}
 
 	protected TPOLITSTreeNode choosePOIToExplore(int numExplorations)
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.choosePOIToExplore", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.choosePOIToExplore", 3);
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
 		TPOLITSTreeNode selected = null;
@@ -632,13 +635,14 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		{
 			for (TPOLITSTreeNode node : this.nodesNearPOIs)
 			{
-				if (node.poi.poiType != POITYPE.SHOT 
-						&& !(node == goalNode && this.previousMode == TREESEARCHMODE.APPROACH && this.numTurnsGoalPOINotChanged > 0)) 
-					// we exclude shot scenario and an approach goal
+				if (node.poi.poiType != POITYPE.SHOT && !(node == goalNode
+						&& this.previousMode == TREESEARCHMODE.APPROACH && this.numTurnsGoalPOINotChanged > 0))
+				// we exclude shot scenario and an approach goal
 				{
 					double nodeValue = node.getValue();
 					// nodeValue = Utils.normalise(nodeValue, this.bounds[0], this.bounds[1]);
-					double uctValue = nodeValue + this.uctConstantInExplore * Math.sqrt(rootStateObsMulti.getGameTick() / node.numVisits);
+					double uctValue = nodeValue
+							+ this.uctConstantInExplore * Math.sqrt(rootStateObsMulti.getGameTick() / node.numVisits);
 
 					uctValue = Utils.noise(uctValue, this.epsilon, this.randomGenerator.nextDouble()); // break ties randomly
 
@@ -652,12 +656,12 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		}
 
 		/*
-		LogHandler.writeLog(
-				"Explored POI: " + selected.poi.poiType + ", position: " + selected.poi.position + ", uctValue: "
-						+ bestValue + ", value: " + selected.getValue() + ", visits: " + selected.numVisits,
-				"TPOLITSMovePlanner.choosePOIToExplore", 3);
-		*/
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.choosePOIToExplore", 3);
+		 * LogHandler.writeLog(
+		 * "Explored POI: " + selected.poi.poiType + ", position: " + selected.poi.position + ", uctValue: "
+		 * + bestValue + ", value: " + selected.getValue() + ", visits: " + selected.numVisits,
+		 * "TPOLITSMovePlanner.choosePOIToExplore", 3);
+		 */
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.choosePOIToExplore", 3);
 		return selected;
 	}
 
@@ -679,8 +683,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	protected void exploreShot(TPOLITSTreeNode selected)
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.exploreShot", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.exploreShot", 3);
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 
 		StateObservationMulti shotStateObs = selected.stateObs.copy();
@@ -691,7 +695,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		actions[fbtpGameKnowledge.getOppID()] = oppAction;
 
 		shotStateObs.advance(actions);
-		
+
 		double avgTimeTaken = 0;
 		double acumTimeTaken = 0;
 		long initialRemaining = mainElapsedTimer.remainingTimeMillis();
@@ -717,23 +721,23 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			avgTimeTaken = acumTimeTaken / numIters;
 			remaining = this.timeLimitForSinglePOIExplore - (initialRemaining - mainElapsedTimer.remainingTimeMillis());
 		}
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.exploreShot", 3);
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.exploreShot", 3);
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.exploreShot", 3);
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.exploreShot", 3);
 		double score = stateEvaluator.evaluateState(shotStateObs);
 		selected.totalValue += score;
 		selected.numVisits = 1;
 		/*
-		LogHandler.writeLog(
-				"Exploring shot> turns: " + numIters + ", score: " + score + ", value: " + selected.getValue(),
-				"TPOLITSMovePlanner.exploreShot", 3);
-		*/
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.exploreShot", 3);
+		 * LogHandler.writeLog(
+		 * "Exploring shot> turns: " + numIters + ", score: " + score + ", value: " + selected.getValue(),
+		 * "TPOLITSMovePlanner.exploreShot", 3);
+		 */
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.exploreShot", 3);
 	}
 
 	protected void exploreApproach(TPOLITSTreeNode selected)
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.exploreApproach", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.exploreApproach", 3);
 		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
 		Pair<StateObservationMulti, ArrayList<Types.ACTIONS>> approachInfo = null;
@@ -761,17 +765,17 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		}
 
 		/*
-		LogHandler.writeLog(
-				"Exploring approach> " + ((approachInfo != null) ? "Path length: " + approachInfo.second().size() : "no path found"),
-				"TPOLITSMovePlanner.exploreApproach", 3);
-		*/
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.exploreApproach", 3);
+		 * LogHandler.writeLog(
+		 * "Exploring approach> " + ((approachInfo != null) ? "Path length: " + approachInfo.second().size() : "no path found"),
+		 * "TPOLITSMovePlanner.exploreApproach", 3);
+		 */
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.exploreApproach", 3);
 	}
 
 	protected void exploreRollOut(TPOLITSTreeNode selected)
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.exploreRollOut", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.exploreRollOut", 3);
 		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 
@@ -796,13 +800,13 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			{
 				ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
 
-				//Types.ACTIONS randomAction = rolloutState.getAvailableActions().get(this.randomGenerator.nextInt(rolloutState.getAvailableActions().size()));
+				// Types.ACTIONS randomAction = rolloutState.getAvailableActions().get(this.randomGenerator.nextInt(rolloutState.getAvailableActions().size()));
 
 				Types.ACTIONS[] actions = new Types.ACTIONS[2];
 				Types.ACTIONS action = fbtpAgentMoveController.getRandomNonDyingAction(rolloutState,
 						fbtpGameKnowledge.getPlayerID());
 				actions[fbtpGameKnowledge.getPlayerID()] = ((action != null) ? action : Types.ACTIONS.ACTION_NIL);
-				actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getRandomAction(rolloutState, 
+				actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getRandomAction(rolloutState,
 						fbtpGameKnowledge.getOppID());
 
 				rolloutState.advance(actions);
@@ -824,23 +828,23 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			remaining = this.timeLimitForSinglePOIExplore - (initialRemaining - mainElapsedTimer.remainingTimeMillis());
 
 			/*
-			LogHandler.writeLog(
-					"Exploring rollout> rollout: " + numLargeIters + ", final depth: " + numIters + ", score: " + score,
-					"TPOLITSMovePlanner.exploreRollOut", 3);
-			*/
+			 * LogHandler.writeLog(
+			 * "Exploring rollout> rollout: " + numLargeIters + ", final depth: " + numIters + ", score: " + score,
+			 * "TPOLITSMovePlanner.exploreRollOut", 3);
+			 */
 		}
 		/*
-		LogHandler.writeLog("Exploring rollout> total value: " + selected.totalValue + ", value: " + selected.getValue()
-				+ ", visits: " + selected.numVisits, "TPOLITSMovePlanner.exploreRollOut", 3);
-		*/
+		 * LogHandler.writeLog("Exploring rollout> total value: " + selected.totalValue + ", value: " + selected.getValue()
+		 * + ", visits: " + selected.numVisits, "TPOLITSMovePlanner.exploreRollOut", 3);
+		 */
 
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.exploreRollOut", 3);
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.exploreRollOut", 3);
 	}
 
 	protected void updateGoalPOI()
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.updateGoalPOI", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.updateGoalPOI", 3);
 		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
 		// if there was a large change in score of the best POI, change goal POI
@@ -858,7 +862,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				numTurnsGoalPOINotChanged = 0;
 			}
 		}
-		
+
 		if (numTurnsGoalPOINotChanged == 0)
 		{
 			if (fbtpAgentMoveController.isPositionWithinGivenMoveRange(rootStateObsMulti, goalNode.poi.position,
@@ -874,21 +878,21 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		}
 
 		/*
-		LogHandler
-				.writeLog(
-						"Goal node type: " + goalNode.poi.poiType + ", position: " + goalNode.poi.position + ", value: "
-								+ goalNode.getValue() + ", final mode: "
-								+ this.mode + ((goalNode.poi.observation != null)
-										? ", POI type: " + goalNode.poi.observation.itype : ""),
-						"TPOLITSMovePlanner.updateGoalPOI", 3);
-		*/
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.updateGoalPOI", 3);
+		 * LogHandler
+		 * .writeLog(
+		 * "Goal node type: " + goalNode.poi.poiType + ", position: " + goalNode.poi.position + ", value: "
+		 * + goalNode.getValue() + ", final mode: "
+		 * + this.mode + ((goalNode.poi.observation != null)
+		 * ? ", POI type: " + goalNode.poi.observation.itype : ""),
+		 * "TPOLITSMovePlanner.updateGoalPOI", 3);
+		 */
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.updateGoalPOI", 3);
 	}
 
 	protected void initializeForTreeSearch()
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.initializeForTreeSearch", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.initializeForTreeSearch", 3);
 		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 
@@ -910,7 +914,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			}
 			this.rootNode = goalNode;
 		}
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.initializeForTreeSearch", 3);
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.initializeForTreeSearch", 3);
 	}
 
 	protected void searchTree()
@@ -931,8 +935,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	protected void searchTreeAction()
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.searchTreeAction", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.searchTreeAction", 3);
 		double avgTimeTaken = 0;
 		double acumTimeTaken = 0;
 		long initialRemaining = mainElapsedTimer.remainingTimeMillis();
@@ -956,47 +960,47 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			remaining = timeLimitForTreeSearch - (initialRemaining - mainElapsedTimer.remainingTimeMillis());
 
 			/*
-			TPOLITSTreeNode tpolitsRootNode = (TPOLITSTreeNode) this.rootNode;
-			LogHandler
-					.writeLog(
-							"Root node total value: " + tpolitsRootNode.totalValue + " Value: "
-									+ tpolitsRootNode.getValue() + " Visits: " + tpolitsRootNode.numVisits,
-							"TPOLITSMovePlanner.searchTreeAction", 3);
-			
-			for (int i = 0; i < tpolitsRootNode.children.length; i++)
-			{
-				TPOLITSTreeNode child =  (TPOLITSTreeNode) tpolitsRootNode.children[i];
-
-				if (child != null)
-				{
-					LogHandler.writeLog(
-							"Child: " + i + " actionIndex: " + child.actionIndex
-							+ " action: " + AuxUtils.indexToAction((StateObservationMulti)rootStateObs, gameKnowledge.getPlayerID(), i)
-							+ " total value: " + child.totalValue + " value: " + child.getValue()
-							+ " visits: " + child.numVisits,
-							"TPOLITSMovePlanner.searchTreeAction", 3);
-				}
-				else
-				{
-					LogHandler.writeLog(
-							"Null child " + i,
-							"TPOLITSMovePlanner.searchTreeAction", 3);
-				}
-			}
-			*/	
+			 * TPOLITSTreeNode tpolitsRootNode = (TPOLITSTreeNode) this.rootNode;
+			 * LogHandler
+			 * .writeLog(
+			 * "Root node total value: " + tpolitsRootNode.totalValue + " Value: "
+			 * + tpolitsRootNode.getValue() + " Visits: " + tpolitsRootNode.numVisits,
+			 * "TPOLITSMovePlanner.searchTreeAction", 3);
+			 * 
+			 * for (int i = 0; i < tpolitsRootNode.children.length; i++)
+			 * {
+			 * TPOLITSTreeNode child = (TPOLITSTreeNode) tpolitsRootNode.children[i];
+			 * 
+			 * if (child != null)
+			 * {
+			 * LogHandler.writeLog(
+			 * "Child: " + i + " actionIndex: " + child.actionIndex
+			 * + " action: " + AuxUtils.indexToAction((StateObservationMulti)rootStateObs, gameKnowledge.getPlayerID(), i)
+			 * + " total value: " + child.totalValue + " value: " + child.getValue()
+			 * + " visits: " + child.numVisits,
+			 * "TPOLITSMovePlanner.searchTreeAction", 3);
+			 * }
+			 * else
+			 * {
+			 * LogHandler.writeLog(
+			 * "Null child " + i,
+			 * "TPOLITSMovePlanner.searchTreeAction", 3);
+			 * }
+			 * }
+			 */
 
 			/*
-			LogHandler.writeLog("Iteration time: " + elapsedTimerIteration.elapsedMillis() + " | cumulative time: "
-					+ acumTimeTaken + " | remaining: " + remaining, "TPOLITSMovePlanner.searchTreeAction", 3);
-			*/
+			 * LogHandler.writeLog("Iteration time: " + elapsedTimerIteration.elapsedMillis() + " | cumulative time: "
+			 * + acumTimeTaken + " | remaining: " + remaining, "TPOLITSMovePlanner.searchTreeAction", 3);
+			 */
 		}
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.searchTreeAction", 3);
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.searchTreeAction", 3);
 	}
 
 	protected void searchTreeApproach()
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.searchTreeApproach", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.searchTreeApproach", 3);
 		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		StateObservationMulti rootStateObsMulti = (StateObservationMulti) this.rootStateObs;
@@ -1052,51 +1056,59 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		}
 		else
 		{
-			Pair<StateObservationMulti, ArrayList<Types.ACTIONS>> approachInfo = null;
-			searchForANewPath = true;
+			if (this.goalNode.path == null)
+			{
+				Pair<StateObservationMulti, ArrayList<Types.ACTIONS>> approachInfo = null;
+				searchForANewPath = true;
 
-			if (goalNode.poi.poiType == POITYPE.SPRITE)
-			{
-				int maxDistance = 2;
-				long timeLimit = this.timeLimitForTreeSearch - 1;
-				approachInfo = fbtpAgentMoveController.approachSprite(rootStateObsMulti,
-						this.gameKnowledge.getPlayerID(), goalNode.poi.observation, maxDistance, timeLimit);
-			}
-			else if (goalNode.poi.poiType == POITYPE.POSITION)
-			{
-				int maxDistance = 2;
-				long timeLimit = this.timeLimitForTreeSearch - 1;
-				approachInfo = fbtpAgentMoveController.reachPosition(rootStateObsMulti,
-						this.gameKnowledge.getPlayerID(), goalNode.poi.position, maxDistance, timeLimit);
-			}
+				if (goalNode.poi.poiType == POITYPE.SPRITE)
+				{
+					int maxDistance = 2;
+					long timeLimit = this.timeLimitForTreeSearch - 1;
+					approachInfo = fbtpAgentMoveController.approachSprite(rootStateObsMulti,
+							this.gameKnowledge.getPlayerID(), goalNode.poi.observation, maxDistance, timeLimit);
+				}
+				else if (goalNode.poi.poiType == POITYPE.POSITION)
+				{
+					int maxDistance = 2;
+					long timeLimit = this.timeLimitForTreeSearch - 1;
+					approachInfo = fbtpAgentMoveController.reachPosition(rootStateObsMulti,
+							this.gameKnowledge.getPlayerID(), goalNode.poi.position, maxDistance, timeLimit);
+				}
 
-			if (approachInfo != null)
-			{
-				goalNode.stateObs = approachInfo.first();
-				goalNode.path = approachInfo.second();
-				foundNewPath = true;
+				if (approachInfo != null)
+				{
+					goalNode.stateObs = approachInfo.first();
+					goalNode.path = approachInfo.second();
+					foundNewPath = true;
+				}
+				else
+				{
+					goalNode.stateObs = null;
+					goalNode.path = null;
+				}
 			}
 		}
 
 		/*
-		LogHandler.writeLog("Searching for a new path: " + searchForANewPath + ", found a new path: " + foundNewPath,
-				"TPOLITSMovePlanner.searchTreeApproach", 3);
-		*/
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.searchTreeApproach", 3);
+		 * LogHandler.writeLog("Searching for a new path: " + searchForANewPath + ", found a new path: " + foundNewPath,
+		 * "TPOLITSMovePlanner.searchTreeApproach", 3);
+		 */
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.searchTreeApproach", 3);
 	}
 
 	protected void searchTreeShot()
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.searchTreeShot", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.searchTreeShot", 3);
 		// nothing needs to be done
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.searchTreeShot", 3);
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.searchTreeShot", 3);
 	}
 
 	protected TreeNode applyTreePolicy(StateObservation stateObs)
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.applyTreePolicy", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.applyTreePolicy", 3);
 		TreeNode currentNode = rootNode;
 		boolean expand = false;
 
@@ -1115,12 +1127,12 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		}
 
 		/*
-		LogHandler.writeLog(
-				"Tree policy depth: " + currentNode.depth + ", is game over state: " + stateObs.isGameOver(),
-				"TPOLITSMovePlanner.applyTreePolicy", 3);
-		*/
+		 * LogHandler.writeLog(
+		 * "Tree policy depth: " + currentNode.depth + ", is game over state: " + stateObs.isGameOver(),
+		 * "TPOLITSMovePlanner.applyTreePolicy", 3);
+		 */
 
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.applyTreePolicy", 3);
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.applyTreePolicy", 3);
 		return currentNode;
 	}
 
@@ -1147,8 +1159,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 
 	protected void backUp(TreeNode node, double delta)
 	{
-		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
-		performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.backUp", 3);
+		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		//performanceMonitor.startNanoMeasure("Start", "TPOLITSMovePlanner.backUp", 3);
 		TPOLITSTreeNode n = (TPOLITSTreeNode) node;
 		int backUpDepth = 0;
 		while (n != null)
@@ -1195,7 +1207,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			n = (TPOLITSTreeNode) n.parent;
 			backUpDepth += 1;
 		}
-		performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.backUp", 3);
+		//performanceMonitor.finishNanoMeasure("Finish", "TPOLITSMovePlanner.backUp", 3);
 	}
 
 	/**
@@ -1221,14 +1233,15 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 		actions[fbtpGameKnowledge.getOppID()] = fbtpAgentMoveController.getGreedyAction(stateObsMulti,
 				fbtpGameKnowledge.getOppID());
 
-		int bestAction = gameMechanicsController.actToIndex(stateObsMulti.getAvailableActions(fbtpGameKnowledge.getPlayerID()), 
+		int bestAction = gameMechanicsController.actToIndex(
+				stateObsMulti.getAvailableActions(fbtpGameKnowledge.getPlayerID()),
 				actions[fbtpGameKnowledge.getPlayerID()]);
-		
+
 		/*
-		LogHandler.writeLog("Available actions: " + stateObsMulti.getAvailableActions(fbtpGameKnowledge.getPlayerID())
-			+ "Action: " + actions[fbtpGameKnowledge.getPlayerID()] + " Best action: " + bestAction, "TPOLITSMovePlanner.expandNode", 0);
-		*/
-		
+		 * LogHandler.writeLog("Available actions: " + stateObsMulti.getAvailableActions(fbtpGameKnowledge.getPlayerID())
+		 * + "Action: " + actions[fbtpGameKnowledge.getPlayerID()] + " Best action: " + bestAction, "TPOLITSMovePlanner.expandNode", 0);
+		 */
+
 		stateObsMulti.advance(actions);
 
 		double tabooBias = 0.0;
@@ -1282,9 +1295,9 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				bestValue = score;
 			}
 			/*
-			LogHandler.writeLog("Child: " + child.actionIndex + " AdjEmaxScore: " + getNodeAdjustedEmaxScore(child)
-					+ " Best value: " + bestValue + " Child value: " + child.getValue(), "TPOLITSMovePlanner.exploitNode", 0);
-			*/
+			 * LogHandler.writeLog("Child: " + child.actionIndex + " AdjEmaxScore: " + getNodeAdjustedEmaxScore(child)
+			 * + " Best value: " + bestValue + " Child value: " + child.getValue(), "TPOLITSMovePlanner.exploitNode", 0);
+			 */
 		}
 
 		Types.ACTIONS[] actions = new Types.ACTIONS[2];
@@ -1344,7 +1357,8 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 			else
 			{
 				this.goalNode.path = null;
-				action = getRandomFBTPGreedyAction((StateObservationMulti) this.rootStateObs, gameKnowledge.getPlayerID());
+				action = getRandomFBTPGreedyAction((StateObservationMulti) this.rootStateObs,
+						gameKnowledge.getPlayerID());
 			}
 		}
 		else if (this.mode == TREESEARCHMODE.SHOT)
@@ -1369,11 +1383,12 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 				+ this.uctConstant * Math.sqrt(Math.log(node.parent.numVisits + 1) / (node.numVisits + this.epsilon))
 				- node.tabooBias);
 	}
-	
+
 	public ACTIONS getRandomFBTPGreedyAction(StateObservationMulti stateObs, int playerID)
 	{
-		FBTPStateEvaluator fbtpStateEvaluator = (FBTPStateEvaluator) this.stateEvaluator; 
-		ArrayList<Types.ACTIONS> availableActions = new ArrayList<Types.ACTIONS>(stateObs.getAvailableActions(playerID));
+		FBTPStateEvaluator fbtpStateEvaluator = (FBTPStateEvaluator) this.stateEvaluator;
+		ArrayList<Types.ACTIONS> availableActions = new ArrayList<Types.ACTIONS>(
+				stateObs.getAvailableActions(playerID));
 		Collections.shuffle(availableActions);
 		Types.ACTIONS oppAction = Types.ACTIONS.ACTION_NIL;
 		ACTIONS[] chosenActions = new Types.ACTIONS[2];
@@ -1481,7 +1496,7 @@ public class TPOLITSMovePlanner extends TreeSearchMovePlanner
 	{
 		PURE, HEURISTIC, RANDOM
 	}
-	
+
 	private Comparator<TPOLITSTreeNode> nodesComparator = new Comparator<TPOLITSTreeNode>()
 	{
 		public int compare(TPOLITSTreeNode a, TPOLITSTreeNode b)
