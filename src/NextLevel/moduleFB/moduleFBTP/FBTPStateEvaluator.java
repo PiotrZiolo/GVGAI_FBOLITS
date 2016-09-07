@@ -289,12 +289,12 @@ public class FBTPStateEvaluator extends StateEvaluator
 		if (stateObsMulti.getMultiGameWinner()[playerID] == Types.WINNER.PLAYER_LOSES)
 			return -999999999;
 
-		updateInfluenceMap(stateObsMulti);
-		double score = map.getInfluenceValue(stateObsMulti.getAvatarPosition(playerID));
-		score += getUnmappedScore();
-		score += getMappedPoints();
-		score += boardStateScore;
-		score += stateObsMulti.getGameScore(playerID);
+		//updateInfluenceMap(stateObsMulti);
+		//double score = map.getInfluenceValue(stateObsMulti.getAvatarPosition(playerID));
+		//score += getUnmappedScore();
+		//score += getMappedPoints();
+		//score += boardStateScore;
+		double score = stateObsMulti.getGameScore(playerID);
 
 		return score;
 	}

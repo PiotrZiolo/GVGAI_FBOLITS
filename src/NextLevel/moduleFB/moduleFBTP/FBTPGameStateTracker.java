@@ -42,11 +42,14 @@ public class FBTPGameStateTracker extends GameStateTracker
 			PointOfInterest poi = this.pois.get(index);
 			if (poi.track)
 			{
-				LogHandler.writeLog("Tracking POI| id: " + poi.observation.obsID + ", type: " + poi.observation.itype 
-						+ ", category: " + poi.observation.category + ", position: [" + poi.observation.position.x + ", " 
-						+ poi.observation.position.y + "]", "FBTPGameStateTracker.searchForNewPOIs", 0);
-				
 				Observation obs = this.gameMechanicsController.localizeSprite(stateObsMulti, poi.observation);
+				LogHandler.writeLog("Tracking POI| id: " + poi.observation.obsID + ", type: " + poi.observation.itype 
+						+ ", category: " + poi.observation.category + ", POI position: [" + poi.observation.position.x + ", " 
+						+ poi.observation.position.y + "]" + " Sprite localized: " 
+						+ ((obs != null) ? "yes" : "no") + " Position changed: " 
+						+ ((obs != null) ? ((!poi.position.equals(obs.position)) ? "yes" : "no") : "unknown")
+						+ ((obs != null) ? " Position obs: " + obs.position : ""), "FBTPGameStateTracker.updatePOIsPosition", 3);
+				
 				if (obs == null)
 				{
 					this.removedPOIs.add(poi);
@@ -55,7 +58,7 @@ public class FBTPGameStateTracker extends GameStateTracker
 					continue;
 				}
 
-				if (poi.position != obs.position)
+				if (!poi.position.equals(obs.position))
 				{
 					this.pois.get(index).positionChangedFromPreviousTurn = true;
 					this.pois.get(index).position = obs.position;

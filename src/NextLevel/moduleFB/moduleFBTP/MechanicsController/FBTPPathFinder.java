@@ -27,7 +27,6 @@ public class FBTPPathFinder extends PathFinder
 {
 	// protected FBTPGameKnowledge gameKnowledge;
 	// protected TPGameMechanicsController gameMechanicsController
-	// protected FBTPAgentMoveController agentMoveController;
 	private boolean tryToDestroyObjects;
 
 	private int playerID;
@@ -41,11 +40,9 @@ public class FBTPPathFinder extends PathFinder
 	private long timeLimit;
 	private int numberOfTurnTriesNearGoal = 5;
 
-	public FBTPPathFinder(FBTPGameKnowledge gameKnowledge, FBTPAgentMoveController agentMoveController,
-			TPGameMechanicsController gameMechanicsController)
+	public FBTPPathFinder(FBTPGameKnowledge gameKnowledge, TPGameMechanicsController gameMechanicsController)
 	{
 		this.gameKnowledge = gameKnowledge;
-		this.agentMoveController = agentMoveController;
 		this.gameMechanicsController = gameMechanicsController;
 		tryToDestroyObjects = false;
 		/*
@@ -74,7 +71,6 @@ public class FBTPPathFinder extends PathFinder
 	public Pair<StateObservation, ArrayList<Types.ACTIONS>> findPath(Vector2d goalPosition, StateObservation stateObs,
 			ElapsedCpuTimer elapsedTimer, long timeLimit, boolean takePointsIntoAccount, boolean prohibitNegativePoints)
 	{
-		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		StateObservationMulti finalObs = null;
 		this.timeLimit = (long) timeLimit;
@@ -85,7 +81,7 @@ public class FBTPPathFinder extends PathFinder
 		this.takePointsIntoAccount = takePointsIntoAccount;
 		this.prohibitNegativePoints = prohibitNegativePoints;
 
-		final ArrayList<Types.ACTIONS> actions = fbtpAgentMoveController.getPlayerMoveActions(stateObsMulti, playerID);
+		final ArrayList<Types.ACTIONS> actions = gameKnowledge.getPlayerMoveActions();
 
 		long initialRemainingTime = 0;
 		if (this.timeLimit > 0)
@@ -167,7 +163,6 @@ public class FBTPPathFinder extends PathFinder
 			StateObservation stateObs, ElapsedCpuTimer elapsedTimer, long timeLimit, boolean takePointsIntoAccount,
 			boolean prohibitNegativePoints)
 	{
-		FBTPAgentMoveController fbtpAgentMoveController = (FBTPAgentMoveController) this.agentMoveController;
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		StateObservationMulti finalObs = null;
@@ -179,23 +174,21 @@ public class FBTPPathFinder extends PathFinder
 		this.takePointsIntoAccount = takePointsIntoAccount;
 		this.prohibitNegativePoints = prohibitNegativePoints;
 
-		LogHandler.writeLog("Path finding start", "FBTPPathFinder.findPathToAreaNearPosition", 0);
 		//PerformanceMonitor performanceMonitor = new PerformanceMonitor();
 		//performanceMonitor.startNanoMeasure("Start", "FBTPPathFinder.findPathToAreaNearPosition", 3);
 
 		//final ArrayList<Types.ACTIONS> actions = gameKnowledge.getPlayerMoveActions();
-		final ArrayList<Types.ACTIONS> actions = fbtpAgentMoveController.getPlayerMoveActions(stateObsMulti, playerID);
+		final ArrayList<Types.ACTIONS> actions = gameKnowledge.getPlayerMoveActions();
 		
 		long initialRemainingTime = 0;
 		if (this.timeLimit > 0)
-			initialRemainingTime = this.elapsedTimer.remainingTimeMillis();
+			initialRemainingTime = elapsedTimer.remainingTimeMillis();
 
 		Map<Integer, Double> costMap = new HashMap<Integer, Double>();
 		//performanceMonitor.finishNanoMeasure("Finish", "FBTPPathFinder.findPathToAreaNearPosition", 3);
 		
 		//performanceMonitor.startNanoMeasure("Start", "FBTPPathFinder.findPathToAreaNearPosition", 3);
 		double currentScore = getDistanceToGoalScore(stateObsMulti);
-		//LogHandler.writeLog("Path finding start", "FBTPPathFinder.findPathToAreaNearPosition", 0);
 		//performanceMonitor.finishNanoMeasure("Finish", "FBTPPathFinder.findPathToAreaNearPosition", 3);
 		
 		//performanceMonitor.startNanoMeasure("Start", "FBTPPathFinder.findPathToAreaNearPosition", 3);
@@ -218,7 +211,7 @@ public class FBTPPathFinder extends PathFinder
 
 			queue.poll();
 
-			Types.ACTIONS lastMove = fbtpAgentMoveController.getOneStepToSprite(
+			Types.ACTIONS lastMove = gameMechanicsController.getOneStepToSprite(
 					previous.stateObs.getAvatarPosition(playerID), goal.positionV,
 					previous.stateObs.getAvatarSpeed(playerID), previous.stateObs.getBlockSize());
 			LogHandler.writeLog(
@@ -285,6 +278,12 @@ public class FBTPPathFinder extends PathFinder
 			}
 			//performanceMonitor.finishNanoMeasure("Finish loop iteration", "FBTPPathFinder.findPathToAreaNearPosition", 3);
 		}
+		
+		LogHandler.writeLog("Path finding start> Goal position: " + goalPosition
+				+ " Avatar position: " + stateObsMulti.getAvatarPosition(playerID)
+				+ " Time limit: " + timeLimit
+				+ " Path found: " + ((finalObs != null) ? "yes" : "no"), 
+				"FBTPPathFinder.findPathToAreaNearPosition", 3);
 
 		this.timeLimit = 0;
 		if (finalObs != null && translateString(goal.path) != null)
@@ -388,7 +387,7 @@ public class FBTPPathFinder extends PathFinder
 			stateObsCopy = advanceSimplified(stateObsCopy, act);
 
 			if (!stateObsCopy2.getAvatarPosition(playerID).equals(stateObsCopy.getAvatarPosition(playerID))
-					&& stateObs.isAvatarAlive(playerID) && !stateObs.isGameOver())
+					&& stateObsCopy.isAvatarAlive(playerID) && !stateObsCopy.isGameOver())
 			{
 				stateObsCopy2 = stateObsCopy;
 				moves += actToString(Types.ACTIONS.ACTION_USE);

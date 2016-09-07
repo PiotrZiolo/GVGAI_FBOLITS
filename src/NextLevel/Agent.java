@@ -26,6 +26,7 @@ import NextLevel.utils.LogHandler;
 import NextLevel.utils.Pair;
 import NextLevel.utils.PerformanceMonitor;
 import NextLevel.utils.StatePrinter;
+import core.game.Observation;
 import core.game.StateObservation;
 import core.game.StateObservationMulti;
 import core.player.AbstractMultiPlayer;
@@ -43,7 +44,7 @@ public class Agent extends AbstractMultiPlayer
 
 	private int timeForLearningDuringInitialization = 1500;
 	private int timeForLearningDuringMove = 0;
-	private int timeForChoosingMove = 300;
+	private int timeForChoosingMove = 1000;
 
 	// Objects structure
 
@@ -146,12 +147,16 @@ public class Agent extends AbstractMultiPlayer
 	public Types.ACTIONS act(StateObservationMulti stateObs, ElapsedCpuTimer elapsedTimer)
 	{
 		LogHandler.writeLog("Turn: " + stateObs.getGameTick(), "Agent.act", 3);
+	
+		//Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
 		
 		gameStateTracker.runTracker(stateObs);
 		gameKnowledgeExplorer.successiveLearn(stateObs, elapsedTimer, timeForLearningDuringMove);
 		stateEvaluatorTeacher.updateEvaluator();
 		
 		BasicTPState state = stateHandler.prepareState(stateObs);
+		
+		//LogHandler.writeLog("From avatar sprite: " + agentMoveController.isFromAvatarSpriteOnTheMap(stateObs, playerID), "Agent.act", 3);
 		
 		//LogHandler.writeLog("State evaluation: " + stateEvaluator.evaluateState(stateObs), "Agent.act", 3);
 		//stateObs.advance(new Types.ACTIONS[]{Types.ACTIONS.ACTION_NIL, Types.ACTIONS.ACTION_NIL});

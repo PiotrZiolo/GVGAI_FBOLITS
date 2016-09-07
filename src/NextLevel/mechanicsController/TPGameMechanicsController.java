@@ -36,7 +36,6 @@ public class TPGameMechanicsController extends GameMechanicsController
 
 	public int getNumberOfResourcesGainedDuringSOI(TPSituationOfInterest soi, int playerID)
 	{
-
 		return ((StateObservationMulti) soi.afterState).getAvatarResources(playerID).size()
 				- ((StateObservationMulti) soi.baseState).getAvatarResources(playerID).size();
 	}
@@ -194,97 +193,6 @@ public class TPGameMechanicsController extends GameMechanicsController
 		}
 		
 		return opp;
-	}
-	
-	/**
-	 * Localizes a sprite given by observation on the map in state stateObs.
-	 * Returns null if the sprite is not on the map.
-	 * 
-	 * @param stateObs
-	 *            State in which the sprite is to be found.
-	 * @param observation
-	 *            Earlier observation of the sprite.
-	 * @param searchBreadth
-	 *            How far from the observation position to search.
-	 * @param maxDistance
-	 *            How far from the previous position should the sprite be searched for.
-	 */
-	public Observation localizeSprite(StateObservationMulti stateObs, int obsID, Vector2d position, int maxDistance,
-			boolean searchFullBoard)
-	{
-		ArrayList<Observation> suspects;
-
-		int[] start = { (int) (position.x / stateObs.getBlockSize()),
-				(int) (position.y / stateObs.getBlockSize()) };
-		LogHandler.writeLog("start x: " + start[0], "GameMechanicsController.localizeSprite", 0);
-		LogHandler.writeLog("start y: " + start[1], "GameMechanicsController.localizeSprite", 0);
-
-		int worldXDimension = stateObs.getObservationGrid().length;
-		int worldYDimension = stateObs.getObservationGrid()[0].length;
-		LogHandler.writeLog("worldXDimension: " + worldXDimension, "GameMechanicsController.localizeSprite", 0);
-		LogHandler.writeLog("worldYDimension: " + worldYDimension, "GameMechanicsController.localizeSprite", 0);
-
-		int distance = 0;
-
-		while (distance <= maxDistance)
-		{
-			for (int i = -distance; i <= distance; i = i + 1)
-			{
-				if (i == -distance || i == distance)
-				{
-					for (int j = -distance; j <= distance; j = j + 1)
-					{
-						int x = AuxUtils.mod(start[0] + i, worldXDimension);
-						int y = AuxUtils.mod(start[1] + j, worldYDimension);
-						LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
-								"GameMechanicsController.localizeSprite", 0);
-						suspects = stateObs.getObservationGrid()[x][y];
-						for (Observation suspect : suspects)
-							if (suspect.obsID == obsID)
-								return suspect;
-					}
-				}
-				else
-				{
-					for (int j = -distance; j <= distance; j = j + 2 * distance)
-					{
-						int x = AuxUtils.mod(start[0] + i, worldXDimension);
-						int y = AuxUtils.mod(start[1] + j, worldYDimension);
-						LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
-								"GameMechanicsController.localizeSprite", 0);
-						suspects = stateObs.getObservationGrid()[x][y];
-						for (Observation suspect : suspects)
-							if (suspect.obsID == obsID)
-								return suspect;
-					}
-				}
-			}
-			distance++;
-		}
-		if (searchFullBoard)
-		{
-			getListOfSprites(stateObs);
-		}
-		return null;
-	}
-
-	public Observation localizeSprite(StateObservationMulti stateObs, Observation observation)
-	{
-		return localizeSprite(stateObs, observation.obsID, observation.position);
-	}
-
-	public Observation localizeSprite(StateObservationMulti stateObs, int obsID, Vector2d position)
-	{
-		int worldXDimension = stateObs.getObservationGrid().length;
-		int worldYDimension = stateObs.getObservationGrid()[0].length;
-
-		int rangeX = Math.min( 2, worldXDimension/2 + 1 );
-		int rangeY = Math.min( 2, worldYDimension/2 + 1 );
-
-		return localizeSprite(stateObs, obsID, position, Math.max(rangeX, rangeY), false);
-
-		//return localizeSprite(stateObs, obsID, position,
-		//		Math.max(worldXDimension / 2 + 1, worldYDimension / 2 + 1), false);
 	}
 
 	public ArrayList<Observation> getListOfSpritesRepresentants(StateObservationMulti state, Vector2d refPosition)

@@ -17,7 +17,7 @@ public class TPGameKnowledge extends GameKnowledge
 	protected int numOfOpponentActions;
 	protected ArrayList<Types.ACTIONS> opponentActions;
 	protected ArrayList<Types.ACTIONS> opponentMoveActions;
-
+	
 	public int getOppID()
 	{
 		return oppID;

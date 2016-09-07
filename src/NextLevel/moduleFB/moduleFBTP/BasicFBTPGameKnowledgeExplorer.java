@@ -85,6 +85,7 @@ public class BasicFBTPGameKnowledgeExplorer extends TPGameKnowledgeExplorer
 		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
 		StateObservationMulti stateObsMulti = (StateObservationMulti) stateObs;
 		
+		fbtpGameKnowledge.setFromAvatarSpriteType(7);
 		fbtpGameKnowledge.setShootingAllowed(true);
 		fbtpGameKnowledge.setDeterministicGame(false);
 		fbtpGameKnowledge.setOpenMap(true);

@@ -342,6 +342,65 @@ public class GameMechanicsController
 	{
 		return getManhattanDistanceInBlockSizes(stateObs, position1, position2) / stateObs.getAvatarSpeed();
 	}
+	
+	public Types.ACTIONS getOneStepToSprite(Vector2d avatarPosition, Vector2d spritePosition, double speed, int blockSize)
+	{
+		double dx = (avatarPosition.x - spritePosition.x) / blockSize;
+		double dy = (avatarPosition.y - spritePosition.y) / blockSize;
+		// we assume that other sprites are at least 1/2 blockSize in size
+		if (dx > -1 && dx < 0.5 && dy > 0 && dy < 0.5 + speed) 
+			return Types.ACTIONS.ACTION_UP;
+		if (dx > -1 && dx < 0.5 && dy < 0 && dy > -(1 + speed)) 
+			return Types.ACTIONS.ACTION_DOWN;
+		if (dy > -1 && dy < 0.5 && dx > 0 && dx < 0.5 + speed)
+			return Types.ACTIONS.ACTION_LEFT;
+		if (dy > -1 && dy < 0.5 && dx < 0 && dx > -(1 + speed)) 
+			return Types.ACTIONS.ACTION_RIGHT;
+		return null;
+	}
+	
+	public boolean isAvatarOneStepFromSprite(Vector2d avatarPosition, Vector2d spritePosition, double speed, int blockSize)
+	{
+		double dx = (avatarPosition.x - spritePosition.x) / blockSize;
+		double dy = (avatarPosition.y - spritePosition.y) / blockSize;
+		// we assume that other sprites are at least 1/2 blockSize in size
+		if (dx > -1 && dx < 0.5 && dy > 0 && dy < 0.5 + speed) 
+			return true;
+		if (dx > -1 && dx < 0.5 && dy < 0 && dy > -(1 + speed)) 
+			return true;
+		if (dy > -1 && dy < 0.5 && dx > 0 && dx < 0.5 + speed)
+			return true;
+		if (dy > -1 && dy < 0.5 && dx < 0 && dx > -(1 + speed)) 
+			return true;
+		return false;
+	}
+	
+	public boolean isFromAvatarSpriteOnTheMap(StateObservationMulti stateObs)
+	{
+		ArrayList<Observation>[] fromAvatarSpritesPositions = stateObs.getFromAvatarSpritesPositions();
+		
+		if (fromAvatarSpritesPositions != null)
+		{
+			for (ArrayList<Observation> observations : fromAvatarSpritesPositions)
+			{
+				if (observations.size() > 0 && observations.get(0).itype == gameKnowledge.getFromAvatarSpriteType())
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public int actToIndex(ArrayList<Types.ACTIONS> availableActions, Types.ACTIONS act)
+	{
+		for (int index = 0; index < availableActions.size(); index++)
+		{
+			if (availableActions.get(index) == act)
+				return index;
+		}
+		return 0;
+	}
 
 	// another function to check if position are on the same grid element
 }

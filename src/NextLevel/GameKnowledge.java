@@ -11,6 +11,7 @@ public class GameKnowledge
 	protected int numOfPlayerActions;
 	protected ArrayList<Types.ACTIONS> playerActions;
 	protected ArrayList<Types.ACTIONS> playerMoveActions;
+	protected int fromAvatarSpriteType;
 	protected int worldXDimension;
 	protected int worldYDimension;
 	protected double blockSize;
@@ -72,6 +73,16 @@ public class GameKnowledge
 	public ArrayList<Types.ACTIONS> getPlayerMoveActions()
 	{
 		return playerMoveActions;
+	}
+	
+	public int getFromAvatarSpriteType()
+	{
+		return fromAvatarSpriteType;
+	}
+
+	public void setFromAvatarSpriteType(int fromAvatarSpriteType)
+	{
+		this.fromAvatarSpriteType = fromAvatarSpriteType;
 	}
 	
 	public int getWorldXDimension()

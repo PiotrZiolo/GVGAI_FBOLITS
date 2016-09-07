@@ -7,6 +7,7 @@ import java.util.Random;
 
 import NextLevel.mechanicsController.AgentMoveController;
 import NextLevel.mechanicsController.TPGameMechanicsController;
+import NextLevel.moduleFB.SpriteTypeFeatures;
 import NextLevel.moduleFB.moduleFBTP.FBTPGameKnowledge;
 import NextLevel.moduleTP.TPWinScoreStateEvaluator;
 import NextLevel.utils.LogHandler;
@@ -27,22 +28,13 @@ public class FBTPAgentMoveController extends AgentMoveController
 	// protected FBTPPathFinder pathFinder;
 	// protected ElapsedCpuTimer elapsedTimer;
 
-	private boolean fastThinking;
-	private int approachingSpriteMovesLimit;
-
 	public FBTPAgentMoveController(FBTPGameKnowledge gameKnowledge, TPGameMechanicsController gameMechanicsController)
 	{
 		this.gameKnowledge = gameKnowledge;
 		this.gameMechanicsController = gameMechanicsController;
-		pathFinder = new FBTPPathFinder(gameKnowledge, this, gameMechanicsController);
+		pathFinder = new FBTPPathFinder(gameKnowledge, gameMechanicsController);
 
 		this.elapsedTimer = new ElapsedCpuTimer();
-	}
-
-	public void setParameters(boolean fastThinking, int approachingSpriteMovesLimit)
-	{
-		this.fastThinking = fastThinking;
-		this.approachingSpriteMovesLimit = approachingSpriteMovesLimit;
 	}
 
 	public ArrayList<Types.ACTIONS> findPath(Vector2d goalPosition, StateObservation stateObs,
@@ -393,82 +385,6 @@ public class FBTPAgentMoveController extends AgentMoveController
 	}
 
 	/**
-	 * Returns an action which guarantees not dying for the player with playerID id for safeTurns.
-	 * One non-dying simulation for safeTurns turns/moves is enough to return the first action of the successful sequence.
-	 * 
-	 * @param playerID
-	 * @return Non-dying action or null if such action doesn't exist.
-	 */
-	public ACTIONS getNonDyingAction(StateObservationMulti stateObs, int playerID, int safeTurns)
-	{
-		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
-		availableActions.remove(Types.ACTIONS.ACTION_NIL);
-		Collections.shuffle(availableActions);
-		availableActions.add(1, Types.ACTIONS.ACTION_NIL); // so that ACTION_NIL goes always first
-		Types.ACTIONS oppAction = getGreedyAction(stateObs, 1 - playerID);
-		ACTIONS[] chosenActions = new Types.ACTIONS[2];
-		StateObservationMulti nextState;
-		for (Types.ACTIONS action : availableActions)
-		{
-			nextState = stateObs.copy();
-			chosenActions[playerID] = action;
-			chosenActions[1 - playerID] = oppAction;
-			nextState.advance(chosenActions);
-			if (nextState.isAvatarAlive(playerID)
-					&& (safeTurns == 1 || getNonDyingAction(nextState, playerID, safeTurns - 1) != null))
-				return action;
-		}
-		return null;
-	}
-
-	/**
-	 * Returns an action which gives the best raw score (including reward for win and penalty for loss) for the player with playerID id.
-	 * 
-	 * @param playerID
-	 * @return Action maximizing raw score.
-	 */
-	public ACTIONS getGreedyAction(StateObservationMulti stateObs, int playerID)
-	{
-		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
-		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
-		Types.ACTIONS oppAction = Types.ACTIONS.ACTION_NIL;
-		ACTIONS[] chosenActions = new Types.ACTIONS[2];
-		StateObservationMulti nextState;
-		double bestScore = -10000000.0;
-		Types.ACTIONS bestAction = Types.ACTIONS.ACTION_NIL;
-		TPWinScoreStateEvaluator scoreEvaluator = new TPWinScoreStateEvaluator(fbtpGameKnowledge);
-		for (Types.ACTIONS action : availableActions)
-		{
-			nextState = stateObs.copy();
-			chosenActions[playerID] = action;
-			chosenActions[1 - playerID] = oppAction;
-			nextState.advance(chosenActions);
-			double score = scoreEvaluator.evaluateState(nextState);
-			if (score > bestScore)
-			{
-				bestScore = score;
-				bestAction = action;
-			}
-		}
-		return bestAction;
-		// use TPWinScoreStateEvaluator to evaluate states
-	}
-	
-	/**
-	 * Returns a random action.
-	 * 
-	 * @param playerID
-	 * @return Random action.
-	 */
-	public ACTIONS getRandomAction(StateObservationMulti stateObs, int playerID)
-	{
-		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
-		
-		return availableActions.get((new Random()).nextInt(availableActions.size()));
-		// use TPWinScoreStateEvaluator to evaluate states
-	}
-
-	/**
 	 * Moves player avatar (of playerID id) to the observation to the distance of one field with orientation toward the sprite.
 	 * 
 	 * @param stateObs
@@ -489,12 +405,6 @@ public class FBTPAgentMoveController extends AgentMoveController
 		{
 			Pair<StateObservation, ArrayList<ACTIONS>> pathFinderOutput = fbtpPathFinder
 					.findPathToAreaNearPosition(obs.position, currentState, elapsedTimer, timeLimit);
-			/*
-			 * System.out.println("pathFinderOutput");
-			 * System.out.println(pathFinderOutput);
-			 * System.out.println(obs.position);
-			 * System.out.println(currentState.getAvatarPosition(playerID));
-			 */
 
 			if (pathFinderOutput == null)
 				return null;
@@ -503,10 +413,13 @@ public class FBTPAgentMoveController extends AgentMoveController
 
 			obs = this.gameMechanicsController.localizeSprite(currentState, obs);
 			if (obs != null)
-				if (currentState.getAvatarPosition(playerID).dist(obs.position) <= currentState.getAvatarSpeed() * currentState.getBlockSize()) // not sure if its enough
+			{
+				if (gameMechanicsController.isAvatarOneStepFromSprite(currentState.getAvatarPosition(playerID), obs.position, 
+						currentState.getAvatarSpeed(), currentState.getBlockSize()))
 					return new Pair<StateObservationMulti, ArrayList<ACTIONS>>(currentState, pathFinderOutput.second());
-				else
-					return null;
+			}
+			else
+				return null;
 		}
 		return null;
 	}
@@ -543,13 +456,42 @@ public class FBTPAgentMoveController extends AgentMoveController
 		}
 		return null;
 	}
-
+	
+	/**
+	 * Returns an action which guarantees not dying for the player with playerID id for safeTurns.
+	 * One non-dying simulation for safeTurns turns/moves is enough to return the first action of the successful sequence.
+	 * 
+	 * @param playerID
+	 * @return Non-dying action or null if such action doesn't exist.
+	 */
+	public ACTIONS getNonDyingAction(StateObservationMulti stateObs, int playerID, int safeTurns)
+	{
+		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
+		availableActions.remove(Types.ACTIONS.ACTION_NIL);
+		Collections.shuffle(availableActions);
+		availableActions.add(0, Types.ACTIONS.ACTION_NIL); // so that ACTION_NIL goes always first
+		Types.ACTIONS oppAction = getGreedyAction(stateObs, 1 - playerID);
+		ACTIONS[] chosenActions = new Types.ACTIONS[2];
+		StateObservationMulti nextState;
+		for (Types.ACTIONS action : availableActions)
+		{
+			nextState = stateObs.copy();
+			chosenActions[playerID] = action;
+			chosenActions[1 - playerID] = oppAction;
+			nextState.advance(chosenActions);
+			if (nextState.isAvatarAlive(playerID)
+					&& (safeTurns == 1 || getNonDyingAction(nextState, playerID, safeTurns - 1) != null))
+				return action;
+		}
+		return null;
+	}
+	
 	public ACTIONS getNonDyingAction(StateObservationMulti stateObs, int playerID)
 	{
 		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
 		availableActions.remove(Types.ACTIONS.ACTION_NIL);
 		Collections.shuffle(availableActions);
-		availableActions.add(1, Types.ACTIONS.ACTION_NIL); // so that ACTION_NIL goes always first
+		availableActions.add(0, Types.ACTIONS.ACTION_NIL); // so that ACTION_NIL goes always first
 		ACTIONS[] chosenActions = new Types.ACTIONS[2];
 		StateObservationMulti nextState;
 		for (Types.ACTIONS action : availableActions)
@@ -562,6 +504,51 @@ public class FBTPAgentMoveController extends AgentMoveController
 				return action;
 		}
 		return null;
+	}
+
+	/**
+	 * Returns an action which gives the best raw score (including reward for win and penalty for loss) for the player with playerID id.
+	 * 
+	 * @param playerID
+	 * @return Action maximizing raw score.
+	 */
+	public ACTIONS getGreedyAction(StateObservationMulti stateObs, int playerID)
+	{
+		FBTPGameKnowledge fbtpGameKnowledge = (FBTPGameKnowledge) this.gameKnowledge;
+		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
+		Types.ACTIONS oppAction = Types.ACTIONS.ACTION_NIL;
+		ACTIONS[] chosenActions = new Types.ACTIONS[2];
+		StateObservationMulti nextState;
+		double bestScore = -10000000.0;
+		Types.ACTIONS bestAction = Types.ACTIONS.ACTION_NIL;
+		TPWinScoreStateEvaluator scoreEvaluator = new TPWinScoreStateEvaluator(fbtpGameKnowledge);
+		for (Types.ACTIONS action : availableActions)
+		{
+			nextState = stateObs.copy();
+			chosenActions[playerID] = action;
+			chosenActions[1 - playerID] = oppAction;
+			nextState.advance(chosenActions);
+			double score = scoreEvaluator.evaluateState(nextState);
+			if (score > bestScore)
+			{
+				bestScore = score;
+				bestAction = action;
+			}
+		}
+		return bestAction;
+	}
+	
+	/**
+	 * Returns a random action.
+	 * 
+	 * @param playerID
+	 * @return Random action.
+	 */
+	public ACTIONS getRandomAction(StateObservationMulti stateObs, int playerID)
+	{
+		ArrayList<Types.ACTIONS> availableActions = stateObs.getAvailableActions(playerID);
+		
+		return availableActions.get((new Random()).nextInt(availableActions.size()));
 	}
 	
 	public ArrayList<Types.ACTIONS> getPlayerMoveActions(StateObservationMulti stateObs, int playerID)
@@ -577,36 +564,5 @@ public class FBTPAgentMoveController extends AgentMoveController
 					playerMoveActions.add(j);
 		
 		return playerMoveActions;
-	}
-	
-	public Types.ACTIONS getOneStepToSprite(Vector2d avatarPosition, Vector2d spritePosition, double speed, int blockSize)
-	{
-		double dx = (avatarPosition.x - spritePosition.x) / blockSize;
-		double dy = (avatarPosition.y - spritePosition.y) / blockSize;
-		// we assume that other sprites are at least 1/2 blockSize in size
-		if (dx > -1 && dx < 0.5 && dy > 0 && dy < 0.5 + speed) 
-			return Types.ACTIONS.ACTION_UP;
-		if (dx > -1 && dx < 0.5 && dy < 0 && dy > -(1 + speed)) 
-			return Types.ACTIONS.ACTION_DOWN;
-		if (dy > -1 && dy < 0.5 && dx > 0 && dx < 0.5 + speed)
-			return Types.ACTIONS.ACTION_LEFT;
-		if (dy > -1 && dy < 0.5 && dx < 0 && dx > -(1 + speed)) 
-			return Types.ACTIONS.ACTION_RIGHT;
-		return null;
-	}
-	
-	public boolean isAvatarOneStepFromSprite(Vector2d avatarPosition, Vector2d spritePosition, double speed, int blockSize)
-	{
-		int dx = (int) (avatarPosition.x / blockSize) - (int) (spritePosition.x / blockSize);
-		int dy = (int) (avatarPosition.y / blockSize) - (int) (spritePosition.y / blockSize);
-		if (dx == 0 && dy > 0 && dy < blockSize + speed)
-			return true;
-		if (dx == 0 && dy < 0 && dy >= -(0.5 * blockSize + speed)) // we assume that other sprites are at least 1/2 blockSize in size
-			return true;
-		if (dy == 0 && dx > 0 && dx <= blockSize + speed)
-			return true;
-		if (dy == 0 && dx < 0 && dx >= -(0.5 * blockSize + speed)) // we assume that other sprites are at least 1/2 blockSize in size
-			return true;
-		return false;
 	}
 }
