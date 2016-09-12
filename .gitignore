@@ -14,3 +14,4 @@ dist/
 .project
 NextLevel.log
 *.bak
+*.log
