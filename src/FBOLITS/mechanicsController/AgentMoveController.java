@@ -17,7 +17,7 @@ public class AgentMoveController
 {
 	protected GameKnowledge gameKnowledge;
 	protected GameMechanicsController gameMechanicsController;
-	protected PathFinder pathFinder;
+	protected DynamicPathFinder pathFinder;
 
 	protected ElapsedCpuTimer elapsedTimer;
 
@@ -30,7 +30,7 @@ public class AgentMoveController
 	{
 		this.gameKnowledge = gameKnowledge;
 		this.gameMechanicsController = gameMechanicsController;
-		pathFinder = new PathFinder(gameKnowledge, gameMechanicsController);
+		pathFinder = new DynamicPathFinder(gameKnowledge, gameMechanicsController);
 
 		this.elapsedTimer = new ElapsedCpuTimer();
 	}
