@@ -1,45 +1,43 @@
-package FBOLITS.moduleFB.MechanicsController;
+package FBOLITS.mechanicsController;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.TreeSet;
 
 import FBOLITS.mechanicsController.PathFinder;
 import FBOLITS.mechanicsController.PathFinderNode;
+import FBOLITS.GameKnowledge;
 import FBOLITS.mechanicsController.GameMechanicsController;
 import FBOLITS.utils.Pair;
-import FBOLITS.utils.PerformanceMonitor;
-import FBOLITS.moduleFB.FBGameKnowledge;
-import core.game.Event;
-import core.game.StateObservation;
 import core.game.StateObservation;
 import ontology.Types;
-import ontology.Types.ACTIONS;
 import tools.Direction;
 import tools.ElapsedCpuTimer;
 import tools.Vector2d;
 
-public class FBPathFinder extends PathFinder
+public class DynamicPathFinder extends PathFinder
 {
-	// protected FBTPGameKnowledge gameKnowledge;
-	// protected TPGameMechanicsController gameMechanicsController
-	private boolean tryToDestroyObjects;
+	// protected GameKnowledge gameKnowledge;
+	// protected GameMechanicsController gameMechanicsController
+	protected StateObservation firstObs;
+	protected Vector2d goalVector;
+	protected ElapsedCpuTimer elapsedTimer;
+	protected boolean tryToDestroyObjects;
+	protected boolean takePointsIntoAccount = false;
+	protected boolean prohibitNegativePoints = false;
+	protected double pointsValue = 1.0;
+	protected boolean allowTie = false;
+	protected long timeLimit;
+	protected int numberOfTurnTriesNearGoal = 5;
+	
+	public DynamicPathFinder()
+	{
 
-	private int playerID;
-	private StateObservation firstObs;
-	private Vector2d goalVector;
-	private ElapsedCpuTimer elapsedTimer;
-	private boolean takePointsIntoAccount = false;
-	private boolean prohibitNegativePoints = false;
-	private double pointsValue = 1.0;
-	private boolean allowTie = false;
-	private long timeLimit;
-	private int numberOfTurnTriesNearGoal = 5;
-
-	public FBPathFinder(FBGameKnowledge gameKnowledge, GameMechanicsController gameMechanicsController)
+	}
+	
+	public DynamicPathFinder(GameKnowledge gameKnowledge, GameMechanicsController gameMechanicsController)
 	{
 		this.gameKnowledge = gameKnowledge;
 		this.gameMechanicsController = gameMechanicsController;
@@ -65,7 +63,6 @@ public class FBPathFinder extends PathFinder
 		StateObservation finalObs = null;
 		this.timeLimit = (long) timeLimit;
 		this.elapsedTimer = elapsedTimer;
-		this.playerID = gameKnowledge.getPlayerID();
 		this.firstObs = stateObs.copy();
 		this.goalVector = goalPosition;
 		this.takePointsIntoAccount = takePointsIntoAccount;
@@ -109,7 +106,7 @@ public class FBPathFinder extends PathFinder
 				double distanceToGoal = getDistanceToGoalScore(currentObs);
 				double cost = previous.pathLength + 1 - getScore(previous.stateObs, currentObs);
 				PathFinderNode next = new PathFinderNode(cost + distanceToGoal, previous.path + adv.second(),
-						currentObs, playerID);
+						currentObs);
 				next.pathLength = previous.pathLength + 1;
 
 				if (!costMap.containsKey(next.ID) || costMap.get(next.ID) > next.cost)
@@ -122,7 +119,7 @@ public class FBPathFinder extends PathFinder
 
 		this.timeLimit = 0;
 		if (finalObs != null && translateString(goal.path) != null)
-			return new Pair<StateObservation, ArrayList<ACTIONS>>((StateObservation) finalObs,
+			return new Pair<StateObservation, ArrayList<Types.ACTIONS>>((StateObservation) finalObs,
 					translateString(goal.path));
 
 		return null;
@@ -151,11 +148,9 @@ public class FBPathFinder extends PathFinder
 			StateObservation stateObs, ElapsedCpuTimer elapsedTimer, long timeLimit, boolean takePointsIntoAccount,
 			boolean prohibitNegativePoints)
 	{
-		FBGameKnowledge fbGameKnowledge = (FBGameKnowledge) this.gameKnowledge;
 		StateObservation finalObs = null;
 		this.timeLimit = timeLimit;
 		this.elapsedTimer = elapsedTimer;
-		this.playerID = gameKnowledge.getPlayerID();
 		this.firstObs = stateObs.copy();
 		this.goalVector = goalPosition;
 		this.takePointsIntoAccount = takePointsIntoAccount;
@@ -214,7 +209,7 @@ public class FBPathFinder extends PathFinder
 				String path = previous.path;
 				if (!gameMechanicsController.isOrientationConsistentWithMove(lastMove, orientation))
 				{
-					if (fbGameKnowledge.isDeterministicGame())
+					if (gameKnowledge.isDeterministicGame())
 					{
 						afterTurnState = previous.stateObs.copy();
 						afterTurnState.advance(lastMove);
@@ -238,7 +233,7 @@ public class FBPathFinder extends PathFinder
 					path += actToString(lastMove);
 				}
 				path += actToString(lastMove);
-				goal = new PathFinderNode(0, path, afterTurnState, playerID); // The cost doesn't matter at this stage, hence 0
+				goal = new PathFinderNode(0, path, afterTurnState); // The cost doesn't matter at this stage, hence 0
 				finalObs = goal.stateObs;
 				break;
 			}
@@ -253,7 +248,7 @@ public class FBPathFinder extends PathFinder
 					double distanceToGoal = getDistanceToGoalScore(currentObs);
 					double cost = previous.pathLength + 1 - getScore(previous.stateObs, currentObs);
 					PathFinderNode next = new PathFinderNode(cost + 2 * distanceToGoal, previous.path + adv.second(),
-							currentObs, playerID);
+							currentObs);
 					next.pathLength = previous.pathLength + 1;
 					/*
 					LogHandler.writeLog(
@@ -279,7 +274,7 @@ public class FBPathFinder extends PathFinder
 		*/
 		this.timeLimit = 0;
 		if (finalObs != null && translateString(goal.path) != null)
-			return new Pair<StateObservation, ArrayList<ACTIONS>>((StateObservation) finalObs,
+			return new Pair<StateObservation, ArrayList<Types.ACTIONS>>((StateObservation) finalObs,
 					translateString(goal.path));
 		return null;
 	}
@@ -295,7 +290,7 @@ public class FBPathFinder extends PathFinder
 		// int initialSize = (int) stateObs.getWorldDimension().width / stateObs.getBlockSize();
 		// initialSize *= (int) stateObs.getWorldDimension().height / stateObs.getBlockSize();
 		PriorityQueue<PathFinderNode> queue = new PriorityQueue<PathFinderNode>(100, comp);
-		queue.add(new PathFinderNode(0, "", stateObs, playerID));
+		queue.add(new PathFinderNode(0, "", stateObs));
 		return queue;
 	}
 

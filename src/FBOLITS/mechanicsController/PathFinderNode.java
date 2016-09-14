@@ -17,7 +17,7 @@ public class PathFinderNode
 	public StateObservation stateObs;
 	public int ID;
 
-	public PathFinderNode(double cost, String path, StateObservation stateObs, int playerID)
+	public PathFinderNode(double cost, String path, StateObservation stateObs)
 	{
 		this.cost = cost;
 

@@ -17,7 +17,7 @@ public class FBAgentMoveController extends AgentMoveController
 	{
 		this.gameKnowledge = gameKnowledge;
 		this.gameMechanicsController = gameMechanicsController;
-		pathFinder = new FBPathFinder(gameKnowledge, gameMechanicsController);
+		pathFinder = new FBDynamicPathFinder(gameKnowledge, gameMechanicsController);
 
 		this.elapsedTimer = new ElapsedCpuTimer();
 	}
