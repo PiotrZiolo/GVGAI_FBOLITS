@@ -70,7 +70,7 @@ public class Test
         // ArcadeMachine.playOneGame(game, level1, recordActionsFile, seed);
         
         // 2. This plays a game in a level by the controller.
-        ArcadeMachine.runOneGame(game, level1, visuals, sampleOLETSController, recordActionsFile, seed, 0);
+        ArcadeMachine.runOneGame(game, level1, visuals, FBOLITS, recordActionsFile, seed, 0);
 
         // 3. This replays a game from an action file previously recorded
         //String readActionsFile = recordActionsFile;

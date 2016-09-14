@@ -4,7 +4,6 @@ import FBOLITS.mechanicsController.AgentMoveController;
 import FBOLITS.mechanicsController.GameMechanicsController;
 import core.game.StateObservation;
 import ontology.Types;
-import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
 
 public class MovePlanner
@@ -61,7 +60,7 @@ public class MovePlanner
 		
 	}
 
-	public ACTIONS chooseAction(StateObservation stateObs, ElapsedCpuTimer elapsedTimer, long timeForChoosingMove)
+	public Types.ACTIONS chooseAction(StateObservation stateObs, ElapsedCpuTimer elapsedTimer, long timeForChoosingMove)
 	{
 		// To be overridden in subclasses
 

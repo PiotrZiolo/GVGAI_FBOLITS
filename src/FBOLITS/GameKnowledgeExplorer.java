@@ -14,7 +14,7 @@ import tools.Vector2d;
 
 public class GameKnowledgeExplorer
 {
-	protected StateObservation stateObs;
+	protected StateObservation rootStateObs;
 	protected GameKnowledge gameKnowledge;
 	protected GameMechanicsController gameMechanicsController;
 	protected AgentMoveController agentMoveController;
@@ -31,8 +31,6 @@ public class GameKnowledgeExplorer
 	{
 		this.gameKnowledge = gameKnowledge;
 		this.gameMechanicsController = gameMechanicsController;
-
-		this.elapsedTimer = new ElapsedCpuTimer();
 	}
 
 	public GameKnowledgeExplorer(GameKnowledge gameKnowledge, GameMechanicsController gameMechanicsController,
@@ -41,8 +39,6 @@ public class GameKnowledgeExplorer
 		this.gameKnowledge = gameKnowledge;
 		this.gameMechanicsController = gameMechanicsController;
 		this.agentMoveController = agentMoveController;
-
-		this.elapsedTimer = new ElapsedCpuTimer();
 	}
 	
 	public GameKnowledgeExplorer(GameKnowledge gameKnowledge, GameMechanicsController gameMechanicsController, 
@@ -52,8 +48,6 @@ public class GameKnowledgeExplorer
 		this.gameMechanicsController = gameMechanicsController;
 		this.agentMoveController = agentMoveController;
 		this.gameStateTracker = gameStateTracker;
-
-		this.elapsedTimer = new ElapsedCpuTimer();
 	}
 	
 	public void setGameStateTracker(GameStateTracker gameStateTracker)
@@ -63,7 +57,7 @@ public class GameKnowledgeExplorer
 
 	public void learnStaticBasics(StateObservation stateObs, int playerID)
 	{
-		this.stateObs = stateObs;
+		this.rootStateObs = stateObs;
 		this.gameKnowledge.setPlayerID(playerID);
 		this.gameKnowledge.setNumOfPlayers(stateObs.getNoPlayers());
 		this.gameKnowledge.setWorldXDimensionInBlocks(stateObs.getObservationGrid().length);
@@ -73,16 +67,17 @@ public class GameKnowledgeExplorer
 	
 	public void learnDynamicBasics(StateObservation stateObs)
 	{
-		this.stateObs = stateObs;
+		this.rootStateObs = stateObs;
 		this.gameKnowledge.setNumOfPlayerActions(stateObs.getAvailableActions().size());
 		this.gameKnowledge.setPlayerActions(stateObs.getAvailableActions());
 		this.gameKnowledge.setAvatarSpeed(stateObs.getAvatarSpeed());
 	}
 	
 	public void initialLearn(StateObservation stateObs, ElapsedCpuTimer elapsedTimer,
-			int timeForLearningDuringInitialization)
+			int timeForLearning)
 	{
-		this.stateObs = stateObs;
+		this.rootStateObs = stateObs;
+		this.elapsedTimer = elapsedTimer;
 		
 		gameKnowledge.setAvatarSpriteId(gameMechanicsController.getPlayerId(stateObs));
 		gameKnowledge.setShootingAllowed(checkWhetherShootingIsAllowed(stateObs));
@@ -91,9 +86,10 @@ public class GameKnowledgeExplorer
 	}
 	
 	public void successiveLearn(StateObservation stateObs, ElapsedCpuTimer elapsedTimer,
-			int timeForLearningDuringInitialization)
+			int timeForLearning)
 	{
-		this.stateObs = stateObs;
+		this.rootStateObs = stateObs;
+		this.elapsedTimer = elapsedTimer;
 	}
 	
 	@SafeVarargs

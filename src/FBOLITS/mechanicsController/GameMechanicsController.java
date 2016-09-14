@@ -1,13 +1,15 @@
 package FBOLITS.mechanicsController;
 
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 import FBOLITS.GameKnowledge;
+import FBOLITS.SituationOfInterest;
 import FBOLITS.utils.AuxUtils;
+import core.game.Event;
 import core.game.Observation;
 import core.game.StateObservation;
 import ontology.Types;
-import ontology.Types.ACTIONS;
 import tools.Direction;
 import tools.Vector2d;
 
@@ -40,7 +42,7 @@ public class GameMechanicsController
 		return false;
 	}
 
-	public boolean isOrientationConsistentWithMove(ACTIONS act, Vector2d orientationVector)
+	public boolean isOrientationConsistentWithMove(Types.ACTIONS act, Vector2d orientationVector)
 	{
 		return isOrientationConsistentWithMove(act, new Direction(orientationVector.x, orientationVector.y));
 	}
@@ -71,17 +73,17 @@ public class GameMechanicsController
 		ArrayList<Observation> suspects;
 
 		/*
-		LogHandler.writeLog("Searching for sprite with id: " + obsID + " and last location: " + position, 
-				"GameMechanicsController.localizeSprite", 0);
-		*/
+		 * LogHandler.writeLog("Searching for sprite with id: " + obsID + " and last location: " + position,
+		 * "GameMechanicsController.localizeSprite", 0);
+		 */
 		int[] start = { (int) (position.x / stateObs.getBlockSize()), (int) (position.y / stateObs.getBlockSize()) };
-		//LogHandler.writeLog("start x: " + start[0], "GameMechanicsController.localizeSprite", 0);
-		//LogHandler.writeLog("start y: " + start[1], "GameMechanicsController.localizeSprite", 0);
+		// LogHandler.writeLog("start x: " + start[0], "GameMechanicsController.localizeSprite", 0);
+		// LogHandler.writeLog("start y: " + start[1], "GameMechanicsController.localizeSprite", 0);
 
 		int worldXDimension = stateObs.getObservationGrid().length;
 		int worldYDimension = stateObs.getObservationGrid()[0].length;
-		//LogHandler.writeLog("worldXDimension: " + worldXDimension, "GameMechanicsController.localizeSprite", 0);
-		//LogHandler.writeLog("worldYDimension: " + worldYDimension, "GameMechanicsController.localizeSprite", 0);
+		// LogHandler.writeLog("worldXDimension: " + worldXDimension, "GameMechanicsController.localizeSprite", 0);
+		// LogHandler.writeLog("worldYDimension: " + worldYDimension, "GameMechanicsController.localizeSprite", 0);
 
 		int distance = 0;
 
@@ -96,9 +98,9 @@ public class GameMechanicsController
 						int x = AuxUtils.mod(start[0] + i, worldXDimension);
 						int y = AuxUtils.mod(start[1] + j, worldYDimension);
 						/*
-						LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
-								"GameMechanicsController.localizeSprite", 0);
-						*/
+						 * LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
+						 * "GameMechanicsController.localizeSprite", 0);
+						 */
 						suspects = stateObs.getObservationGrid()[x][y];
 						for (Observation suspect : suspects)
 							if (suspect.obsID == obsID)
@@ -112,9 +114,9 @@ public class GameMechanicsController
 						int x = AuxUtils.mod(start[0] + i, worldXDimension);
 						int y = AuxUtils.mod(start[1] + j, worldYDimension);
 						/*
-						LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
-								"GameMechanicsController.localizeSprite", 0);
-						*/
+						 * LogHandler.writeLog("Grid search position: [" + x + ", " + y + "]",
+						 * "GameMechanicsController.localizeSprite", 0);
+						 */
 						suspects = stateObs.getObservationGrid()[x][y];
 						for (Observation suspect : suspects)
 							if (suspect.obsID == obsID)
@@ -225,6 +227,18 @@ public class GameMechanicsController
 		return null;
 	}
 
+	public TreeSet<Event> getEventsDuringSOI(SituationOfInterest soi)
+	{
+		TreeSet<Event> events = (TreeSet<Event>) soi.afterState.getEventsHistory().clone();
+		events.removeAll(soi.baseState.getEventsHistory());
+		return events;
+	}
+
+	public int getNumberOfResourcesGainedDuringSOI(SituationOfInterest soi)
+	{
+		return soi.afterState.getAvatarResources().size() - soi.baseState.getAvatarResources().size();
+	}
+
 	/**
 	 * Returns Manhattan distance between position1 and position2.
 	 * Assumes that upper and lower as well as right and left map edges are glued.
@@ -237,22 +251,20 @@ public class GameMechanicsController
 	{
 		if (gameKnowledge.isOpenMap())
 		{
-			double xDistance = Math.min(AuxUtils.mod((int) (position1.x - position2.x),
-					(int) (gameKnowledge.getWorldXDimensionInPX())), 
-					AuxUtils.mod((int) (position2.x - position1.x),
-							(int) (gameKnowledge.getWorldXDimensionInPX())));
-			double yDistance = Math.min(AuxUtils.mod((int) (position1.y - position2.y),
-					(int) (gameKnowledge.getWorldYDimensionInPX())), 
-					AuxUtils.mod((int) (position2.y - position1.y),
-							(int) (gameKnowledge.getWorldYDimensionInPX())));
-			
+			double xDistance = Math.min(
+					AuxUtils.mod((int) (position1.x - position2.x), (int) (gameKnowledge.getWorldXDimensionInPX())),
+					AuxUtils.mod((int) (position2.x - position1.x), (int) (gameKnowledge.getWorldXDimensionInPX())));
+			double yDistance = Math.min(
+					AuxUtils.mod((int) (position1.y - position2.y), (int) (gameKnowledge.getWorldYDimensionInPX())),
+					AuxUtils.mod((int) (position2.y - position1.y), (int) (gameKnowledge.getWorldYDimensionInPX())));
+
 			return (xDistance + yDistance) / gameKnowledge.getBlockSize();
 		}
 		else
 		{
 			double xDistance = Math.abs(position1.x - position2.x);
 			double yDistance = Math.abs(position1.y - position2.y);
-			
+
 			return xDistance + yDistance;
 		}
 	}
@@ -261,22 +273,20 @@ public class GameMechanicsController
 	{
 		if (gameKnowledge.isOpenMap())
 		{
-			double xDistance = Math.min(AuxUtils.mod((int) (position1.x - position2.x),
-					(int) (stateObs.getWorldDimension().getWidth())), 
-					AuxUtils.mod((int) (position2.x - position1.x),
-							(int) (stateObs.getWorldDimension().getWidth())));
-			double yDistance = Math.min(AuxUtils.mod((int) (position1.y - position2.y),
-					(int) (stateObs.getWorldDimension().getHeight())), 
-					AuxUtils.mod((int) (position2.y - position1.y),
-							(int) (stateObs.getWorldDimension().getHeight())));
-			
+			double xDistance = Math.min(
+					AuxUtils.mod((int) (position1.x - position2.x), (int) (stateObs.getWorldDimension().getWidth())),
+					AuxUtils.mod((int) (position2.x - position1.x), (int) (stateObs.getWorldDimension().getWidth())));
+			double yDistance = Math.min(
+					AuxUtils.mod((int) (position1.y - position2.y), (int) (stateObs.getWorldDimension().getHeight())),
+					AuxUtils.mod((int) (position2.y - position1.y), (int) (stateObs.getWorldDimension().getHeight())));
+
 			return (xDistance + yDistance) / stateObs.getBlockSize();
 		}
 		else
 		{
 			double xDistance = Math.abs(position1.x - position2.x);
 			double yDistance = Math.abs(position1.y - position2.y);
-			
+
 			return xDistance + yDistance;
 		}
 	}
@@ -285,22 +295,20 @@ public class GameMechanicsController
 	{
 		if (gameKnowledge.isOpenMap())
 		{
-			double xDistance = Math.min(AuxUtils.mod((int) (position1.x - position2.x),
-					(int) (gameKnowledge.getWorldXDimensionInPX())), 
-					AuxUtils.mod((int) (position2.x - position1.x),
-							(int) (gameKnowledge.getWorldXDimensionInPX())));
-			double yDistance = Math.min(AuxUtils.mod((int) (position1.y - position2.y),
-					(int) (gameKnowledge.getWorldYDimensionInPX())), 
-					AuxUtils.mod((int) (position2.y - position1.y),
-							(int) (gameKnowledge.getWorldYDimensionInPX())));
-			
+			double xDistance = Math.min(
+					AuxUtils.mod((int) (position1.x - position2.x), (int) (gameKnowledge.getWorldXDimensionInPX())),
+					AuxUtils.mod((int) (position2.x - position1.x), (int) (gameKnowledge.getWorldXDimensionInPX())));
+			double yDistance = Math.min(
+					AuxUtils.mod((int) (position1.y - position2.y), (int) (gameKnowledge.getWorldYDimensionInPX())),
+					AuxUtils.mod((int) (position2.y - position1.y), (int) (gameKnowledge.getWorldYDimensionInPX())));
+
 			return (xDistance + yDistance) / gameKnowledge.getBlockSize();
 		}
 		else
 		{
 			double xDistance = Math.abs(position1.x - position2.x);
 			double yDistance = Math.abs(position1.y - position2.y);
-			
+
 			return (xDistance + yDistance) / gameKnowledge.getBlockSize();
 		}
 	}
@@ -308,32 +316,30 @@ public class GameMechanicsController
 	public double getManhattanDistanceInBlockSizes(StateObservation stateObs, Vector2d position1, Vector2d position2)
 	{
 		if (gameKnowledge.isOpenMap())
-		{			
-			double xDistance = Math.min(AuxUtils.mod((int) (position1.x - position2.x),
-					(int) (stateObs.getWorldDimension().getWidth())), 
-					AuxUtils.mod((int) (position2.x - position1.x),
-							(int) (stateObs.getWorldDimension().getWidth())));
-			double yDistance = Math.min(AuxUtils.mod((int) (position1.y - position2.y),
-					(int) (stateObs.getWorldDimension().getHeight())), 
-					AuxUtils.mod((int) (position2.y - position1.y),
-							(int) (stateObs.getWorldDimension().getHeight())));
-			
+		{
+			double xDistance = Math.min(
+					AuxUtils.mod((int) (position1.x - position2.x), (int) (stateObs.getWorldDimension().getWidth())),
+					AuxUtils.mod((int) (position2.x - position1.x), (int) (stateObs.getWorldDimension().getWidth())));
+			double yDistance = Math.min(
+					AuxUtils.mod((int) (position1.y - position2.y), (int) (stateObs.getWorldDimension().getHeight())),
+					AuxUtils.mod((int) (position2.y - position1.y), (int) (stateObs.getWorldDimension().getHeight())));
+
 			/*
-			LogHandler.writeLog("Open map " + AuxUtils.mod((int) (position1.y - position2.y),
-					(int) (stateObs.getWorldDimension().getHeight())) + " " 
-					+ AuxUtils.mod((int) (position2.y - position1.y),
-							(int) (stateObs.getWorldDimension().getHeight())), "GameMechanicsController.Manhattan", 0);
-			*/
-			
+			 * LogHandler.writeLog("Open map " + AuxUtils.mod((int) (position1.y - position2.y),
+			 * (int) (stateObs.getWorldDimension().getHeight())) + " "
+			 * + AuxUtils.mod((int) (position2.y - position1.y),
+			 * (int) (stateObs.getWorldDimension().getHeight())), "GameMechanicsController.Manhattan", 0);
+			 */
+
 			return (xDistance + yDistance) / stateObs.getBlockSize();
 		}
 		else
 		{
 			double xDistance = Math.abs(position1.x - position2.x);
 			double yDistance = Math.abs(position1.y - position2.y);
-			
-			//LogHandler.writeLog("Not open map", "GameMechanicsController.Manhattan", 3);
-			
+
+			// LogHandler.writeLog("Not open map", "GameMechanicsController.Manhattan", 3);
+
 			return (xDistance + yDistance) / stateObs.getBlockSize();
 		}
 	}
@@ -347,43 +353,73 @@ public class GameMechanicsController
 	{
 		return getManhattanDistanceInBlockSizes(stateObs, position1, position2) / stateObs.getAvatarSpeed();
 	}
-	
-	public Types.ACTIONS getOneStepToSprite(Vector2d avatarPosition, Vector2d spritePosition, double speed, int blockSize)
+
+	public Types.ACTIONS getOneStepToSprite(Vector2d avatarPosition, Vector2d spritePosition, double speed,
+			int blockSize)
 	{
 		double dx = (avatarPosition.x - spritePosition.x) / blockSize;
 		double dy = (avatarPosition.y - spritePosition.y) / blockSize;
 		// we assume that other sprites are at least 1/2 blockSize in size
-		if (dx > -1 && dx < 0.5 && dy > 0 && dy < 0.5 + speed) 
+		if (dx > -1 && dx < 1 && dy > 0 && dy < 1 + speed)
 			return Types.ACTIONS.ACTION_UP;
-		if (dx > -1 && dx < 0.5 && dy < 0 && dy > -(1 + speed)) 
+		if (dx > -1 && dx < 1 && dy < 0 && dy > -(1 + speed))
 			return Types.ACTIONS.ACTION_DOWN;
-		if (dy > -1 && dy < 0.5 && dx > 0 && dx < 0.5 + speed)
+		if (dy > -1 && dy < 1 && dx > 0 && dx < 1 + speed)
 			return Types.ACTIONS.ACTION_LEFT;
-		if (dy > -1 && dy < 0.5 && dx < 0 && dx > -(1 + speed)) 
+		if (dy > -1 && dy < 1 && dx < 0 && dx > -(1 + speed))
 			return Types.ACTIONS.ACTION_RIGHT;
 		return null;
 	}
-	
-	public boolean isAvatarOneStepFromSprite(Vector2d avatarPosition, Vector2d spritePosition, double speed, int blockSize)
+
+	public boolean isAvatarAtMostOneStepFromSprite(Vector2d avatarPosition, Vector2d spritePosition, double speed,
+			int blockSize)
 	{
 		double dx = (avatarPosition.x - spritePosition.x) / blockSize;
 		double dy = (avatarPosition.y - spritePosition.y) / blockSize;
-		// we assume that other sprites are at least 1/2 blockSize in size
-		if (dx > -1 && dx < 0.5 && dy > 0 && dy < 0.5 + speed) 
+		// all sprites are of size blockSize * blockSize
+		if (dx > -1 && dx < 1 && dy > 0 && dy < 1 + speed)
 			return true;
-		if (dx > -1 && dx < 0.5 && dy < 0 && dy > -(1 + speed)) 
+		if (dx > -1 && dx < 1 && dy < 0 && dy > -(1 + speed))
 			return true;
-		if (dy > -1 && dy < 0.5 && dx > 0 && dx < 0.5 + speed)
+		if (dy > -1 && dy < 1 && dx > 0 && dx < 1 + speed)
 			return true;
-		if (dy > -1 && dy < 0.5 && dx < 0 && dx > -(1 + speed)) 
+		if (dy > -1 && dy < 1 && dx < 0 && dx > -(1 + speed))
 			return true;
 		return false;
 	}
 	
+	public boolean isAvatarExactlyOneStepFromSprite(Vector2d avatarPosition, Vector2d spritePosition, double speed,
+			int blockSize)
+	{
+		double dx = (avatarPosition.x - spritePosition.x) / blockSize;
+		double dy = (avatarPosition.y - spritePosition.y) / blockSize;
+		// all sprites are of size blockSize * blockSize
+		if (dx > -1 && dx < 1 && dy >= 1 && dy < 1 + speed)
+			return true;
+		if (dx > -1 && dx < 1 && dy <= -1 && dy > -(1 + speed))
+			return true;
+		if (dy > -1 && dy < 1 && dx >= 1 && dx < 1 + speed)
+			return true;
+		if (dy > -1 && dy < 1 && dx <= -1 && dx > -(1 + speed))
+			return true;
+		return false;
+	}
+	
+	public boolean isAvatarOverlappingSprite(Vector2d avatarPosition, Vector2d spritePosition, double speed,
+			int blockSize)
+	{
+		double dx = (avatarPosition.x - spritePosition.x) / blockSize;
+		double dy = (avatarPosition.y - spritePosition.y) / blockSize;
+		// all sprites are of size blockSize * blockSize
+		if (dx > -1 && dx < 1 && dy > -1 && dy < 1)
+			return true;
+		return false;
+	}
+
 	public boolean isFromAvatarSpriteOnTheMap(StateObservation stateObs)
 	{
 		ArrayList<Observation>[] fromAvatarSpritesPositions = stateObs.getFromAvatarSpritesPositions();
-		
+
 		if (fromAvatarSpritesPositions != null)
 		{
 			for (ArrayList<Observation> observations : fromAvatarSpritesPositions)
@@ -396,7 +432,7 @@ public class GameMechanicsController
 		}
 		return false;
 	}
-	
+
 	public int actToIndex(ArrayList<Types.ACTIONS> availableActions, Types.ACTIONS act)
 	{
 		for (int index = 0; index < availableActions.size(); index++)
@@ -406,7 +442,7 @@ public class GameMechanicsController
 		}
 		return 0;
 	}
-	
+
 	public ArrayList<Types.ACTIONS> getPlayerMoveActions(StateObservation stateObs)
 	{
 		ArrayList<Types.ACTIONS> playerActions = stateObs.getAvailableActions();
@@ -421,8 +457,164 @@ public class GameMechanicsController
 
 		return playerMoveActions;
 	}
-	
+
 	public int getPlayerId(StateObservation stateObs)
+	{
+		ArrayList<Observation> observations = stateObs.getObservationGrid()[(int) (stateObs.getAvatarPosition().x
+				/ stateObs.getBlockSize())][(int) (stateObs.getAvatarPosition().y / stateObs.getBlockSize())];
+
+		for (Observation obs : observations)
+		{
+			if (obs.category == 0)
+			{
+				return obs.obsID;
+			}
+		}
+
+		return 0;
+	}
+
+	// TODO another function to check if positions are on the same grid element
+
+	public ArrayList<Observation> getListOfSprites(StateObservation stateObs, boolean treatFromAvatarAsSprite)
+	{
+		ArrayList<Observation> listOfSprites = new ArrayList<Observation>();
+		ArrayList<Observation> part[];
+
+		if (treatFromAvatarAsSprite)
+		{
+			part = stateObs.getFromAvatarSpritesPositions();
+			if (part != null)
+				for (ArrayList<Observation> array : part)
+					listOfSprites.addAll(array);
+		}
+
+		part = stateObs.getImmovablePositions();
+		if (part != null)
+			for (ArrayList<Observation> array : part)
+				listOfSprites.addAll(array);
+
+		part = stateObs.getMovablePositions();
+		if (part != null)
+			for (ArrayList<Observation> array : part)
+				listOfSprites.addAll(array);
+
+		part = stateObs.getNPCPositions();
+		if (part != null)
+			for (ArrayList<Observation> array : part)
+				listOfSprites.addAll(array);
+
+		part = stateObs.getPortalsPositions();
+		if (part != null)
+			for (ArrayList<Observation> array : part)
+				listOfSprites.addAll(array);
+
+		part = stateObs.getResourcesPositions();
+		if (part != null)
+			for (ArrayList<Observation> array : part)
+				listOfSprites.addAll(array);
+
+		return listOfSprites;
+	}
+
+	public Observation getPlayerObservation(StateObservation stateObs)
+	{
+		ArrayList<Observation> observations = stateObs.getObservationGrid()[(int) (stateObs.getAvatarPosition().x
+				/ stateObs.getBlockSize())][(int) (stateObs.getAvatarPosition().y / stateObs.getBlockSize())];
+
+		Observation opp = null;
+
+		for (Observation obs : observations)
+		{
+			if (obs.category == 0)
+			{
+				if (gameKnowledge.getAvatarSpriteId() == obs.obsID)
+					return obs;
+				opp = obs;
+			}
+		}
+
+		return opp;
+	}
+
+	public ArrayList<Observation> getListOfAllTypesRepresentatives(StateObservation stateObs, Vector2d refPosition,
+			boolean treatFromAvatarAsSprite)
+	{
+		ArrayList<Observation> listOfSprites = new ArrayList<Observation>();
+		ArrayList<Observation> categoryObservations[];
+
+		if (treatFromAvatarAsSprite)
+		{
+			categoryObservations = stateObs.getFromAvatarSpritesPositions(refPosition);
+			listOfSprites.addAll(getTypesRepresentativesFromOneCategory(categoryObservations, refPosition));
+		}
+
+		categoryObservations = stateObs.getImmovablePositions(refPosition);
+		listOfSprites.addAll(getTypesRepresentativesFromOneCategory(categoryObservations, refPosition));
+
+		categoryObservations = stateObs.getMovablePositions(refPosition);
+		listOfSprites.addAll(getTypesRepresentativesFromOneCategory(categoryObservations, refPosition));
+
+		categoryObservations = stateObs.getNPCPositions(refPosition);
+		listOfSprites.addAll(getTypesRepresentativesFromOneCategory(categoryObservations, refPosition));
+
+		categoryObservations = stateObs.getPortalsPositions(refPosition);
+		listOfSprites.addAll(getTypesRepresentativesFromOneCategory(categoryObservations, refPosition));
+
+		categoryObservations = stateObs.getResourcesPositions(refPosition);
+		listOfSprites.addAll(getTypesRepresentativesFromOneCategory(categoryObservations, refPosition));
+
+		return listOfSprites;
+	}
+
+	private ArrayList<Observation> getTypesRepresentativesFromOneCategory(ArrayList<Observation>[] categoryObservations,
+			Vector2d refPosition)
+	{
+		ArrayList<Observation> listOfSprites = new ArrayList<Observation>();
+		if (categoryObservations != null)
+		{
+			for (ArrayList<Observation> array : categoryObservations)
+			{
+				for (Observation obs : array)
+				{
+					if (obs.position != refPosition)
+					{
+						listOfSprites.add(obs);
+						break;
+					}
+				}
+			}
+		}
+		return listOfSprites;
+	}
+
+	public Observation getSpriteTypeRepresentative(int spriteType, StateObservation stateObs)
+	{
+		ArrayList<Observation> spritesRepresentatives = getListOfAllTypesRepresentatives(stateObs, stateObs.getAvatarPosition(),
+				false);
+
+		for (Observation sprite : spritesRepresentatives)
+		{
+			if (sprite.itype == spriteType)
+				return sprite;
+		}
+		return null;
+	}
+	
+	public int getSpriteCategoryFromState(int spriteType, StateObservation stateObs)
+	{
+		ArrayList<Observation> spritesRepresentants = getListOfAllTypesRepresentatives(stateObs,
+				stateObs.getAvatarPosition(), false);
+
+		for (Observation sprite : spritesRepresentants)
+		{
+			if (sprite.itype == spriteType)
+				return sprite.category;
+		}
+		return -1;
+	}
+	
+	public int getPlayerObsId(StateObservation stateObs)
 	{
 		ArrayList<Observation> observations = stateObs
 				.getObservationGrid()[(int) (stateObs.getAvatarPosition().x
@@ -436,9 +628,6 @@ public class GameMechanicsController
 				return obs.obsID;
 			}
 		}
-
 		return 0;
 	}
-
-	// another function to check if positions are on the same grid element
 }

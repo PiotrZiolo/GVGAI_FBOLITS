@@ -11,6 +11,11 @@ public class StateEvaluator
 	{
 
 	}
+	
+	public StateEvaluator(GameKnowledge gameKnowledge)
+	{
+		this.gameKnowledge = gameKnowledge;
+	}
 
 	public StateEvaluator(GameKnowledge gameKnowledge, StateHandler stateHandler)
 	{

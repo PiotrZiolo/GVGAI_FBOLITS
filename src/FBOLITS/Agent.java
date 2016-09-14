@@ -2,6 +2,15 @@ package FBOLITS;
 
 import FBOLITS.mechanicsController.AgentMoveController;
 import FBOLITS.mechanicsController.GameMechanicsController;
+import FBOLITS.moduleFB.FBGameKnowledge;
+import FBOLITS.moduleFB.FBGameKnowledgeExplorer;
+import FBOLITS.moduleFB.FBGameStateTracker;
+import FBOLITS.moduleFB.FBStateEvaluator;
+import FBOLITS.moduleFB.FBStateEvaluatorTeacher;
+import FBOLITS.moduleFB.MechanicsController.FBAgentMoveController;
+import FBOLITS.moduleFB.MechanicsController.FBGameMechanicsController;
+import FBOLITS.treeSearchPlanners.OLITSPlanner.OLITSMovePlanner;
+import FBOLITS.treeSearchPlanners.OLMCTSPlanner.OLMCTSMovePlanner;
 import core.game.StateObservation;
 import core.player.AbstractPlayer;
 import ontology.Types;
@@ -19,15 +28,14 @@ public class Agent extends AbstractPlayer
 
 	// Objects structure
 
-	private MovePlanner movePlanner;
-	private GameKnowledgeExplorer gameKnowledgeExplorer;
-	private GameKnowledge gameKnowledge;
-	private AgentMoveController agentMoveController;
-	private GameMechanicsController gameMechanicsController;
-	private StateHandler stateHandler;
-	private StateEvaluatorTeacher stateEvaluatorTeacher;
-	private StateEvaluator stateEvaluator;
-	private GameStateTracker gameStateTracker;
+	private OLMCTSMovePlanner movePlanner;
+	private FBGameKnowledgeExplorer gameKnowledgeExplorer;
+	private FBGameKnowledge gameKnowledge;
+	private FBAgentMoveController agentMoveController;
+	private FBGameMechanicsController gameMechanicsController;
+	private FBStateEvaluatorTeacher stateEvaluatorTeacher;
+	private FBStateEvaluator stateEvaluator;
+	private FBGameStateTracker gameStateTracker;
 	
 	// private FBTPPathFinder fbtpPathFinder;
 	// private ArrayList<Types.ACTIONS> path;
@@ -45,11 +53,12 @@ public class Agent extends AbstractPlayer
 	 */
 	public Agent(StateObservation stateObs, ElapsedCpuTimer elapsedTimer)
 	{
-		gameKnowledge = new GameKnowledge();
-		gameMechanicsController = new GameMechanicsController(gameKnowledge);
-		agentMoveController = new AgentMoveController(gameKnowledge, gameMechanicsController);
-		gameStateTracker = new GameStateTracker(gameMechanicsController, gameKnowledge);
-		gameKnowledgeExplorer = new GameKnowledgeExplorer(gameKnowledge, gameMechanicsController);
+		gameKnowledge = new FBGameKnowledge();
+		gameMechanicsController = new FBGameMechanicsController(gameKnowledge);
+		agentMoveController = new FBAgentMoveController(gameKnowledge, gameMechanicsController);
+		gameStateTracker = new FBGameStateTracker(gameMechanicsController, gameKnowledge);
+		gameKnowledgeExplorer = new FBGameKnowledgeExplorer(gameKnowledge, gameMechanicsController, 
+				agentMoveController, gameStateTracker);
 
 		// Learning
 
@@ -61,13 +70,11 @@ public class Agent extends AbstractPlayer
 		gameStateTracker.runTracker(stateObs);
 		gameKnowledgeExplorer.initialLearn(stateObs, elapsedTimer, timeForLearningDuringInitialization);
 
-		stateHandler = new StateHandler();
-		stateEvaluator = new StateEvaluator(gameKnowledge, stateHandler);
-		stateEvaluatorTeacher = new StateEvaluatorTeacher(stateEvaluator, gameKnowledge);
+		stateEvaluator = new FBStateEvaluator(gameKnowledge, gameMechanicsController);
+		stateEvaluatorTeacher = new FBStateEvaluatorTeacher(stateEvaluator, gameKnowledge);
 		stateEvaluatorTeacher.initializeEvaluator(stateObs);
 
-		movePlanner = new MovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController,
-				gameMechanicsController, gameStateTracker);
+		movePlanner = new OLMCTSMovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController);
 		movePlanner.initialize(stateObs);
 	}
 
