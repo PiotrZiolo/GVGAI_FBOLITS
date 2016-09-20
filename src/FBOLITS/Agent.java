@@ -14,6 +14,7 @@ import FBOLITS.moduleFB.MechanicsController.FBGameMechanicsController;
 import FBOLITS.treeSearchPlanners.OLITSPlanner.OLITSMovePlanner;
 import FBOLITS.treeSearchPlanners.OLMCTSPlanner.OLMCTSMovePlanner;
 import FBOLITS.utils.PerformanceMonitor;
+import FBOLITS.utils.StatePrinter;
 import core.game.StateObservation;
 import core.player.AbstractPlayer;
 import ontology.Types;
@@ -81,6 +82,9 @@ public class Agent extends AbstractPlayer
 
 		movePlanner = new OLMCTSMovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController);
 		movePlanner.initialize(stateObs);
+		
+		//StatePrinter sp = new StatePrinter();
+		//sp.printGameState(stateObs, 0, true);
 		
 		performanceMonitor.finishNanoMeasure("Finish creator", Agent.class, 3);
 	}

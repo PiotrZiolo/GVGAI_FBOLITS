@@ -1,20 +1,22 @@
 package FBOLITS.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 
 import OldNextLevel.LogHandler;
 import core.game.Observation;
-import core.game.StateObservationMulti;
+import core.game.StateObservation;
 
 public class StatePrinter
 {
-	public static void printGameState(StateObservationMulti stateObs, int playerID, int iAdvances, boolean extended)
+	public void printGameState(StateObservation stateObs, int iAdvances, boolean extended)
 	{
-		LogHandler.writeLog("========== Player " + playerID + " report ==========", "", 3);
-		LogHandler.writeLog("Game tick: " + stateObs.getGameTick(), "", 3);
-		LogHandler.writeLog("Advance number: " + iAdvances, "", 3);
+		writeLog("========== State report ==========", StatePrinter.class, 3);
+		writeLog("Game tick: " + stateObs.getGameTick(), StatePrinter.class, 3);
+		writeLog("Advance number: " + iAdvances, StatePrinter.class, 3);
 
-		LogHandler.writeLog("Avatar position: " + stateObs.getAvatarPosition(playerID).x + ", " + stateObs.getAvatarPosition(playerID).y, "", 3);
+		writeLog("Avatar position: " + stateObs.getAvatarPosition().x + ", " + stateObs.getAvatarPosition().y, StatePrinter.class, 3);
 
 		//Vector2d avatarPosition = so.getAvatarPosition(id);
 		ArrayList<Observation>[] npcPositions = stateObs.getNPCPositions();
@@ -32,26 +34,26 @@ public class StatePrinter
 				if (npcs.size() > 0)
 				{
 					npcCounter += npcs.size();
-					LogHandler.writeLog("Number of NPCs of type " + npcs.get(0).itype + ": " + npcs.size(), "", 3);
+					writeLog("Number of NPCs of type " + npcs.get(0).itype + ": " + npcs.size(), StatePrinter.class, 3);
 
 					if (extended)
 					{
 						for (int i = 0; i < npcs.size(); i++)
 						{
-							LogHandler.writeLog("<<<Object>>>", "", 3);
-							LogHandler.writeLog("Category:           " + npcs.get(i).category, "", 3);
-							LogHandler.writeLog("Type:               " + npcs.get(i).itype, "", 3);
-							LogHandler.writeLog("Observation id:     " + npcs.get(i).obsID, "", 3);
-							LogHandler.writeLog("Position x:         " + npcs.get(i).position.x, "", 3);
-							LogHandler.writeLog("Position y:         " + npcs.get(i).position.y, "", 3);
-							LogHandler.writeLog("Squared distance:   " + npcs.get(i).sqDist, "", 3);
-							LogHandler.writeLog("----------", "", 3);
+							writeLog("<<<Object>>>", StatePrinter.class, 3);
+							writeLog("Category:           " + npcs.get(i).category, StatePrinter.class, 3);
+							writeLog("Type:               " + npcs.get(i).itype, StatePrinter.class, 3);
+							writeLog("Observation id:     " + npcs.get(i).obsID, StatePrinter.class, 3);
+							writeLog("Position x:         " + npcs.get(i).position.x, StatePrinter.class, 3);
+							writeLog("Position y:         " + npcs.get(i).position.y, StatePrinter.class, 3);
+							writeLog("Squared distance:   " + npcs.get(i).sqDist, StatePrinter.class, 3);
+							writeLog("----------", StatePrinter.class, 3);
 						}
 					}
 				}
 			}
 		}
-		LogHandler.writeLog("Number of NPCs: " + npcCounter, "", 3);
+		writeLog("Number of NPCs: " + npcCounter, StatePrinter.class, 3);
 
 		int immovableCounter = 0;
 		if (immovablePositions != null)
@@ -61,26 +63,26 @@ public class StatePrinter
 				if (immovable.size() > 0)
 				{
 					immovableCounter += immovable.size();
-					LogHandler.writeLog("Number of immovables of type " + immovable.get(0).itype + ": " + immovable.size(), "", 3);
+					writeLog("Number of immovables of type " + immovable.get(0).itype + ": " + immovable.size(), StatePrinter.class, 3);
 
 					if (extended)
 					{
 						for (int i = 0; i < immovable.size(); i++)
 						{
-							LogHandler.writeLog("<<<Object>>>", "", 3);
-							LogHandler.writeLog("Category:           " + immovable.get(i).category, "", 3);
-							LogHandler.writeLog("Type:               " + immovable.get(i).itype, "", 3);
-							LogHandler.writeLog("Observation id:     " + immovable.get(i).obsID, "", 3);
-							LogHandler.writeLog("Position x:         " + immovable.get(i).position.x, "", 3);
-							LogHandler.writeLog("Position y:         " + immovable.get(i).position.y, "", 3);
-							LogHandler.writeLog("Squared distance:   " + immovable.get(i).sqDist, "", 3);
-							LogHandler.writeLog("----------", "", 3);
+							writeLog("<<<Object>>>", StatePrinter.class, 3);
+							writeLog("Category:           " + immovable.get(i).category, StatePrinter.class, 3);
+							writeLog("Type:               " + immovable.get(i).itype, StatePrinter.class, 3);
+							writeLog("Observation id:     " + immovable.get(i).obsID, StatePrinter.class, 3);
+							writeLog("Position x:         " + immovable.get(i).position.x, StatePrinter.class, 3);
+							writeLog("Position y:         " + immovable.get(i).position.y, StatePrinter.class, 3);
+							writeLog("Squared distance:   " + immovable.get(i).sqDist, StatePrinter.class, 3);
+							writeLog("----------", StatePrinter.class, 3);
 						}
 					}
 				}
 			}
 		}
-		LogHandler.writeLog("Number of immovables: " + immovableCounter, "", 3);
+		writeLog("Number of immovables: " + immovableCounter, StatePrinter.class, 3);
 
 		int movableCounter = 0;
 		if (movablePositions != null)
@@ -90,26 +92,26 @@ public class StatePrinter
 				if (movable.size() > 0)
 				{
 					movableCounter += movable.size();
-					LogHandler.writeLog("Number of movables of type " + movable.get(0).itype + ": " + movable.size(), "", 3);
+					writeLog("Number of movables of type " + movable.get(0).itype + ": " + movable.size(), StatePrinter.class, 3);
 
 					if (extended)
 					{
 						for (int i = 0; i < movable.size(); i++)
 						{
-							LogHandler.writeLog("<<<Object>>>", "", 3);
-							LogHandler.writeLog("Category:           " + movable.get(i).category, "", 3);
-							LogHandler.writeLog("Type:               " + movable.get(i).itype, "", 3);
-							LogHandler.writeLog("Observation id:     " + movable.get(i).obsID, "", 3);
-							LogHandler.writeLog("Position x:         " + movable.get(i).position.x, "", 3);
-							LogHandler.writeLog("Position y:         " + movable.get(i).position.y, "", 3);
-							LogHandler.writeLog("Squared distance:   " + movable.get(i).sqDist, "", 3);
-							LogHandler.writeLog("----------", "", 3);
+							writeLog("<<<Object>>>", StatePrinter.class, 3);
+							writeLog("Category:           " + movable.get(i).category, StatePrinter.class, 3);
+							writeLog("Type:               " + movable.get(i).itype, StatePrinter.class, 3);
+							writeLog("Observation id:     " + movable.get(i).obsID, StatePrinter.class, 3);
+							writeLog("Position x:         " + movable.get(i).position.x, StatePrinter.class, 3);
+							writeLog("Position y:         " + movable.get(i).position.y, StatePrinter.class, 3);
+							writeLog("Squared distance:   " + movable.get(i).sqDist, StatePrinter.class, 3);
+							writeLog("----------", StatePrinter.class, 3);
 						}
 					}
 				}
 			}
 		}
-		LogHandler.writeLog("Number of movables: " + movableCounter, "", 3);
+		writeLog("Number of movables: " + movableCounter, StatePrinter.class, 3);
 
 		int resourcesCounter = 0;
 		if (resourcesPositions != null)
@@ -119,26 +121,26 @@ public class StatePrinter
 				if (resources.size() > 0)
 				{
 					resourcesCounter += resources.size();
-					LogHandler.writeLog("Number of resources of type " + resources.get(0).itype + ": " + resources.size(), "", 3);
+					writeLog("Number of resources of type " + resources.get(0).itype + ": " + resources.size(), StatePrinter.class, 3);
 
 					if (extended)
 					{
 						for (int i = 0; i < resources.size(); i++)
 						{
-							LogHandler.writeLog("<<<Object>>>", "", 3);
-							LogHandler.writeLog("Category:           " + resources.get(i).category, "", 3);
-							LogHandler.writeLog("Type:               " + resources.get(i).itype, "", 3);
-							LogHandler.writeLog("Observation id:     " + resources.get(i).obsID, "", 3);
-							LogHandler.writeLog("Position x:         " + resources.get(i).position.x, "", 3);
-							LogHandler.writeLog("Position y:         " + resources.get(i).position.y, "", 3);
-							LogHandler.writeLog("Squared distance:   " + resources.get(i).sqDist, "", 3);
-							LogHandler.writeLog("----------", "", 3);
+							writeLog("<<<Object>>>", StatePrinter.class, 3);
+							writeLog("Category:           " + resources.get(i).category, StatePrinter.class, 3);
+							writeLog("Type:               " + resources.get(i).itype, StatePrinter.class, 3);
+							writeLog("Observation id:     " + resources.get(i).obsID, StatePrinter.class, 3);
+							writeLog("Position x:         " + resources.get(i).position.x, StatePrinter.class, 3);
+							writeLog("Position y:         " + resources.get(i).position.y, StatePrinter.class, 3);
+							writeLog("Squared distance:   " + resources.get(i).sqDist, StatePrinter.class, 3);
+							writeLog("----------", StatePrinter.class, 3);
 						}
 					}
 				}
 			}
 		}
-		LogHandler.writeLog("Number of resources: " + resourcesCounter, "", 3);
+		writeLog("Number of resources: " + resourcesCounter, StatePrinter.class, 3);
 
 		int portalsCounter = 0;
 		if (portalPositions != null)
@@ -148,26 +150,26 @@ public class StatePrinter
 				if (portals.size() > 0)
 				{
 					portalsCounter += portals.size();
-					LogHandler.writeLog("Number of portals of type " + portals.get(0).itype + ": " + portals.size(), "", 3);
+					writeLog("Number of portals of type " + portals.get(0).itype + ": " + portals.size(), StatePrinter.class, 3);
 
 					if (extended)
 					{
 						for (int i = 0; i < portals.size(); i++)
 						{
-							LogHandler.writeLog("<<<Object>>>", "", 3);
-							LogHandler.writeLog("Category:           " + portals.get(i).category, "", 3);
-							LogHandler.writeLog("Type:               " + portals.get(i).itype, "", 3);
-							LogHandler.writeLog("Observation id:     " + portals.get(i).obsID, "", 3);
-							LogHandler.writeLog("Position x:         " + portals.get(i).position.x, "", 3);
-							LogHandler.writeLog("Position y:         " + portals.get(i).position.y, "", 3);
-							LogHandler.writeLog("Squared distance:   " + portals.get(i).sqDist, "", 3);
-							LogHandler.writeLog("----------", "", 3);
+							writeLog("<<<Object>>>", StatePrinter.class, 3);
+							writeLog("Category:           " + portals.get(i).category, StatePrinter.class, 3);
+							writeLog("Type:               " + portals.get(i).itype, StatePrinter.class, 3);
+							writeLog("Observation id:     " + portals.get(i).obsID, StatePrinter.class, 3);
+							writeLog("Position x:         " + portals.get(i).position.x, StatePrinter.class, 3);
+							writeLog("Position y:         " + portals.get(i).position.y, StatePrinter.class, 3);
+							writeLog("Squared distance:   " + portals.get(i).sqDist, StatePrinter.class, 3);
+							writeLog("----------", StatePrinter.class, 3);
 						}
 					}
 				}
 			}
 		}
-		LogHandler.writeLog("Number of portals: " + portalsCounter, "", 3);
+		writeLog("Number of portals: " + portalsCounter, StatePrinter.class, 3);
 
 		int fromAvatarSpritesCounter = 0;
 		if (fromAvatarSpritesPositions != null)
@@ -177,29 +179,38 @@ public class StatePrinter
 				if (fromAvatarSprites.size() > 0)
 				{
 					fromAvatarSpritesCounter += fromAvatarSprites.size();
-					LogHandler.writeLog("Number of from avatar sprites of type " + fromAvatarSprites.get(0).itype + ": "
-							+ fromAvatarSprites.size(), "", 3);
+					writeLog("Number of from avatar sprites of type " + fromAvatarSprites.get(0).itype + ": "
+							+ fromAvatarSprites.size(), StatePrinter.class, 3);
 
 					if (extended)
 					{
 						for (int i = 0; i < fromAvatarSprites.size(); i++)
 						{
-							LogHandler.writeLog("<<<Object>>>", "", 3);
-							LogHandler.writeLog("Category:           " + fromAvatarSprites.get(i).category, "", 3);
-							LogHandler.writeLog("Type:               " + fromAvatarSprites.get(i).itype, "", 3);
-							LogHandler.writeLog("Observation id:     " + fromAvatarSprites.get(i).obsID, "", 3);
-							LogHandler.writeLog("Position x:         " + fromAvatarSprites.get(i).position.x, "", 3);
-							LogHandler.writeLog("Position y:         " + fromAvatarSprites.get(i).position.y, "", 3);
-							LogHandler.writeLog("Squared distance:   " + fromAvatarSprites.get(i).sqDist, "", 3);
-							LogHandler.writeLog("----------", "", 3);
+							writeLog("<<<Object>>>", StatePrinter.class, 3);
+							writeLog("Category:           " + fromAvatarSprites.get(i).category, StatePrinter.class, 3);
+							writeLog("Type:               " + fromAvatarSprites.get(i).itype, StatePrinter.class, 3);
+							writeLog("Observation id:     " + fromAvatarSprites.get(i).obsID, StatePrinter.class, 3);
+							writeLog("Position x:         " + fromAvatarSprites.get(i).position.x, StatePrinter.class, 3);
+							writeLog("Position y:         " + fromAvatarSprites.get(i).position.y, StatePrinter.class, 3);
+							writeLog("Squared distance:   " + fromAvatarSprites.get(i).sqDist, StatePrinter.class, 3);
+							writeLog("----------", StatePrinter.class, 3);
 						}
 					}
 				}
 			}
 		}
-		LogHandler.writeLog("Number of from avatar sprites: " + fromAvatarSpritesCounter, "", 3);
+		writeLog("Number of from avatar sprites: " + fromAvatarSpritesCounter, StatePrinter.class, 3);
 
-		LogHandler.writeLog("=====================================", "", 3);
-		LogHandler.writeLog("     ", "", 3);
+		writeLog("=====================================", StatePrinter.class, 3);
+		writeLog("     ", StatePrinter.class, 3);
+	}
+	
+	public void writeLog(String message, Class origin, int iWrite)
+	{
+		if (iWrite != 0)
+		{
+			Logger logger = LoggerFactory.getLogger(origin);
+			logger.info(message);
+		}
 	}
 }
