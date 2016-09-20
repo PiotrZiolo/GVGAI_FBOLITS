@@ -1,5 +1,7 @@
 package FBOLITS;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import FBOLITS.mechanicsController.AgentMoveController;
 import FBOLITS.mechanicsController.GameMechanicsController;
 import FBOLITS.moduleFB.FBGameKnowledge;
@@ -11,6 +13,7 @@ import FBOLITS.moduleFB.MechanicsController.FBAgentMoveController;
 import FBOLITS.moduleFB.MechanicsController.FBGameMechanicsController;
 import FBOLITS.treeSearchPlanners.OLITSPlanner.OLITSMovePlanner;
 import FBOLITS.treeSearchPlanners.OLMCTSPlanner.OLMCTSMovePlanner;
+import FBOLITS.utils.PerformanceMonitor;
 import core.game.StateObservation;
 import core.player.AbstractPlayer;
 import ontology.Types;
@@ -53,6 +56,8 @@ public class Agent extends AbstractPlayer
 	 */
 	public Agent(StateObservation stateObs, ElapsedCpuTimer elapsedTimer)
 	{
+		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		performanceMonitor.startNanoMeasure("Start creator", Agent.class, 3);
 		gameKnowledge = new FBGameKnowledge();
 		gameMechanicsController = new FBGameMechanicsController(gameKnowledge);
 		agentMoveController = new FBAgentMoveController(gameKnowledge, gameMechanicsController);
@@ -76,6 +81,8 @@ public class Agent extends AbstractPlayer
 
 		movePlanner = new OLMCTSMovePlanner(stateEvaluator, gameKnowledge, gameKnowledgeExplorer, agentMoveController);
 		movePlanner.initialize(stateObs);
+		
+		performanceMonitor.finishNanoMeasure("Finish creator", Agent.class, 3);
 	}
 
 	/**
@@ -90,6 +97,8 @@ public class Agent extends AbstractPlayer
 	 */
 	public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer)
 	{
+		PerformanceMonitor performanceMonitor = new PerformanceMonitor();
+		performanceMonitor.startNanoMeasure("Start act", Agent.class, 3);
 		gameKnowledgeExplorer.learnDynamicBasics(stateObs);
 		gameStateTracker.runTracker(stateObs);
 		gameKnowledgeExplorer.successiveLearn(stateObs, elapsedTimer, timeForLearningDuringMove);
@@ -97,6 +106,7 @@ public class Agent extends AbstractPlayer
 		
 		Types.ACTIONS action = movePlanner.chooseAction(stateObs, elapsedTimer, timeForChoosingMove);
 
+		performanceMonitor.finishNanoMeasure("Finish act", Agent.class, 3);
 		return action;
 	}
 
